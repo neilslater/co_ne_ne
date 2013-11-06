@@ -87,7 +87,6 @@ module CoNeNe::MLP
       end
       @output_deltas = NArray.sfloat( @num_outputs ) unless @output_deltas
       @num_outputs.times do |j|
-        # Not 100% certain that we need the derivative here
         @output_deltas[j] = ( target[j] - @output[j] ) * CoNeNe::MLP.transfer_derivative( @output[j] )
       end
       @output_deltas
