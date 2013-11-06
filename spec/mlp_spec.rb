@@ -330,6 +330,7 @@ describe CoNeNe::MLP::Network do
 
   describe "instance methods" do
     let( :nn ) { CoNeNe::MLP::Network.new( 2, [4], 1 ) }
+    let( :nn2 ) { CoNeNe::MLP::Network.new( 2, [5,3], 1 ) }
     let( :xor_train_set ) {
       [
         [  NArray.cast( [0.0, 0.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
@@ -361,7 +362,7 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        2000.times do
+        3000.times do
           xor_train_set.each do | xin, xtarg |
             nn.train_once xin, xtarg
           end
@@ -380,6 +381,35 @@ describe CoNeNe::MLP::Network do
         nn.run( NArray.cast( [0.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
         nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
         nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+      end
+
+      it "can learn xor with 2 hidden layers" do
+        rms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn2.run xin
+          rms_total += nn2.rms_error( xtarg )
+        end
+        rms_total /= 4
+
+        5000.times do
+          xor_train_set.each do | xin, xtarg |
+            nn2.train_once xin, xtarg
+          end
+        end
+
+        after_rms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn2.run xin
+          after_rms_total += nn2.rms_error( xtarg )
+        end
+        after_rms_total /= 4
+
+        after_rms_total.should be < rms_total
+
+        nn2.run( NArray.cast( [0.0, 0.0], 'sfloat' ) )[0].should be_within(0.15).of 0.0
+        nn2.run( NArray.cast( [0.0, 1.0], 'sfloat' ) )[0].should be_within(0.15).of 1.0
+        nn2.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )[0].should be_within(0.15).of 1.0
+        nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.15).of 0.0
       end
     end
 
