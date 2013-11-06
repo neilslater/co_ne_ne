@@ -1,6 +1,7 @@
 *.gem
 *.rbc
 .bundle
+lib/co_ne_ne/co_ne_ne.bundle
 .config
 .yardoc
 Gemfile.lock

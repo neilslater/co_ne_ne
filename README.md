@@ -1,6 +1,14 @@
 # CoNeNe
 
-TODO: Write a gem description
+[![Gem Version](https://badge.fury.io/rb/co_ne_ne.png)](http://badge.fury.io/rb/co_ne_ne)
+[![Build Status](https://travis-ci.org/neilslater/co_ne_ne.png?branch=master)](http://travis-ci.org/neilslater/co_ne_ne)
+[![Dependency Status](https://gemnasium.com/neilslater/co_ne_ne.png)](https://gemnasium.com/neilslater/co_ne_ne)
+
+**Co**nvolutional **Ne**ural **Ne**tworks.
+
+## Features
+
+ * Uses NArray sfloat arrays to represent inputs, outputs and weights.
 
 ## Installation
 
@@ -18,7 +26,8 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Here's how to train a simple MLP to learn **xor**:
+
 
 ## Contributing
 
