@@ -331,6 +331,7 @@ describe CoNeNe::MLP::Network do
   describe "instance methods" do
     let( :nn ) { CoNeNe::MLP::Network.new( 2, [4], 1 ) }
     let( :nn2 ) { CoNeNe::MLP::Network.new( 2, [5,3], 1 ) }
+    let( :nn3 ) { CoNeNe::MLP::Network.new( 2, [4,3,2], 1 ) }
     let( :xor_train_set ) {
       [
         [  NArray.cast( [0.0, 0.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
@@ -391,7 +392,7 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        5000.times do
+        10000.times do
           xor_train_set.each do | xin, xtarg |
             nn2.train_once xin, xtarg
           end
@@ -412,6 +413,5 @@ describe CoNeNe::MLP::Network do
         nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.15).of 0.0
       end
     end
-
   end
 end

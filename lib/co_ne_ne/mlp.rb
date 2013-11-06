@@ -16,7 +16,7 @@ module CoNeNe::MLP
       @num_inputs = Integer( n_inputs )
       @num_outputs = Integer( n_outputs )
       @output = NArray.sfloat( @num_outputs )
-      @weights = NArray.sfloat( @num_inputs + 1,  @num_outputs ).random( 2.0 ) - 1.0
+      @weights = NArray.sfloat( @num_inputs + 1,  @num_outputs ).random( 1.54 ) - 0.77
     end
 
     def self.from_weights new_weights
