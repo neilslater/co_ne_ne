@@ -26,7 +26,7 @@ Or install it yourself as:
 
 ## Usage
 
-Here's how to train a simple MLP to learn **xor**:
+Here's how to train a simple MLP to learn **xor**: (TODO)
 
 
 ## Contributing
