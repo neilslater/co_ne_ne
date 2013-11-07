@@ -334,9 +334,9 @@ describe CoNeNe::MLP::Network do
     let( :nn3 ) { CoNeNe::MLP::Network.new( 2, [4,3,2], 1 ) }
     let( :xor_train_set ) {
       [
-        [  NArray.cast( [0.0, 0.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
-        [  NArray.cast( [0.0, 1.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
-        [  NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
+        [  NArray.cast( [-1.0, -1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
+        [  NArray.cast( [-1.0, 1.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
+        [  NArray.cast( [1.0, -1.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
         [  NArray.cast( [1.0, 1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ]
       ]
     }
@@ -363,7 +363,7 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        3000.times do
+        2000.times do
           xor_train_set.each do | xin, xtarg |
             nn.train_once xin, xtarg
           end
@@ -378,9 +378,9 @@ describe CoNeNe::MLP::Network do
 
         after_rms_total.should be < rms_total
 
-        nn.run( NArray.cast( [0.0, 0.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
-        nn.run( NArray.cast( [0.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
-        nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+        nn.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
         nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
       end
 
@@ -392,7 +392,7 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        10000.times do
+        5000.times do
           xor_train_set.each do | xin, xtarg |
             nn2.train_once xin, xtarg
           end
@@ -407,10 +407,10 @@ describe CoNeNe::MLP::Network do
 
         after_rms_total.should be < rms_total
 
-        nn2.run( NArray.cast( [0.0, 0.0], 'sfloat' ) )[0].should be_within(0.15).of 0.0
-        nn2.run( NArray.cast( [0.0, 1.0], 'sfloat' ) )[0].should be_within(0.15).of 1.0
-        nn2.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )[0].should be_within(0.15).of 1.0
-        nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.15).of 0.0
+        nn2.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+        nn2.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn2.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
       end
     end
   end

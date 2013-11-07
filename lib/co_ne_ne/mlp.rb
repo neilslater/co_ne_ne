@@ -10,13 +10,14 @@ module CoNeNe::MLP
 
   class Layer
     attr_reader :num_inputs, :num_outputs, :input, :output, :weights
-    attr_reader :input_layer, :output_layer, :output_deltas
+    attr_reader :input_layer, :output_layer, :output_deltas, :weights_last_deltas
 
     def initialize n_inputs, n_outputs
       @num_inputs = Integer( n_inputs )
       @num_outputs = Integer( n_outputs )
       @output = NArray.sfloat( @num_outputs )
       @weights = NArray.sfloat( @num_inputs + 1,  @num_outputs ).random( 1.54 ) - 0.77
+      @weights_last_deltas = NArray.sfloat( @num_inputs + 1,  @num_outputs )
     end
 
     def self.from_weights new_weights
@@ -117,15 +118,19 @@ module CoNeNe::MLP
       deltas
     end
 
-    def update_weights learning_rate
+    def update_weights learning_rate, momentum = 0.0
       raise "No output deltas!" unless @output_deltas
       raise "No input!" unless @input
 
       @num_outputs.times do |j|
         @num_inputs.times do |i|
-          @weights[i,j] += learning_rate * @output_deltas[j] * @input[i]
+          wupdate = (learning_rate * @output_deltas[j] * @input[i]) + momentum * @weights_last_deltas[i,j]
+          @weights_last_deltas[i,j] = wupdate
+          @weights[i,j] += wupdate
         end
-        @weights[@num_inputs,j] += learning_rate * @output_deltas[j] * 0.5
+        wupdate = (learning_rate * @output_deltas[j]) + momentum * @weights_last_deltas[@num_inputs,j]
+        @weights_last_deltas[@num_inputs,j] = wupdate
+        @weights[@num_inputs,j] += learning_rate * @output_deltas[j]
       end
     end
 
@@ -181,11 +186,12 @@ module CoNeNe::MLP
         prev_layer = new_layer
       end
 
-      @learning_rate = 0.7
+      @learning_rate = 1.0
+      @momentum = 0.5
     end
 
     attr_reader :num_inputs, :num_outputs, :layer_sizes, :layers
-    attr_accessor :learning_rate
+    attr_accessor :learning_rate, :momentum
 
     def run input
       @layers.first.attach_input( input )
@@ -205,7 +211,7 @@ module CoNeNe::MLP
         layer.backprop_deltas
       end
       @layers.each do |layer|
-        layer.update_weights( @learning_rate )
+        layer.update_weights( @learning_rate, @momentum )
       end
       @layers.last.rms_error target
     end
