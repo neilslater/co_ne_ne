@@ -71,14 +71,31 @@ end
 end
 
 describe "Output value tests for" do
-  let( :input_array ) { NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
+  let( :test_array ) { NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
       0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' ) }
 
   describe CoNeNe::Transfer::Sigmoid do
     it "should match normal definition of sigmoid function" do
-      CoNeNe::Transfer::Sigmoid.bulk_apply_function( input_array )
-      input_array.should be_narray_like NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
-        0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
+      CoNeNe::Transfer::Sigmoid.bulk_apply_function( test_array )
+      test_array.should be_narray_like NArray.cast( [ 0.377541, 0.401312, 0.425557, 0.450166,
+          0.475021, 0.5, 0.524979, 0.549834, 0.574443, 0.598688, 0.622459], 'sfloat' )
     end
   end
+
+  describe CoNeNe::Transfer::TanH do
+    it "should match normal definition of tanh function" do
+      CoNeNe::Transfer::TanH.bulk_apply_function( test_array )
+      test_array.should be_narray_like NArray.cast( [ -0.462117, -0.379949, -0.291313, -0.197375,
+          -0.099668, 0.0, 0.099668, 0.197375, 0.291313, 0.379949, 0.462117 ], 'sfloat' )
+    end
+  end
+
+  describe CoNeNe::Transfer::ReLU do
+    it "should match normal definition of 'rectified linear' function" do
+      CoNeNe::Transfer::ReLU.bulk_apply_function( test_array )
+      test_array.should be_narray_like NArray.cast( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
+    end
+  end
+
 end
