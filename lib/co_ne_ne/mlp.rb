@@ -1,13 +1,5 @@
 module CoNeNe::MLP
 
-  def self.transfer activation
-    return 1.0 / (1.0 + Math.exp(-activation))
-  end
-
-  def self.transfer_derivative output
-    return output * (1.0 - output)
-  end
-
   class Layer
     attr_reader :num_inputs, :num_outputs, :input, :output, :weights
     attr_reader :input_layer, :output_layer, :output_deltas, :weights_last_deltas
@@ -78,8 +70,9 @@ module CoNeNe::MLP
       raise "No input!" unless @input
       num_outputs.times do |j|
         activation = (weights[(0...@num_inputs),j] * @input).sum + weights[@num_inputs,j]
-        @output[j] = CoNeNe::MLP.transfer( activation )
+        @output[j] = activation
       end
+      CoNeNe::Transfer::Sigmoid.bulk_apply_function( @output )
     end
 
     def calc_output_deltas target
@@ -88,7 +81,7 @@ module CoNeNe::MLP
       end
       @output_deltas = NArray.sfloat( @num_outputs ) unless @output_deltas
       @num_outputs.times do |j|
-        @output_deltas[j] = ( target[j] - @output[j] ) * CoNeNe::MLP.transfer_derivative( @output[j] )
+        @output_deltas[j] = ( target[j] - @output[j] ) * CoNeNe::Transfer::Sigmoid.derivative_at( @output[j] )
       end
       @output_deltas
     end
@@ -113,7 +106,7 @@ module CoNeNe::MLP
         @num_outputs.times do |j|
           deltas[i] += @weights[i,j] * @output_deltas[j]
         end
-        deltas[i] *=  CoNeNe::MLP.transfer_derivative( @input[i] )
+        deltas[i] *=  CoNeNe::Transfer::Sigmoid.derivative_at( @input[i] )
       end
       deltas
     end

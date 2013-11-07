@@ -1,33 +1,5 @@
 require 'helpers'
 
-describe CoNeNe::MLP do
-  describe "helper methods" do
-    describe "#transfer" do
-      it "is monotonically increasing function value between 0.0 and 1.0" do
-        results = [-120.0, -12.0, -1.2, -0.4, 0.0, 0.01, 0.23, 4.5, 7.8 ].map do |x|
-          CoNeNe::MLP.transfer( x )
-        end
-        results.all? { |r| r >= 0.0 && r <= 1.0 }.should be_true
-        results.sort.should == results
-        results.first.should be_within(0.001).of 0.0
-        results.last.should be_within(0.001).of 1.0
-      end
-    end
-
-    describe "#transfer_derivative" do
-      it "is always positive, with lowest values at extremes" do
-        results = [-120.0, -12.0, -1.2, -0.4, 0.0, 0.01, 0.23, 4.5, 7.8 ].map do |x|
-          CoNeNe::MLP.transfer_derivative( CoNeNe::MLP.transfer( x ) )
-        end
-        results.all? { |r| r > 0.0 }.should be_true
-        results.first.should be_within(0.001).of 0.0
-        results.sort.last.should be > 0.2
-        results.last.should be_within(0.001).of 0.0
-      end
-    end
-  end
-end
-
 describe CoNeNe::MLP::Layer do
   describe "class methods" do
     describe "#new" do
