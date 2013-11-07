@@ -26,7 +26,7 @@ describe transfer do
   end
 
   describe "#bulk_apply_function" do
-    it "alters the whole input array" do
+    it "alters the whole input narray" do
       big_array.should be_narray_like original_array
       transfer.bulk_apply_function( big_array )
       big_array.should_not be_narray_like original_array
@@ -68,4 +68,17 @@ describe transfer do
     end
   end
 end
+end
+
+describe "Output value tests for" do
+  let( :input_array ) { NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
+      0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' ) }
+
+  describe CoNeNe::Transfer::Sigmoid do
+    it "should match normal definition of sigmoid function" do
+      CoNeNe::Transfer::Sigmoid.bulk_apply_function( input_array )
+      input_array.should be_narray_like NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
+        0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
+    end
+  end
 end
