@@ -44,7 +44,7 @@ describe transfer do
 
     # This is numerical approximation of derivative
     d = 5e-6
-    100000 * ( t.function( x + d ) - t.function( x - d ) )
+    100000.0 * ( t.function( x + d ) - t.function( x - d ) )
   end
 
   describe "#derivative" do
@@ -52,7 +52,7 @@ describe transfer do
       x_vals.each do |x|
         dy_dx = transfer.derivative(x)
         dy_dx.should be_a Float
-        dy_dx.should be_within(1e-5).of approx_dy_dx( transfer, x )
+        dy_dx.should be_within(1e-3).of approx_dy_dx( transfer, x )
       end
     end
   end
@@ -63,7 +63,7 @@ describe transfer do
         y = transfer.function(x)
         dy_dx = transfer.derivative_at(y)
         dy_dx.should be_a Float
-        dy_dx.should be_within(1e-5).of approx_dy_dx( transfer, x )
+        dy_dx.should be_within(1e-3).of approx_dy_dx( transfer, x )
       end
     end
   end

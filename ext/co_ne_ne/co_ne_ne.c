@@ -8,6 +8,7 @@
 #include "narray_shared.h"
 #include "convolve_raw.h"
 #include "cnn_components.h"
+#include "transfer_module.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -114,4 +115,5 @@ void Init_co_ne_ne() {
   CoNeNe = rb_define_module( "CoNeNe" );
   rb_define_singleton_method( CoNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
+  init_transfer_module( CoNeNe );
 }
