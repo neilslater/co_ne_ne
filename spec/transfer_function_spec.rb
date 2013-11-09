@@ -63,7 +63,7 @@ describe transfer do
         y = transfer.function(x)
         dy_dx = transfer.derivative_at(y)
         dy_dx.should be_a Float
-        dy_dx.should be_within(1e-3).of approx_dy_dx( transfer, x )
+        (dy_dx/approx_dy_dx( transfer, x )).should be_within(1e-3).of 1.0
       end
     end
   end
