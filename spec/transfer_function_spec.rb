@@ -1,5 +1,9 @@
 require 'helpers'
 
+def qsig x
+  1.0 / ( 1.0 + Math.exp( -x ) )
+end
+
 [ CoNeNe::Transfer::Sigmoid, CoNeNe::Transfer::TanH, CoNeNe::Transfer::ReLU ].each do |transfer|
 describe transfer do
   let( :x_vals ) { (-100..100).to_a.map { |x| x.to_f/10 } }
@@ -44,7 +48,14 @@ describe transfer do
 
     # This is numerical approximation of derivative
     d = 5e-6
-    100000.0 * ( t.function( x + d ) - t.function( x - d ) )
+    case t.name
+    when 'CoNeNe::Transfer::Sigmoid'
+      100000.0 * ( qsig( x + d ) - qsig( x - d ) )
+    when 'CoNeNe::Transfer::TanH'
+      100000.0 * ( t.function( x + d ) - t.function( x - d ) )
+    when 'CoNeNe::Transfer::ReLU'
+      100000.0 * ( t.function( x + d ) - t.function( x - d ) )
+    end
   end
 
   describe "#derivative" do
@@ -52,7 +63,7 @@ describe transfer do
       x_vals.each do |x|
         dy_dx = transfer.derivative(x)
         dy_dx.should be_a Float
-        dy_dx.should be_within(1e-3).of approx_dy_dx( transfer, x )
+        dy_dx.should be_within(1e-4).of approx_dy_dx( transfer, x )
       end
     end
   end
@@ -63,7 +74,7 @@ describe transfer do
         y = transfer.function(x)
         dy_dx = transfer.derivative_at(y)
         dy_dx.should be_a Float
-        (dy_dx/approx_dy_dx( transfer, x )).should be_within(1e-3).of 1.0
+        dy_dx.should be_within(1e-4).of approx_dy_dx( transfer, x )
       end
     end
   end
