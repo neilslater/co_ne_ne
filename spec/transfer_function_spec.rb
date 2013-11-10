@@ -1,9 +1,5 @@
 require 'helpers'
 
-def qsig x
-  1.0 / ( 1.0 + Math.exp( -x ) )
-end
-
 [ CoNeNe::Transfer::Sigmoid, CoNeNe::Transfer::TanH, CoNeNe::Transfer::ReLU ].each do |transfer|
 describe transfer do
   let( :x_vals ) { (-100..100).to_a.map { |x| x.to_f/10 } }
@@ -48,13 +44,17 @@ describe transfer do
 
     # This is numerical approximation of derivative
     d = 5e-6
+    x1 = x + d
+    x2 = x - d
+
     case t.name
     when 'CoNeNe::Transfer::Sigmoid'
-      100000.0 * ( qsig( x + d ) - qsig( x - d ) )
+
+      100000.0 * ( 1.0 / ( 1.0 + Math.exp( -x1 ) ) - 1.0 / ( 1.0 + Math.exp( -x2 ) ) )
     when 'CoNeNe::Transfer::TanH'
-      100000.0 * ( t.function( x + d ) - t.function( x - d ) )
+      100000.0 * ( 2.0 / (1.0 + Math.exp(-2*x1) ) -  2.0 / (1.0 + Math.exp(-2*x2) ) );
     when 'CoNeNe::Transfer::ReLU'
-      100000.0 * ( t.function( x + d ) - t.function( x - d ) )
+      100000.0 * ( t.function( x1 ) - t.function( x2 ) )
     end
   end
 
