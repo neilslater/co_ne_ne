@@ -1,6 +1,7 @@
 # ext/co_ne_ne/extconf.rb
 require "mkmf"
 require "rubygems"
+require "narray"
 
 # Following code stolen shamelessly from fftw3 gem:
 narray_dir = File.dirname(Gem.find_files("narray.h").first) rescue $sitearchdir
