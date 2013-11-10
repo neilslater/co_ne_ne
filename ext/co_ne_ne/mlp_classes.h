@@ -1,0 +1,13 @@
+// ext/co_ne_ne/mlp_classes.h
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Declarations of MLP classes
+//
+
+#ifndef MLP_CLASSES_H
+#define MLP_CLASSES_H
+
+void init_mlp_classes( VALUE parent );
+
+#endif
