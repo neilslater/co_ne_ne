@@ -8,6 +8,10 @@ module CoNeNe::MLP
       @num_inputs = Integer( n_inputs )
       @num_outputs = Integer( n_outputs )
       @output = NArray.sfloat( @num_outputs )
+      random_weights
+    end
+
+    def random_weights
       @weights = NArray.sfloat( @num_inputs + 1,  @num_outputs ).random( 1.54 ) - 0.77
       @weights_last_deltas = NArray.sfloat( @num_inputs + 1,  @num_outputs )
     end
@@ -211,6 +215,10 @@ module CoNeNe::MLP
 
     def rms_error target
       @layers.last.rms_error target
+    end
+
+    def random_weights
+      @layers.each { |layer| layer.random_weights }
     end
   end
 

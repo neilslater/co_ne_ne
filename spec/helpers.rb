@@ -41,3 +41,10 @@ RSpec::Matchers.define :be_narray_like do |expected_narray|
     "numerically very close to example"
   end
 end
+
+def xor_test nn
+  (nn.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0] - 0.0).abs < 0.1 &&
+    (nn.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0] - 1.0).abs < 0.1 &&
+    (nn.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0] - 1.0).abs < 0.1 &&
+    (nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0] - 0.0).abs < 0.1
+end

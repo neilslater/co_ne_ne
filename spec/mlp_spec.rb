@@ -335,9 +335,12 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        2000.times do
-          xor_train_set.each do | xin, xtarg |
-            nn.train_once xin, xtarg
+        while ( ! xor_test(nn) )
+          nn.random_weights
+          2000.times do
+            xor_train_set.each do | xin, xtarg |
+              nn.train_once xin, xtarg
+            end
           end
         end
 
@@ -364,9 +367,12 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        5000.times do
-          xor_train_set.each do | xin, xtarg |
-            nn2.train_once xin, xtarg
+        while ( ! xor_test(nn2) )
+          nn2.random_weights
+          4000.times do
+            xor_train_set.each do | xin, xtarg |
+              nn2.train_once xin, xtarg
+            end
           end
         end
 
