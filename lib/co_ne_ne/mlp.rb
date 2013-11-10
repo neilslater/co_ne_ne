@@ -1,17 +1,25 @@
 module CoNeNe::MLP
 
   class Layer
+    TRANSFER_TYPES = [ CoNeNe::Transfer::Sigmoid, CoNeNe::Transfer::TanH, CoNeNe::Transfer::ReLU ]
+
     attr_reader :num_inputs, :num_outputs, :input, :output, :weights
     attr_reader :input_layer, :output_layer, :output_deltas, :weights_last_deltas
+    attr_reader :transfer
 
-    def initialize n_inputs, n_outputs
+    def initialize n_inputs, n_outputs, transfer_type = CoNeNe::Transfer::Sigmoid
       @num_inputs = Integer( n_inputs )
       @num_outputs = Integer( n_outputs )
+      if TRANSFER_TYPES.member?( transfer_type )
+        @transfer = transfer_type
+      else
+        raise ArgumentError, "Unrecognised transfer type, should be one of #{TRANSFER_TYPES.inspect}"
+      end
       @output = NArray.sfloat( @num_outputs )
-      random_weights
+      init_weights
     end
 
-    def random_weights
+    def init_weights
       @weights = NArray.sfloat( @num_inputs + 1,  @num_outputs ).random( 1.54 ) - 0.77
       @weights_last_deltas = NArray.sfloat( @num_inputs + 1,  @num_outputs )
     end
@@ -76,7 +84,7 @@ module CoNeNe::MLP
         activation = (weights[(0...@num_inputs),j] * @input).sum + weights[@num_inputs,j]
         @output[j] = activation
       end
-      CoNeNe::Transfer::Sigmoid.bulk_apply_function( @output )
+      @transfer.bulk_apply_function( @output )
     end
 
     def calc_output_deltas target
@@ -85,7 +93,7 @@ module CoNeNe::MLP
       end
       @output_deltas = NArray.sfloat( @num_outputs ) unless @output_deltas
       @num_outputs.times do |j|
-        @output_deltas[j] = ( target[j] - @output[j] ) * CoNeNe::Transfer::Sigmoid.derivative_at( @output[j] )
+        @output_deltas[j] = ( target[j] - @output[j] ) * @transfer.derivative_at( @output[j] )
       end
       @output_deltas
     end
@@ -110,7 +118,7 @@ module CoNeNe::MLP
         @num_outputs.times do |j|
           deltas[i] += @weights[i,j] * @output_deltas[j]
         end
-        deltas[i] *=  CoNeNe::Transfer::Sigmoid.derivative_at( @input[i] )
+        deltas[i] *=  @transfer.derivative_at( @input[i] )
       end
       deltas
     end
@@ -171,11 +179,13 @@ module CoNeNe::MLP
         @layer_sizes << lsize
       end
       @layer_sizes << @num_outputs
+      @layer_sizes << nil
 
       @layers = []
       prev_layer = nil
-      @layer_sizes.each_cons(2) do | i, o |
-        new_layer = CoNeNe::MLP::Layer.new( i, o )
+      @layer_sizes.each_cons(3) do | i, o, n |
+        transfer_module = n ? CoNeNe::Transfer::TanH : CoNeNe::Transfer::Sigmoid
+        new_layer = CoNeNe::MLP::Layer.new( i, o, transfer_module )
         @layers << new_layer
         if prev_layer
           new_layer.attach_input_layer prev_layer
@@ -217,8 +227,8 @@ module CoNeNe::MLP
       @layers.last.rms_error target
     end
 
-    def random_weights
-      @layers.each { |layer| layer.random_weights }
+    def init_weights
+      @layers.each { |layer| layer.init_weights }
     end
   end
 

@@ -49,6 +49,15 @@ describe CoNeNe::MLP::Layer do
       CoNeNe::MLP::Layer.from_weights( weights )
     end
 
+    describe "#init_weights" do
+      it "generates new weights" do
+        layer.init_weights
+        layer.weights.should_not be_narray_like NArray.cast(
+          [ [ -0.1, 0.5, 0.9, 0.3, 0.7 ], [ -0.6, 0.6, 0.4, -0.3, 0.6 ],
+          [ 0.9, -0.1, 0.3, -0.8, -0.8 ] ], 'sfloat' )
+      end
+    end
+
     describe "#attach_input" do
       it "uses parameter as new input attribute directly" do
         i = NArray.sfloat(4).random()
@@ -313,6 +322,17 @@ describe CoNeNe::MLP::Network do
       ]
     }
 
+    describe "#init_weights" do
+      it "generates new values for weights" do
+        old_weights0 = nn.layers[0].weights.clone
+        old_weights1 = nn.layers[1].weights.clone
+
+        nn.init_weights
+        nn.layers[0].weights.should_not be_narray_like old_weights0
+        nn.layers[1].weights.should_not be_narray_like old_weights1
+      end
+    end
+
     describe "#run" do
       it "modifies output" do
         nn.output.should eq NArray.sfloat(1)
@@ -335,8 +355,10 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        while ( ! xor_test(nn) )
-          nn.random_weights
+        tries = 0
+        while ( tries < 10 && ! xor_test(nn) )
+          tries += 1
+          nn.init_weights
           2000.times do
             xor_train_set.each do | xin, xtarg |
               nn.train_once xin, xtarg
@@ -367,8 +389,10 @@ describe CoNeNe::MLP::Network do
         end
         rms_total /= 4
 
-        while ( ! xor_test(nn2) )
-          nn2.random_weights
+        tries = 0
+        while ( tries < 10 && ! xor_test(nn2) )
+          tries += 1
+          nn2.init_weights
           4000.times do
             xor_train_set.each do | xin, xtarg |
               nn2.train_once xin, xtarg
