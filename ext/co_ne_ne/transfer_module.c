@@ -55,6 +55,26 @@ float raw_tanh_derivative_at( float y ) {
   return 1.0 - y * y;
 }
 
+///////////////////////////////////////////
+
+float raw_relu_function( float x ) {
+  return x > 0.0 ? x : 0.0;
+}
+
+void raw_relu_bulk_apply_function( int n, float *ptr ) {
+  int i;
+  for( i = 0; i < n; i++ ) {
+    ptr[i] = ( ptr[i] > 0.0 ? ptr[i] : 0.0 );
+  }
+}
+
+float raw_relu_derivative( float x ) {
+  return x > 0.0 ? 1.0 : 0.0;
+}
+
+float raw_relu_derivative_at( float y ) {
+  return y > 0.0 ? 1.0 : 0.0;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -64,6 +84,7 @@ float raw_tanh_derivative_at( float y ) {
 VALUE Transfer = Qnil;
 VALUE Sigmoid = Qnil;
 VALUE TanH = Qnil;
+VALUE ReLU = Qnil;
 
 static VALUE sigmoid_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
@@ -120,6 +141,34 @@ static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_tanh_derivative_at( y ) );
 }
 
+
+static VALUE relu_function( VALUE self, VALUE r_x ) {
+  float x = NUM2FLT( r_x );
+  return FLT2NUM( raw_relu_function( x ) );
+}
+
+static VALUE relu_bulk_apply_function( VALUE self, VALUE r_narr ) {
+  struct NARRAY *na_a;
+  volatile VALUE val_a;
+
+  val_a = na_cast_object(r_narr, NA_SFLOAT);
+  GetNArray( val_a, na_a );
+
+  raw_relu_bulk_apply_function( na_a->total, (float*) na_a->ptr );
+
+  return val_a;
+}
+
+static VALUE relu_derivative( VALUE self, VALUE r_x ) {
+  float x = NUM2FLT( r_x );
+  return FLT2NUM( raw_relu_derivative( x ) );
+}
+
+static VALUE relu_derivative_at( VALUE self, VALUE r_y ) {
+  float y = NUM2FLT( r_y );
+  return FLT2NUM( raw_relu_derivative_at( y ) );
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( VALUE parent_module ) {
@@ -137,4 +186,9 @@ void init_transfer_module( VALUE parent_module ) {
   rb_define_singleton_method( TanH, "derivative", tanh_derivative, 1 );
   rb_define_singleton_method( TanH, "derivative_at", tanh_derivative_at, 1 );
 
+  ReLU = rb_define_module_under( Transfer, "ReLU" );
+  rb_define_singleton_method( ReLU, "function", relu_function, 1 );
+  rb_define_singleton_method( ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );
+  rb_define_singleton_method( ReLU, "derivative", relu_derivative, 1 );
+  rb_define_singleton_method( ReLU, "derivative_at", relu_derivative_at, 1 );
 }

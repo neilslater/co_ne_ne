@@ -39,9 +39,6 @@ describe transfer do
   end
 
   def approx_dy_dx t, x
-    # For ReLU, dy_dx not well-defined at origin, but we have chosen 0.0
-    return 0.0 if x == 0.0 && t == CoNeNe::Transfer::ReLU
-
     # This is numerical approximation of derivative
     d = 5e-6
     x1 = x + d
@@ -54,7 +51,12 @@ describe transfer do
     when 'CoNeNe::Transfer::TanH'
       100000.0 * ( 2.0 / (1.0 + Math.exp(-2*x1) ) -  2.0 / (1.0 + Math.exp(-2*x2) ) );
     when 'CoNeNe::Transfer::ReLU'
-      100000.0 * ( t.function( x1 ) - t.function( x2 ) )
+      # For ReLU, dy_dx not well-defined at origin, but we have chosen 0.0
+      if x == 0
+        0.0
+      else
+        100000.0 * ( ( x1 > 0.0 ? x1 : 0.0 ) - ( x2 > 0.0 ? x2 : 0.0 ) );
+      end
     end
   end
 
