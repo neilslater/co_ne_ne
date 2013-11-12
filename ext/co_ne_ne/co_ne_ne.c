@@ -10,6 +10,7 @@
 #include "cnn_components.h"
 #include "transfer_module.h"
 #include "mlp_classes.h"
+#include "mt.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -112,10 +113,32 @@ static VALUE narray_max_pool( VALUE self, VALUE a, VALUE tile_size, VALUE pool_s
   return val_b;
 }
 
+/* @overload srand( seed )
+ * Seed the random number generator used for weights.
+ * @param [Integer] seed 64-bit seed number
+ * @return [nil]
+ */
+static VALUE mt_srand( VALUE self, VALUE seed ) {
+  init_genrand( NUM2ULONG( seed ) );
+  return Qnil;
+}
+
+
+/* @overload rand( )
+ * @!visibility private
+ * Use the random number generator (used for tests)
+ * @return [Float] random number in range 0.0..1.0
+ */
+static VALUE mt_rand_float( VALUE self ) {
+  return FLT2NUM( genrand_real1() );
+}
+
 void Init_co_ne_ne() {
   CoNeNe = rb_define_module( "CoNeNe" );
   rb_define_singleton_method( CoNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
+  rb_define_singleton_method( CoNeNe, "srand", mt_srand, 1 );
+  rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
   init_transfer_module( CoNeNe );
   init_mlp_classes( CoNeNe );
 }

@@ -5,18 +5,20 @@
 
 #include <ruby.h>
 #include "narray.h"
+#include "mt.h"
+#include "transfer_module.h"
 
 typedef struct _mlp_layer_raw {
     int num_inputs;
     int num_outputs;
-    int transfer_fn_id;
+    transfer_type transfer_fn;
     VALUE narr_input;
     VALUE narr_output;
     VALUE narr_weights;
     VALUE input_layer;
     VALUE output_layer;
     VALUE narr_output_deltas;
-    VALUE weights_last_deltas;
+    VALUE narr_weights_last_deltas;
   } MLP_Layer;
 
 MLP_Layer *create_mlp_layer_struct();
@@ -29,5 +31,9 @@ void mark_mlp_layer_struct( MLP_Layer *mlp_layer );
 
 // Note this isn't called from initialize_copy, it's for internal copies
 MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig );
+
+void mlp_layer_struct_create_arrays( MLP_Layer *mlp_layer );
+
+void mlp_layer_struct_init_weights( MLP_Layer *mlp_layer, float min, float max );
 
 #endif
