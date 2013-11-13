@@ -50,6 +50,7 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "plays nicely with Ruby's garbage collection" do
+        pending "Rubinius crashes on this test, unresolved" if RUBY_DESCRIPTION.include? "rubinius"
         CoNeNe.srand(800)
         layer = CoNeNe::MLP::NLayer.new( 10, 5 )
         new_layer = nil
