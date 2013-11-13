@@ -50,11 +50,15 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "plays nicely with Ruby's garbage collection" do
-        pending "Rubinius crashes on this test, unresolved" if RUBY_DESCRIPTION.include? "rubinius"
+        number_of_layers = 50000
+        if RUBY_DESCRIPTION.include? "rubinius"
+          number_of_layers = 5000
+        end
+
         CoNeNe.srand(800)
         layer = CoNeNe::MLP::NLayer.new( 10, 5 )
         new_layer = nil
-        50000.times do
+        number_of_layers.times do
           new_layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
         end
         GC.start
@@ -62,7 +66,7 @@ describe CoNeNe::MLP::NLayer do
         layer.output.should be_a NArray
         layer.weights.should be_a NArray
         layer.weights[2,1].should be_within(0.000001).of -0.181608
-        5000.times do
+        number_of_layers.times do
           layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
         end
         sleep 0.5
