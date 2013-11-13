@@ -11,6 +11,9 @@ describe CoNeNe::MLP::NLayer do
         expect { CoNeNe::MLP::NLayer.new( 0, 2 ) }.to raise_error
         expect { CoNeNe::MLP::NLayer.new( 3, -1 ) }.to raise_error
         expect { CoNeNe::MLP::NLayer.new( "hello", 2 ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, "garbage" ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, :foobar ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, :tanh, 17 ) }.to raise_error
       end
 
       it "sets values of attributes based on input and output size" do
@@ -35,17 +38,35 @@ describe CoNeNe::MLP::NLayer do
         layer.output_deltas.shape.should == [2]
       end
 
+      it "accepts an optional transfer function type param" do
+        layer = CoNeNe::MLP::NLayer.new( 4, 1, :sigmoid )
+        layer.transfer.should be CoNeNe::Transfer::Sigmoid
+
+        layer = CoNeNe::MLP::NLayer.new( 5, 3, :tanh )
+        layer.transfer.should be CoNeNe::Transfer::TanH
+
+        layer = CoNeNe::MLP::NLayer.new( 7, 2, :relu )
+        layer.transfer.should be CoNeNe::Transfer::ReLU
+      end
+
       it "plays nicely with Ruby's garbage collection" do
-        layer = nil
+        CoNeNe.srand(800)
+        layer = CoNeNe::MLP::NLayer.new( 10, 5 )
+        new_layer = nil
         50000.times do
-          layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
+          new_layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
         end
         GC.start
         sleep 0.5
+        layer.output.should be_a NArray
+        layer.weights.should be_a NArray
+        layer.weights[2,1].should be_within(0.000001).of -0.181608
         5000.times do
           layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
         end
         sleep 0.5
+        new_layer.output.should be_a NArray
+        new_layer.weights.should be_a NArray
       end
     end
   end

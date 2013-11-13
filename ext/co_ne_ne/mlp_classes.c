@@ -48,10 +48,13 @@ void assert_value_wraps_mlp_layer( VALUE obj ) {
 //  NLayer method definitions
 //
 
-// Native extensions version of initialize
-VALUE mlp_layer_class_initialize( VALUE self, VALUE n_ins, VALUE n_outs ) {
+VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
+  VALUE n_ins, n_outs, tfn_type;
+  ID tfn_id;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   int i, o;
+  rb_scan_args( argc, argv, "21", &n_ins, &n_outs, &tfn_type );
+
   i = NUM2INT( n_ins );
   if ( i < 1 ) {
     rb_raise( rb_eArgError, "Input size %d is less than minimum of 1", i );
@@ -63,6 +66,22 @@ VALUE mlp_layer_class_initialize( VALUE self, VALUE n_ins, VALUE n_outs ) {
 
   mlp_layer->num_inputs = i;
   mlp_layer->num_outputs = o;
+
+  tfn_id = rb_intern("sigmoid");
+  if ( ! NIL_P(tfn_type) ) {
+    tfn_id = SYM2ID(tfn_type);
+  }
+
+  if ( rb_intern("sigmoid") == tfn_id ) {
+    mlp_layer->transfer_fn = SIGMOID;
+  } else if ( rb_intern("tanh") == tfn_id ) {
+     mlp_layer->transfer_fn = TANH;
+  } else if ( rb_intern("relu") == tfn_id ) {
+     mlp_layer->transfer_fn = RELU;
+  } else {
+    rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
+  }
+
   mlp_layer_struct_create_arrays( mlp_layer );
   mlp_layer_struct_init_weights( mlp_layer, -0.8, 0.8 );
 
@@ -157,7 +176,7 @@ void init_mlp_classes( VALUE parent_module ) {
 
   // NLayer instantiation and class methods
   rb_define_alloc_func( NLayer, mlp_layer_alloc );
-  rb_define_method( NLayer, "initialize", mlp_layer_class_initialize, 2 );
+  rb_define_method( NLayer, "initialize", mlp_layer_class_initialize, -1 );
   rb_define_method( NLayer, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
 
   // NLayer attributes
@@ -171,6 +190,7 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "output_layer", mlp_layer_object_output_layer, 0 );
   rb_define_method( NLayer, "output_deltas", mlp_layer_object_output_deltas, 0 );
   rb_define_method( NLayer, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
+
 
   // NLayer methods
 }

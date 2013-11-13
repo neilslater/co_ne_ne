@@ -16,6 +16,10 @@ MLP_Layer *create_mlp_layer_struct() {
   mlp_layer->output_layer = Qnil;
   mlp_layer->narr_output_deltas = Qnil;
   mlp_layer->narr_weights_last_deltas = Qnil;
+  // Unused, but may improve performance
+  mlp_layer->narr_output_slope = Qnil;
+  mlp_layer->narr_input_slope = Qnil;
+
   return mlp_layer;
 }
 
@@ -26,6 +30,8 @@ void mlp_layer_struct_create_arrays( MLP_Layer *mlp_layer ) {
   shape[0] = mlp_layer->num_outputs;
   mlp_layer->narr_output = na_make_object( NA_SFLOAT, 1, shape, cNArray );
   mlp_layer->narr_output_deltas = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  mlp_layer->narr_output_slope = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+
 
   shape[0] = mlp_layer->num_inputs + 1;
   shape[1] = mlp_layer->num_outputs;
@@ -70,6 +76,9 @@ void mark_mlp_layer_struct( MLP_Layer *mlp_layer ) {
   rb_gc_mark( mlp_layer->output_layer );
   rb_gc_mark( mlp_layer->narr_output_deltas );
   rb_gc_mark( mlp_layer->narr_weights_last_deltas );
+  rb_gc_mark( mlp_layer->narr_output_slope );
+  rb_gc_mark( mlp_layer->narr_input_slope );
+
   return;
 }
 

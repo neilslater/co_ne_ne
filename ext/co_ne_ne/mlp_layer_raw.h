@@ -19,6 +19,8 @@ typedef struct _mlp_layer_raw {
     VALUE output_layer;
     VALUE narr_output_deltas;
     VALUE narr_weights_last_deltas;
+    VALUE narr_input_slope;
+    VALUE narr_output_slope;
   } MLP_Layer;
 
 MLP_Layer *create_mlp_layer_struct();

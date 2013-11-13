@@ -12,6 +12,14 @@
 #include "mlp_classes.h"
 #include "mt.h"
 
+void init_srand_by_time() {
+  long seed;
+  struct timeval tv;
+  gettimeofday(&tv, 0);
+  seed = ( tv.tv_sec << 24 ) + tv.tv_usec;
+  init_genrand( seed );
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // To hold the module object
@@ -141,4 +149,5 @@ void Init_co_ne_ne() {
   rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
   init_transfer_module( CoNeNe );
   init_mlp_classes( CoNeNe );
+  init_srand_by_time();
 }

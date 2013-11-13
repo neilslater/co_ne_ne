@@ -2,6 +2,12 @@ require 'helpers'
 
 describe CoNeNe do
   describe "random number generator" do
+    it "does not use the default mt.c seed when loaded" do
+      script_output = `ruby -Ilib -e "require 'co_ne_ne'; puts CoNeNe.rand"`
+      got_num = script_output.chomp.to_f
+      got_num.should_not be_within(1e-8).of 0.3147237002849579
+    end
+
     it "generates numbers consistently from seed" do
       inputs = [
         [     0, [0.048813, 0.092844, 0.215189, 0.344266, 0.102763, 0.357945, 0.044883, 0.347252, 0.923654] ],

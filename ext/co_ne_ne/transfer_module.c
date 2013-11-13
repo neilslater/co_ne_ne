@@ -306,7 +306,6 @@ void init_transfer_module( VALUE parent_module ) {
   rb_define_singleton_method( TanH, "derivative_at", tanh_derivative_at, 1 );
   rb_define_singleton_method( TanH, "bulk_apply_derivative_at", tanh_bulk_apply_derivative_at, 1 );
 
-
   ReLU = rb_define_module_under( Transfer, "ReLU" );
   rb_define_singleton_method( ReLU, "function", relu_function, 1 );
   rb_define_singleton_method( ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );

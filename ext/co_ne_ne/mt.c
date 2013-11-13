@@ -1,3 +1,7 @@
+// This variation of mt.c has had some functions removed.
+// You are of course free to use it, but you may prefer to find a more
+// complete version.
+
 /*
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
