@@ -134,7 +134,7 @@ static VALUE mt_srand( VALUE self, VALUE seed ) {
 
 /* @overload rand( )
  * @!visibility private
- * Use the random number generator (used for tests)
+ * Use the random number generator (Ruby binding only used for tests)
  * @return [Float] random number in range 0.0..1.0
  */
 static VALUE mt_rand_float( VALUE self ) {

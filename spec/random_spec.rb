@@ -8,7 +8,7 @@ describe CoNeNe do
       got_num.should_not be_within(1e-8).of 0.3147237002849579
     end
 
-    it "generates numbers consistently from seed" do
+    it "generates numbers consistently when seeded" do
       inputs = [
         [     0, [0.048813, 0.092844, 0.215189, 0.344266, 0.102763, 0.357945, 0.044883, 0.347252, 0.923654] ],
         [   830, [0.958232, 0.129571, 0.470219, 0.028181, 0.131809, 0.675169, 0.473927, 0.302314, 0.488483] ],
