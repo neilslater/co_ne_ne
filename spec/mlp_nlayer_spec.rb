@@ -52,7 +52,7 @@ describe CoNeNe::MLP::NLayer do
       it "plays nicely with Ruby's garbage collection" do
         number_of_layers = 50000
         if RUBY_DESCRIPTION.include? "rubinius"
-          number_of_layers = 5000
+          number_of_layers = 500
         end
 
         CoNeNe.srand(800)
