@@ -101,3 +101,19 @@ MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig ) {
 
   return mlp_layer;
 }
+
+void mlp_layer_struct_use_weights( MLP_Layer *mlp_layer, VALUE weights ) {
+  int shape[2];
+
+  shape[0] = mlp_layer->num_outputs;
+  mlp_layer->narr_output = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  mlp_layer->narr_output_deltas = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  mlp_layer->narr_output_slope = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+
+  shape[0] = mlp_layer->num_inputs + 1;
+  shape[1] = mlp_layer->num_outputs;
+  mlp_layer->narr_weights = weights;
+  mlp_layer->narr_weights_last_deltas = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+
+  return;
+}

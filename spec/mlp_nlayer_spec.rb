@@ -71,6 +71,53 @@ describe CoNeNe::MLP::NLayer do
         new_layer.weights.should be_a NArray
       end
     end
+
+    describe "#from_weights" do
+      it "creates a new layer" do
+        CoNeNe::MLP::NLayer.from_weights( NArray.sfloat(4,5) ).should be_a CoNeNe::MLP::NLayer
+      end
+
+      it "initialises sizes and output arrays" do
+        layer = CoNeNe::MLP::NLayer.from_weights( NArray.sfloat(4,5) )
+
+        layer.num_inputs.should be 3
+        layer.num_outputs.should be 5
+
+        layer.output.should be_a NArray
+        layer.output.shape.should == [ 5 ]
+      end
+
+      it "assigns to the weights attribute directly (not a copy)" do
+        w =  NArray.sfloat(12,7)
+        layer = CoNeNe::MLP::NLayer.from_weights( w )
+        layer.weights.should be w
+      end
+
+      it "accepts an optional transfer function type param" do
+        w =  NArray.sfloat(3,2)
+        layer = CoNeNe::MLP::NLayer.from_weights( w, :sigmoid )
+        layer.transfer.should be CoNeNe::Transfer::Sigmoid
+
+        w =  NArray.sfloat(3,2)
+        layer = CoNeNe::MLP::NLayer.from_weights( w, :tanh )
+        layer.transfer.should be CoNeNe::Transfer::TanH
+
+        w =  NArray.sfloat(3,2)
+        layer = CoNeNe::MLP::NLayer.from_weights( w, :relu )
+        layer.transfer.should be CoNeNe::Transfer::ReLU
+      end
+
+      it "refuses to create new layers for bad parameters" do
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(3,2,1) ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(1,2) ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(7)) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(5,2), "NOTVALID" ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(4,1), :blah ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
+      end
+
+    end
+
   end
 
   describe "instance methods" do

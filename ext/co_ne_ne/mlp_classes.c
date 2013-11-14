@@ -43,29 +43,8 @@ void assert_value_wraps_mlp_layer( VALUE obj ) {
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
-//
-//  NLayer method definitions
-//
-
-VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
-  VALUE n_ins, n_outs, tfn_type;
+void set_transfer_fn_from_symbol( MLP_Layer *mlp_layer , VALUE tfn_type ) {
   ID tfn_id;
-  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
-  int i, o;
-  rb_scan_args( argc, argv, "21", &n_ins, &n_outs, &tfn_type );
-
-  i = NUM2INT( n_ins );
-  if ( i < 1 ) {
-    rb_raise( rb_eArgError, "Input size %d is less than minimum of 1", i );
-  }
-  o = NUM2INT( n_outs );
-  if ( o < 1 ) {
-    rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", o );
-  }
-
-  mlp_layer->num_inputs = i;
-  mlp_layer->num_outputs = o;
 
   tfn_id = rb_intern("sigmoid");
   if ( ! NIL_P(tfn_type) ) {
@@ -84,6 +63,32 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
   } else {
     rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+//  NLayer method definitions
+//
+
+VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
+  VALUE n_ins, n_outs, tfn_type;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+  int i, o;
+  rb_scan_args( argc, argv, "21", &n_ins, &n_outs, &tfn_type );
+
+  i = NUM2INT( n_ins );
+  if ( i < 1 ) {
+    rb_raise( rb_eArgError, "Input size %d is less than minimum of 1", i );
+  }
+  o = NUM2INT( n_outs );
+  if ( o < 1 ) {
+    rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", o );
+  }
+
+  mlp_layer->num_inputs = i;
+  mlp_layer->num_outputs = o;
+
+  set_transfer_fn_from_symbol( mlp_layer, tfn_type );
 
   mlp_layer_struct_create_arrays( mlp_layer );
   mlp_layer_struct_init_weights( mlp_layer, -0.8, 0.8 );
@@ -105,6 +110,42 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   // TODO: Deep clone all NArrays that are created on instantiation
 
   return copy;
+}
+
+VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
+  VALUE weights_in, tfn_type, new_mlp_layer_value;
+  struct NARRAY *na_weights;
+  volatile VALUE val_weights;
+  int i, o;
+  MLP_Layer *mlp_layer;
+
+  rb_scan_args( argc, argv, "11", &weights_in, &tfn_type );
+
+  val_weights = na_cast_object(weights_in, NA_SFLOAT);
+  GetNArray( val_weights, na_weights );
+
+  if ( na_weights->rank != 2 ) {
+    rb_raise( rb_eArgError, "Weights rank should be 2, but got %d", na_weights->rank );
+  }
+
+  i = na_weights->shape[0] - 1;
+  if ( i < 1 ) {
+    rb_raise( rb_eArgError, "Input size %d is less than minimum of 1", i );
+  }
+  o = na_weights->shape[1];
+  if ( o < 1 ) {
+    rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", o );
+  }
+
+  // Create and initialise new object
+  new_mlp_layer_value = mlp_layer_alloc( NLayer );
+  mlp_layer = get_mlp_layer_struct( new_mlp_layer_value );
+  mlp_layer->num_inputs = i;
+  mlp_layer->num_outputs = o;
+  set_transfer_fn_from_symbol( mlp_layer, tfn_type );
+  mlp_layer_struct_use_weights( mlp_layer, val_weights );
+
+  return new_mlp_layer_value;
 }
 
 VALUE mlp_layer_object_num_inputs( VALUE self ) {
@@ -205,6 +246,7 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_alloc_func( NLayer, mlp_layer_alloc );
   rb_define_method( NLayer, "initialize", mlp_layer_class_initialize, -1 );
   rb_define_method( NLayer, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
+  rb_define_singleton_method( NLayer, "from_weights", mlp_layer_class_from_weights, -1 );
 
   // NLayer attributes
   rb_define_method( NLayer, "num_inputs", mlp_layer_object_num_inputs, 0 );
