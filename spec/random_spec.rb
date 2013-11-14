@@ -3,6 +3,7 @@ require 'helpers'
 describe CoNeNe do
   describe "random number generator" do
     it "does not use the default mt.c seed when loaded" do
+      # Run in a separate process in order to get library loaded with initial state
       script_output = `ruby -Ilib -e "require 'co_ne_ne'; puts CoNeNe.rand"`
       got_num = script_output.chomp.to_f
       got_num.should_not be_within(1e-8).of 0.3147237002849579

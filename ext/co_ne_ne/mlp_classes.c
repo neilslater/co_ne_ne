@@ -100,8 +100,9 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   mlp_layer_copy = get_mlp_layer_struct( copy );
   mlp_layer_orig = get_mlp_layer_struct( orig );
 
-  // Should this in fact be a deep clone?
   memcpy( mlp_layer_copy, mlp_layer_orig, sizeof(MLP_Layer) );
+
+  // TODO: Deep clone all NArrays that are created on instantiation
 
   return copy;
 }
@@ -168,6 +169,29 @@ VALUE mlp_layer_object_weights_last_deltas( VALUE self ) {
   return mlp_layer->narr_weights_last_deltas;
 }
 
+VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
+  VALUE minw, maxw;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+  float min_weight, max_weight;
+  rb_scan_args( argc, argv, "02", &minw, &maxw );
+
+  if ( ! NIL_P(minw) ) {
+    min_weight = NUM2FLT( minw );
+    if ( ! NIL_P(maxw) ) {
+      max_weight = NUM2FLT( maxw );
+    } else {
+      max_weight = min_weight;
+      min_weight = -max_weight;
+    }
+  } else {
+    min_weight = -0.8;
+    max_weight = 0.8;
+  }
+
+  mlp_layer_struct_init_weights( mlp_layer, min_weight, max_weight );
+
+  return Qnil;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -194,6 +218,6 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "output_deltas", mlp_layer_object_output_deltas, 0 );
   rb_define_method( NLayer, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
 
-
   // NLayer methods
+  rb_define_method( NLayer, "init_weights", mlp_layer_object_init_weights, -1 );
 }

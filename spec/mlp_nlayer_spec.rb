@@ -72,4 +72,56 @@ describe CoNeNe::MLP::NLayer do
       end
     end
   end
+
+  describe "instance methods" do
+    let(:layer) { CoNeNe::MLP::NLayer.new( 3, 2 ) }
+
+    describe "#init_weights" do
+      before :each do
+        CoNeNe.srand(800)
+      end
+
+      it "should set weights in range -0.8 to 0.8 by default" do
+        layer.init_weights
+        layer.weights.should be_narray_like NArray[
+          [ 0.458294, -0.067838, -0.342399, 0.455698 ],
+          [ 0.790833, -0.181608, 0.752776, 0.1745 ] ]
+      end
+
+      it "should accept a single param to set +- range" do
+        layer.init_weights( 4.0 )
+        layer.weights.should be_narray_like NArray[
+          [ 2.29147, -0.33919, -1.712, 2.27849 ],
+          [ 3.95417, -0.908039, 3.76388, 0.872502 ] ]
+      end
+
+      it "should accept a two params to select from a range" do
+        layer.init_weights( 0.2, 1.8 )
+        layer.weights.should be_narray_like NArray[
+          [ 1.45829, 0.932162, 0.657601, 1.4557 ],
+          [ 1.79083, 0.818392, 1.75278, 1.1745 ] ]
+      end
+
+      it "should work with a negative single param" do
+        layer.init_weights( -0.8 )
+        layer.weights.should be_narray_like NArray[
+          [ -0.458294, 0.067838, 0.342399, -0.455698 ],
+          [ -0.790833, 0.181608, -0.752776, -0.1745 ] ]
+      end
+
+      it "should work with a 'reversed' range" do
+        layer.init_weights( 1.0, 0.0 )
+        layer.weights.should be_narray_like NArray[
+         [ 0.213566, 0.542399, 0.714, 0.215189 ],
+         [ 0.00572914, 0.613505, 0.029515, 0.390937 ] ]
+      end
+
+      it "should raise an error for non-numeric params" do
+        expect { layer.init_weights( [] ) }.to raise_error
+        expect { layer.init_weights( "Hi" ) }.to raise_error
+        expect { layer.init_weights( 2.5, :foo => 'bar' ) }.to raise_error
+      end
+    end
+
+  end
 end
