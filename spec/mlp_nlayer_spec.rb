@@ -95,7 +95,7 @@ describe CoNeNe::MLP::NLayer do
           [ 3.95417, -0.908039, 3.76388, 0.872502 ] ]
       end
 
-      it "should accept a two params to select from a range" do
+      it "should accept two params to select from a range" do
         layer.init_weights( 0.2, 1.8 )
         layer.weights.should be_narray_like NArray[
           [ 1.45829, 0.932162, 0.657601, 1.4557 ],
@@ -120,6 +120,12 @@ describe CoNeNe::MLP::NLayer do
         expect { layer.init_weights( [] ) }.to raise_error
         expect { layer.init_weights( "Hi" ) }.to raise_error
         expect { layer.init_weights( 2.5, :foo => 'bar' ) }.to raise_error
+      end
+
+      it "returns nil" do
+        layer.init_weights().should be_nil
+        layer.init_weights( 2.5 ).should be_nil
+        layer.init_weights( -0.7, 1.0 ).should be_nil
       end
     end
 
