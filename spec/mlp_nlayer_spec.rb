@@ -11,9 +11,9 @@ describe CoNeNe::MLP::NLayer do
         expect { CoNeNe::MLP::NLayer.new( 0, 2 ) }.to raise_error
         expect { CoNeNe::MLP::NLayer.new( 3, -1 ) }.to raise_error
         expect { CoNeNe::MLP::NLayer.new( "hello", 2 ) }.to raise_error
-        #expect { CoNeNe::MLP::NLayer.new( 3, 2, "garbage" ) }.to raise_error
-        #expect { CoNeNe::MLP::NLayer.new( 3, 2, :foobar ) }.to raise_error
-        #expect { CoNeNe::MLP::NLayer.new( 3, 2, :tanh, 17 ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, "garbage" ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, :foobar ) }.to raise_error
+        expect { CoNeNe::MLP::NLayer.new( 3, 2, :tanh, 17 ) }.to raise_error
       end
 
       it "sets values of attributes based on input and output size" do

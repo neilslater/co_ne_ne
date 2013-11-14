@@ -69,6 +69,9 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
 
   tfn_id = rb_intern("sigmoid");
   if ( ! NIL_P(tfn_type) ) {
+    if ( TYPE(tfn_type) != T_SYMBOL ) {
+      rb_raise( rb_eTypeError, "Expected symbol for transfer function type" );
+    }
     tfn_id = SYM2ID(tfn_type);
   }
 
