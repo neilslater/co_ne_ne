@@ -176,5 +176,115 @@ describe CoNeNe::MLP::NLayer do
       end
     end
 
+    describe "#set_input" do
+      it "uses sfloat parameter as new input attribute directly" do
+        i = NArray.sfloat(3).random()
+        layer.set_input i
+        layer.input.should be i
+      end
+
+      it "casts other NArray types to sfloat, and uses a copy" do
+        i = NArray.float(3).random()
+        layer.set_input i
+        layer.input.should_not be i
+        layer.input.should be_narray_like i
+      end
+
+      it "refuses to attach wrong size of input" do
+        i = NArray.sfloat(4).random()
+        expect { layer.set_input i }.to raise_error
+        layer.input.should be nil
+      end
+
+      it "disconnects connected layers" do
+        lower_layer = CoNeNe::MLP::NLayer.new( 7, 3 )
+        layer.attach_input_layer( lower_layer )
+
+        i = NArray.sfloat(3).random()
+        layer.set_input i
+        layer.input.should be i
+        layer.input_layer.should be_nil
+        lower_layer.output_layer.should be_nil
+      end
+    end
+
+    describe "#attach_input_layer" do
+      it "uses parameter as new input_layer attribute directly" do
+        il = CoNeNe::MLP::NLayer.new( 7, 3 )
+        layer.attach_input_layer il
+        layer.input_layer.should be il
+        layer.input.should be il.output
+      end
+
+      it "refuses to attach wrong size of input" do
+        il = CoNeNe::MLP::NLayer.new( 7, 4 )
+        expect { layer.attach_input_layer il }.to raise_error
+        layer.input_layer.should be nil
+      end
+
+      it "refuses to create cyclic connections" do
+        il = CoNeNe::MLP::NLayer.new( 3, 3 )
+        layer.attach_input_layer( il )
+
+        expect { il.attach_input_layer layer }.to raise_error
+
+        il.input_layer.should be_nil
+        il.input.should be_nil
+      end
+
+      it "replaces existing input layer" do
+        prev_layer = CoNeNe::MLP::NLayer.new( 7, 3 )
+        layer.attach_input_layer( prev_layer )
+
+        il = CoNeNe::MLP::NLayer.new( 3, 3 )
+        layer.attach_input_layer( il )
+
+        layer.attach_input_layer il
+        layer.input_layer.should be il
+        layer.input.should be il.output
+        prev_layer.output_layer.should be_nil
+      end
+    end
+
+
+    describe "#attach_output_layer" do
+      it "uses parameter as new output_layer attribute directly" do
+        ol = CoNeNe::MLP::NLayer.new( 2, 1 )
+        layer.attach_output_layer ol
+        layer.output_layer.should be ol
+        ol.input.should be layer.output
+      end
+
+      it "refuses to attach wrong size of output" do
+        ol = CoNeNe::MLP::NLayer.new( 4, 1 )
+        expect { layer.attach_output_layer ol }.to raise_error
+        layer.output_layer.should be nil
+      end
+
+      it "refuses to create cyclic connections" do
+        ol = CoNeNe::MLP::NLayer.new( 2, 2 )
+        layer.attach_output_layer( ol )
+
+        expect { ol.attach_output_layer layer }.to raise_error
+
+        ol.output_layer.should be_nil
+        layer.input.should be_nil
+      end
+
+      it "replaces existing output connection" do
+        next_layer = CoNeNe::MLP::NLayer.new( 2, 2 )
+        layer.attach_output_layer( next_layer )
+
+        ol = CoNeNe::MLP::NLayer.new( 2, 3 )
+        layer.attach_output_layer( ol )
+
+        layer.attach_output_layer ol
+        layer.output_layer.should be ol
+        ol.input.should be layer.output
+        next_layer.input_layer.should be_nil
+      end
+    end
+
+
   end
 end

@@ -65,6 +65,28 @@ void set_transfer_fn_from_symbol( MLP_Layer *mlp_layer , VALUE tfn_type ) {
   }
 }
 
+void assert_not_in_output_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
+  MLP_Layer *mlp_next_layer = mlp_layer;
+  while ( ! NIL_P( mlp_next_layer->output_layer ) ) {
+    if ( mlp_next_layer->output_layer == unexpected_layer ) {
+      rb_raise( rb_eArgError, "Attempt to create a circular network." );
+    }
+    mlp_next_layer = get_mlp_layer_struct( mlp_next_layer->output_layer );
+  }
+  return;
+}
+
+void assert_not_in_input_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
+  MLP_Layer *mlp_next_layer = mlp_layer;
+  while ( ! NIL_P( mlp_next_layer->input_layer ) ) {
+    if ( mlp_next_layer->input_layer == unexpected_layer ) {
+      rb_raise( rb_eArgError, "Attempt to create a circular network." );
+    }
+    mlp_next_layer = get_mlp_layer_struct( mlp_next_layer->input_layer );
+  }
+  return;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////
 //
 //  NLayer method definitions
@@ -234,6 +256,110 @@ VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   return Qnil;
 }
 
+VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
+  struct NARRAY *na_input;
+  volatile VALUE val_input;
+  MLP_Layer *mlp_old_input_layer;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  val_input = na_cast_object(new_input, NA_SFLOAT);
+  GetNArray( val_input, na_input );
+
+  if ( na_input->rank != 1 ) {
+    rb_raise( rb_eArgError, "Inputs rank should be 1, but got %d", na_input->rank );
+  }
+
+  if ( na_input->total != mlp_layer->num_inputs ) {
+    rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, mlp_layer->num_inputs );
+  }
+
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    // This layer has an existing input layer, it needs to stop pointing its output here
+    mlp_old_input_layer = get_mlp_layer_struct( mlp_layer->input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+
+  mlp_layer->narr_input = val_input;
+  mlp_layer->input_layer = Qnil;
+  mlp_layer->narr_input_slope = Qnil;
+
+  return val_input;
+}
+
+VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
+  MLP_Layer *mlp_new_input_layer;
+  MLP_Layer *mlp_old_output_layer, *mlp_old_input_layer;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  assert_value_wraps_mlp_layer( new_input_layer );
+  mlp_new_input_layer = get_mlp_layer_struct( new_input_layer );
+
+  if ( mlp_new_input_layer->num_outputs != mlp_layer->num_inputs ) {
+    rb_raise( rb_eArgError, "Input layer output size %d does not match layer input size %d", mlp_new_input_layer->num_outputs, mlp_layer->num_inputs );
+  }
+
+  assert_not_in_input_chain( mlp_new_input_layer, self );
+
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    // This layer has an existing input layer, it needs to stop pointing its output here
+    mlp_old_input_layer = get_mlp_layer_struct( mlp_layer->input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+
+  mlp_layer->narr_input = mlp_new_input_layer->narr_output;
+  mlp_layer->narr_input_slope = mlp_new_input_layer->narr_output_slope;
+  mlp_layer->input_layer = new_input_layer;
+
+  if ( ! NIL_P( mlp_new_input_layer->output_layer ) ) {
+    // The new input layer was previously attached elsewhere. This needs to be disconnected too
+    mlp_old_output_layer = get_mlp_layer_struct( mlp_new_input_layer->output_layer );
+    mlp_old_output_layer->narr_input = Qnil;
+    mlp_old_output_layer->narr_input_slope = Qnil;
+    mlp_old_output_layer->input_layer = Qnil;
+  }
+  mlp_new_input_layer->output_layer = self;
+
+  return new_input_layer;
+}
+
+
+VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
+  MLP_Layer *mlp_new_output_layer;
+  MLP_Layer *mlp_old_output_layer, *mlp_old_input_layer;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  assert_value_wraps_mlp_layer( new_output_layer );
+  mlp_new_output_layer = get_mlp_layer_struct( new_output_layer );
+
+  if ( mlp_new_output_layer->num_inputs != mlp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "Output layer input size %d does not match layer output size %d", mlp_new_output_layer->num_inputs, mlp_layer->num_outputs );
+  }
+
+  assert_not_in_output_chain( mlp_new_output_layer, self );
+
+  if ( ! NIL_P( mlp_layer->output_layer ) ) {
+    // This layer has an existing output layer, it needs to stop pointing its input here
+    mlp_old_output_layer = get_mlp_layer_struct( mlp_layer->output_layer );
+    mlp_old_output_layer->input_layer = Qnil;
+    mlp_old_output_layer->narr_input = Qnil;
+    mlp_old_output_layer->narr_input_slope = Qnil;
+  }
+
+  mlp_layer->output_layer = new_output_layer;
+
+  if ( ! NIL_P( mlp_new_output_layer->input_layer ) ) {
+    // The new output layer was previously attached elsewhere. This needs to be disconnected too
+    mlp_old_input_layer = get_mlp_layer_struct( mlp_new_output_layer->input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+  mlp_new_output_layer->input_layer = self;
+  mlp_new_output_layer->narr_input = mlp_layer->narr_output;
+  mlp_new_output_layer->narr_input_slope = mlp_layer->narr_output_slope;
+
+  return new_output_layer;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_classes( VALUE parent_module ) {
@@ -262,4 +388,7 @@ void init_mlp_classes( VALUE parent_module ) {
 
   // NLayer methods
   rb_define_method( NLayer, "init_weights", mlp_layer_object_init_weights, -1 );
+  rb_define_method( NLayer, "set_input", mlp_layer_object_set_input, 1 );
+  rb_define_method( NLayer, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
+  rb_define_method( NLayer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
 }

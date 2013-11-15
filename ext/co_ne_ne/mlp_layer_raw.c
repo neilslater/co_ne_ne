@@ -83,6 +83,7 @@ void mark_mlp_layer_struct( MLP_Layer *mlp_layer ) {
 }
 
 // Note this isn't called from initialize_copy, it's for internal copies
+// Also note - it is incomplete., and unused.
 MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig ) {
   MLP_Layer *mlp_layer = create_mlp_layer_struct();
 
@@ -90,14 +91,7 @@ MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig ) {
   mlp_layer->num_outputs = orig->num_outputs;
   mlp_layer->transfer_fn = orig->transfer_fn;
 
-  // Clone now, or later?
-  mlp_layer->narr_input = Qnil;
-  mlp_layer->narr_output = Qnil;
-  mlp_layer->narr_weights = Qnil;
-  mlp_layer->input_layer = Qnil;
-  mlp_layer->output_layer = Qnil;
-  mlp_layer->narr_output_deltas = Qnil;
-  mlp_layer->narr_weights_last_deltas = Qnil;
+  // TODO: Clone whatever needs cloning . . .
 
   return mlp_layer;
 }
