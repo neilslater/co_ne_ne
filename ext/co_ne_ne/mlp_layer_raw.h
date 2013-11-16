@@ -44,4 +44,6 @@ void mlp_layer_run( MLP_Layer *mlp_layer );
 
 void activate_nn_layer_raw( int in_size, int out_size, float *in_ptr, float *weights, float *out_ptr );
 
+float ms_error_raw( int out_size, float *out_ptr, float *target_ptr );
+
 #endif

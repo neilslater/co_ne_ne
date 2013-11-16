@@ -322,6 +322,7 @@ describe CoNeNe::MLP::NLayer do
         result_two = layer.output.clone
 
         result_one.should be_narray_like result_two
+        result_one.should_not eq result_two
       end
 
       it "sets all output values between 0 and 1" do
@@ -333,5 +334,28 @@ describe CoNeNe::MLP::NLayer do
       end
     end
 
+    describe "#ms_error" do
+      before :each do
+        layer.set_input NArray.cast( [0.1, 0.4, 0.9], 'sfloat' )
+        layer.run
+      end
+
+      it "returns current error value for network" do
+        err = layer.ms_error( NArray.cast( [0.5, 1.0], 'sfloat' ) )
+        err.should be_within(1e-6).of 0.089057
+
+        err = layer.ms_error( NArray.cast( [0.0, 0.5], 'sfloat' ) )
+        err.should be_within(1e-6).of 0.390664
+      end
+
+      it "returns similar values for similar targets" do
+        err = layer.ms_error( NArray.cast( [0.12, 0.12], 'sfloat' ) )
+        err.should be_within(1e-6).of 0.466518
+
+        err = layer.ms_error( NArray.cast( [0.13, 0.11], 'sfloat' ) )
+        err.should be_within(1e-6).of 0.465739
+      end
+
+    end
   end
 end

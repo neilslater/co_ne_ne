@@ -166,3 +166,16 @@ void activate_nn_layer_raw( int in_size, int out_size,
 
   return;
 }
+
+float ms_error_raw( int out_size, float *out_ptr, float *target_ptr ) {
+  int i;
+  float t = 0.0;
+  float d;
+
+  for ( i = 0; i < out_size; i++ ) {
+    d = out_ptr[i] - target_ptr[i];
+    t += d * d;
+  }
+
+  return t/out_size;
+}
