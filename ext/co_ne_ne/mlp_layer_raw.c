@@ -17,9 +17,7 @@ MLP_Layer *create_mlp_layer_struct() {
   mlp_layer->output_layer = Qnil;
   mlp_layer->narr_output_deltas = Qnil;
   mlp_layer->narr_weights_last_deltas = Qnil;
-  // Unused, but may improve performance
   mlp_layer->narr_output_slope = Qnil;
-  mlp_layer->narr_input_slope = Qnil;
 
   return mlp_layer;
 }
@@ -78,7 +76,6 @@ void mark_mlp_layer_struct( MLP_Layer *mlp_layer ) {
   rb_gc_mark( mlp_layer->narr_output_deltas );
   rb_gc_mark( mlp_layer->narr_weights_last_deltas );
   rb_gc_mark( mlp_layer->narr_output_slope );
-  rb_gc_mark( mlp_layer->narr_input_slope );
 
   return;
 }
@@ -187,4 +184,44 @@ void calc_output_deltas_raw( int out_size, float *out_ptr, float *out_slope_ptr,
     out_delta_ptr[i] = ( out_ptr[i] - target_ptr[i] ) * out_slope_ptr[i];
   }
   return;
+}
+
+void backprop_deltas_raw( int in_size, int out_size,
+      float *in_deltas, float *in_slopes,
+      float *weights, float *out_deltas ) {
+  int i,j;
+  float t;
+  for( i = 0; i < in_size; i++ ) {
+    t = 0.0;
+    for( j = 0; j < out_size; j++ ) {
+      t += weights[ j * (in_size+1) + i ] * out_deltas[j];
+    }
+    in_deltas[i] = t * in_slopes[i];
+  }
+  return;
+}
+
+void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
+  struct NARRAY *na_inputs; // Only required to pre-calc slopes
+
+  struct NARRAY *na_in_deltas;
+  struct NARRAY *na_in_slopes;
+  struct NARRAY *na_weights;
+  struct NARRAY *na_out_deltas;
+
+  GetNArray( mlp_layer_input->narr_output, na_inputs );
+
+  GetNArray( mlp_layer_input->narr_output_deltas, na_in_deltas );
+  GetNArray( mlp_layer_input->narr_output_slope, na_in_slopes );
+
+  GetNArray( mlp_layer->narr_weights, na_weights );
+
+  GetNArray( mlp_layer->narr_output_deltas, na_out_deltas );
+
+  transfer_bulk_derivative_at( mlp_layer_input->transfer_fn, mlp_layer_input->num_outputs,
+         (float *) na_inputs->ptr, (float *) na_in_slopes->ptr );
+
+  backprop_deltas_raw( mlp_layer->num_inputs, mlp_layer->num_outputs,
+        (float *) na_in_deltas->ptr, (float *) na_in_slopes->ptr,
+        (float *) na_weights->ptr, (float *) na_out_deltas->ptr );
 }

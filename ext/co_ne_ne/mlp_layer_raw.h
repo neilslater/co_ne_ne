@@ -19,7 +19,6 @@ typedef struct _mlp_layer_raw {
     VALUE output_layer;
     VALUE narr_output_deltas;
     VALUE narr_weights_last_deltas;
-    VALUE narr_input_slope;
     VALUE narr_output_slope;
   } MLP_Layer;
 
@@ -47,5 +46,9 @@ void activate_nn_layer_raw( int in_size, int out_size, float *in_ptr, float *wei
 float ms_error_raw( int out_size, float *out_ptr, float *target_ptr );
 
 void calc_output_deltas_raw( int out_size, float *out_ptr, float *out_slope_ptr, float *target_ptr, float *out_delta_ptr );
+
+void backprop_deltas_raw( int in_size, int out_size, float *in_deltas, float *in_slopes, float *weights, float *out_deltas );
+
+void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input );
 
 #endif

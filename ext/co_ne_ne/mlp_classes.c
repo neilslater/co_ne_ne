@@ -281,7 +281,6 @@ VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
 
   mlp_layer->narr_input = val_input;
   mlp_layer->input_layer = Qnil;
-  mlp_layer->narr_input_slope = Qnil;
 
   return val_input;
 }
@@ -307,14 +306,12 @@ VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   }
 
   mlp_layer->narr_input = mlp_new_input_layer->narr_output;
-  mlp_layer->narr_input_slope = mlp_new_input_layer->narr_output_slope;
   mlp_layer->input_layer = new_input_layer;
 
   if ( ! NIL_P( mlp_new_input_layer->output_layer ) ) {
     // The new input layer was previously attached elsewhere. This needs to be disconnected too
     mlp_old_output_layer = get_mlp_layer_struct( mlp_new_input_layer->output_layer );
     mlp_old_output_layer->narr_input = Qnil;
-    mlp_old_output_layer->narr_input_slope = Qnil;
     mlp_old_output_layer->input_layer = Qnil;
   }
   mlp_new_input_layer->output_layer = self;
@@ -342,7 +339,6 @@ VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer )
     mlp_old_output_layer = get_mlp_layer_struct( mlp_layer->output_layer );
     mlp_old_output_layer->input_layer = Qnil;
     mlp_old_output_layer->narr_input = Qnil;
-    mlp_old_output_layer->narr_input_slope = Qnil;
   }
 
   mlp_layer->output_layer = new_output_layer;
@@ -354,7 +350,6 @@ VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer )
   }
   mlp_new_output_layer->input_layer = self;
   mlp_new_output_layer->narr_input = mlp_layer->narr_output;
-  mlp_new_output_layer->narr_input_slope = mlp_layer->narr_output_slope;
 
   return new_output_layer;
 }
@@ -434,11 +429,10 @@ VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
 
   mlp_layer_input = get_mlp_layer_struct( mlp_layer->input_layer );
 
-  // mlp_layer_backprop( mlp_layer, mlp_layer_input );
+  mlp_layer_backprop( mlp_layer, mlp_layer_input );
 
   return mlp_layer_input->narr_output_deltas;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
