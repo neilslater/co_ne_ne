@@ -181,7 +181,7 @@ void calc_output_deltas_raw( int out_size, float *out_ptr, float *out_slope_ptr,
       float *target_ptr, float *out_delta_ptr ) {
   int i;
   for ( i = 0; i < out_size; i++ ) {
-    out_delta_ptr[i] = ( out_ptr[i] - target_ptr[i] ) * out_slope_ptr[i];
+    out_delta_ptr[i] = ( target_ptr[i] - out_ptr[i] ) * out_slope_ptr[i];
   }
   return;
 }

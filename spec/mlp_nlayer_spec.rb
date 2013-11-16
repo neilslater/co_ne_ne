@@ -365,16 +365,15 @@ describe CoNeNe::MLP::NLayer do
 
       it "returns an array of error values" do
         errs = layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-        errs.should be_narray_like NArray[ 0.0451288, -0.0444903 ]
+        errs.should be_narray_like NArray[ -0.0451288, 0.0444903 ]
       end
 
       it "sets output_deltas" do
         layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-        layer.output_deltas.should be_narray_like NArray[ 0.0451288, -0.0444903 ]
+        layer.output_deltas.should be_narray_like NArray[ -0.0451288, 0.0444903 ]
       end
     end
 
-    # TODO: Confirm these specific values with Ruby version
     describe "#backprop_deltas" do
       before :each do
         weights = NArray.cast( [ [ -0.1, 0.5, -0.2 ] ], 'sfloat' )
@@ -389,12 +388,12 @@ describe CoNeNe::MLP::NLayer do
 
       it "returns an array of delta values" do
         deltas = @ol.backprop_deltas
-        deltas.should be_narray_like NArray[ 0.00155221, -0.0109102 ]
+        deltas.should be_narray_like NArray[ -0.00155221, 0.0109102 ]
       end
 
       it "back propagates the deltas to input layer" do
         @ol.backprop_deltas
-        layer.output_deltas.should be_narray_like NArray[ 0.00155221, -0.0109102 ]
+        layer.output_deltas.should be_narray_like NArray[ -0.00155221, 0.0109102 ]
       end
     end
 

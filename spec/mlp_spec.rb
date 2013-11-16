@@ -252,6 +252,31 @@ describe CoNeNe::MLP::Layer do
       end
     end
 
+    describe "#backprop_deltas (compare with C version)" do
+      before :each do
+        il_weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
+        @ilayer = CoNeNe::MLP::Layer.from_weights( il_weights )
+        ol_weights = NArray.cast( [ [ -0.1, 0.5, -0.2 ] ], 'sfloat' )
+        @ol = CoNeNe::MLP::Layer.from_weights( ol_weights )
+
+        @ilayer.attach_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
+        @ilayer.attach_output_layer( @ol )
+        @ilayer.run
+        @ol.run
+        @ol.calc_output_deltas( NArray.cast( [1.0], 'sfloat' ) )
+      end
+
+      it "returns an array of delta values" do
+        deltas = @ol.backprop_deltas
+        deltas.should be_narray_like NArray[ -0.00155221, 0.0109102 ]
+      end
+
+      it "back propagates the deltas to input layer" do
+        @ol.backprop_deltas
+        @ilayer.output_deltas.should be_narray_like NArray[ -0.00155221, 0.0109102 ]
+      end
+    end
+
     describe "#update_weights" do
       before :each do
         layer.attach_input NArray.cast( [0.1, 0.4, 0.9, 0.2], 'sfloat' )
