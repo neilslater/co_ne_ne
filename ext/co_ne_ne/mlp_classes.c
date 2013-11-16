@@ -359,6 +359,18 @@ VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer )
   return new_output_layer;
 }
 
+VALUE mlp_layer_object_run( VALUE self ) {
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  if ( NIL_P( mlp_layer->narr_input ) ) {
+    rb_raise( rb_eArgError, "No input. Cannot run MLP layer." );
+  }
+
+  mlp_layer_run( mlp_layer );
+
+  return Qnil;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -391,4 +403,5 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "set_input", mlp_layer_object_set_input, 1 );
   rb_define_method( NLayer, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
   rb_define_method( NLayer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
+  rb_define_method( NLayer, "run", mlp_layer_object_run, 0 );
 }

@@ -2,6 +2,7 @@
 
 #include "mlp_layer_raw.h"
 #include "narray_shared.h"
+#include <xmmintrin.h>
 
 MLP_Layer *create_mlp_layer_struct() {
   MLP_Layer *mlp_layer;
@@ -108,6 +109,60 @@ void mlp_layer_struct_use_weights( MLP_Layer *mlp_layer, VALUE weights ) {
   shape[1] = mlp_layer->num_outputs;
   mlp_layer->narr_weights = weights;
   mlp_layer->narr_weights_last_deltas = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+
+  return;
+}
+
+void mlp_layer_run( MLP_Layer *mlp_layer ) {
+  struct NARRAY *na_in;
+  struct NARRAY *na_weights;
+  struct NARRAY *na_out;
+
+  GetNArray( mlp_layer->narr_input, na_in );
+  GetNArray( mlp_layer->narr_weights, na_weights );
+  GetNArray( mlp_layer->narr_output, na_out );
+
+  activate_nn_layer_raw( mlp_layer->num_inputs, mlp_layer->num_outputs,
+      (float*) na_in->ptr, (float*) na_weights->ptr, (float*) na_out->ptr );
+
+  transfer_bulk_apply_function( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float*) na_out->ptr  );
+
+  return;
+}
+
+void activate_nn_layer_raw( int in_size, int out_size,
+    float *in_ptr, float *weights, float *out_ptr ) {
+  int i, j, in_aligned_size, offset;
+  __m128 simd_x, simd_y, simd_t;
+  float v[4];
+
+  in_aligned_size = 4 * ( in_size/4 );
+
+  // Calculate activation
+  for ( i = 0; i < out_size; i++ ) {
+
+    float t = 0.0;
+    simd_t = _mm_setzero_ps();
+    offset = i * (in_size + 1);
+
+    // Use SIMD for all the aligned values in groups of 4
+    for ( j = 0; j < in_aligned_size; j +=4 ) {
+      simd_x = _mm_load_ps( in_ptr + j );
+      // Weights might not align to 16 bytes due to size of layers
+      simd_y = _mm_loadu_ps( weights + (offset + j) );
+      simd_x = _mm_mul_ps( simd_x, simd_y );
+      simd_t = _mm_add_ps( simd_x, simd_t );
+    }
+    _mm_store_ps( v, simd_t );
+
+    // Complete any remaining 1,2 or 3 items one at a time
+    for ( j = in_aligned_size; j < in_size; j++ ) {
+      t += in_ptr[ j ] * weights[ offset + j ];
+    }
+
+    // Add together 4 simd channels, plus bias
+    out_ptr[i] = v[0] + v[1] + v[2] + v[3] + t + weights[ offset + in_size ];
+  }
 
   return;
 }

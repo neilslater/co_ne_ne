@@ -40,4 +40,8 @@ void mlp_layer_struct_init_weights( MLP_Layer *mlp_layer, float min, float max )
 
 void mlp_layer_struct_use_weights( MLP_Layer *mlp_layer, VALUE weights );
 
+void mlp_layer_run( MLP_Layer *mlp_layer );
+
+void activate_nn_layer_raw( int in_size, int out_size, float *in_ptr, float *weights, float *out_ptr );
+
 #endif

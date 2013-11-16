@@ -121,7 +121,11 @@ describe CoNeNe::MLP::NLayer do
   end
 
   describe "instance methods" do
-    let(:layer) { CoNeNe::MLP::NLayer.new( 3, 2 ) }
+    let :layer do
+      weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
+      CoNeNe::MLP::NLayer.new( 3, 2 )
+      CoNeNe::MLP::NLayer.from_weights( weights )
+    end
 
     describe "#init_weights" do
       before :each do
@@ -285,6 +289,49 @@ describe CoNeNe::MLP::NLayer do
       end
     end
 
+    describe "#run" do
+      before :each do
+        layer.set_input NArray.cast( [0.1, 0.2, 0.3], 'sfloat' )
+      end
+
+      it "calculates output associated with input and weights" do
+        layer.run
+        layer.output.should be_narray_like NArray[ 0.742691, 0.68568 ]
+      end
+
+      it "gives different output for different input" do
+        layer.run
+        result_one = layer.output.clone
+
+        layer.set_input NArray.cast( [0.5, 0.4, 0.3], 'sfloat' )
+
+        layer.run
+        result_two = layer.output.clone
+
+        result_one.should_not eq result_two
+        result_one.should_not be_narray_like result_two
+      end
+
+      it "gives similar output for similar input" do
+        layer.run
+        result_one = layer.output.clone
+
+        layer.set_input NArray.cast( [0.1002, 0.1998, 0.3001], 'sfloat' )
+
+        layer.run
+        result_two = layer.output.clone
+
+        result_one.should be_narray_like result_two
+      end
+
+      it "sets all output values between 0 and 1" do
+        layer.run
+        layer.output.each do |r|
+          r.should be >= 0.0
+          r.should be <= 1.0
+        end
+      end
+    end
 
   end
 end
