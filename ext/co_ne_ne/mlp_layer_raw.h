@@ -46,4 +46,6 @@ void activate_nn_layer_raw( int in_size, int out_size, float *in_ptr, float *wei
 
 float ms_error_raw( int out_size, float *out_ptr, float *target_ptr );
 
+void calc_output_deltas_raw( int out_size, float *out_ptr, float *out_slope_ptr, float *target_ptr, float *out_delta_ptr );
+
 #endif

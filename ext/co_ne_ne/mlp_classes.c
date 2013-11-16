@@ -393,6 +393,37 @@ VALUE mlp_layer_object_ms_error( VALUE self, VALUE target ) {
   return FLT2NUM( ms_error_raw( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
+VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
+  struct NARRAY *na_target;
+  struct NARRAY *na_output;
+  struct NARRAY *na_output_slope;
+  struct NARRAY *na_output_deltas;
+  volatile VALUE val_target;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  val_target = na_cast_object(target, NA_SFLOAT);
+  GetNArray( val_target, na_target );
+
+  if ( na_target->rank != 1 ) {
+    rb_raise( rb_eArgError, "Target output rank should be 1, but got %d", na_target->rank );
+  }
+
+  if ( na_target->total != mlp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "Array size %d does not match layer output size %d", na_target->total, mlp_layer->num_outputs );
+  }
+
+  GetNArray( mlp_layer->narr_output, na_output );
+  GetNArray( mlp_layer->narr_output_slope, na_output_slope );
+  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
+
+  transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float *) na_output->ptr, (float *) na_output_slope->ptr );
+
+  calc_output_deltas_raw( mlp_layer->num_outputs, (float *) na_output->ptr,
+      (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
+
+  return mlp_layer->narr_output_deltas;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_classes( VALUE parent_module ) {
@@ -426,4 +457,7 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
   rb_define_method( NLayer, "run", mlp_layer_object_run, 0 );
   rb_define_method( NLayer, "ms_error", mlp_layer_object_ms_error, 1 );
+  rb_define_method( NLayer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
+
+
 }

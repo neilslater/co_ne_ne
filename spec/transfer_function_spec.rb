@@ -38,19 +38,6 @@ describe transfer do
     end
   end
 
-  describe "#bulk_apply_derivative_at" do
-    it "alters the whole input narray" do
-      big_array.should be_narray_like original_array
-      transfer.bulk_apply_derivative_at( big_array )
-      big_array.should_not be_narray_like original_array
-      20.times do |i|
-        20.times do |j|
-          big_array[i,j].should be_within(1e-6).of transfer.derivative_at( original_array[i,j] )
-        end
-      end
-    end
-  end
-
   def approx_dy_dx t, x
     # This is numerical approximation of derivative
     d = 5e-6

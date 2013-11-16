@@ -355,7 +355,24 @@ describe CoNeNe::MLP::NLayer do
         err = layer.ms_error( NArray.cast( [0.13, 0.11], 'sfloat' ) )
         err.should be_within(1e-6).of 0.465739
       end
-
     end
+
+    describe "#calc_output_deltas" do
+      before :each do
+        layer.set_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
+        layer.run
+      end
+
+      it "returns an array of error values" do
+        errs = layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
+        errs.should be_narray_like NArray[ 0.0451288, -0.0444903 ]
+      end
+
+      it "sets output_deltas" do
+        layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
+        layer.output_deltas.should be_narray_like NArray[ 0.0451288, -0.0444903 ]
+      end
+    end
+
   end
 end
