@@ -374,5 +374,28 @@ describe CoNeNe::MLP::NLayer do
       end
     end
 
+    describe "#backprop_deltas" do
+      before :each do
+        weights = NArray.cast( [ [ -0.1, 0.5, -0.2 ] ], 'sfloat' )
+        @ol = CoNeNe::MLP::NLayer.from_weights( weights )
+
+        layer.set_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
+        layer.attach_output_layer( @ol )
+        layer.run
+        @ol.run
+        @ol.calc_output_deltas( NArray.cast( [1.0], 'sfloat' ) )
+      end
+
+      it "returns an array of delta values" do
+        deltas = @ol.backprop_deltas
+        deltas.should be_narray_like NArray[ -0.00977509, 0.0114911 ]
+      end
+
+      it "back propagates the deltas to input layer" do
+        @ol.backprop_deltas
+        layer.output_deltas.should be_narray_like NArray[ -0.00977509, 0.0114911 ]
+      end
+    end
+
   end
 end

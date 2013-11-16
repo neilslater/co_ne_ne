@@ -90,7 +90,7 @@ float raw_relu_derivative_at( float y ) {
   return y > 0.0 ? 1.0 : 0.0;
 }
 
-void raw_relu_bulk_apply_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) {
+void raw_relu_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) {
   int i;
   for( i = 0; i < n; i++ ) {
     deriv_ptr[i] = ( func_ptr[i] > 0.0 ? 1.0 : 0.0 );

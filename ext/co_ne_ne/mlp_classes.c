@@ -424,6 +424,22 @@ VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
   return mlp_layer->narr_output_deltas;
 }
 
+VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
+  MLP_Layer *mlp_layer_input;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+
+  if ( NIL_P( mlp_layer->input_layer ) ) {
+    rb_raise( rb_eArgError, "No input layer. Cannot run MLP backpropagation." );
+  }
+
+  mlp_layer_input = get_mlp_layer_struct( mlp_layer->input_layer );
+
+  // mlp_layer_backprop( mlp_layer, mlp_layer_input );
+
+  return mlp_layer_input->narr_output_deltas;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_classes( VALUE parent_module ) {
@@ -458,6 +474,6 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "run", mlp_layer_object_run, 0 );
   rb_define_method( NLayer, "ms_error", mlp_layer_object_ms_error, 1 );
   rb_define_method( NLayer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
-
+  rb_define_method( NLayer, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
 
 }
