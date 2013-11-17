@@ -1,14 +1,6 @@
-// ext/co_ne_ne/co_ne_ne.c
+// ext/co_ne_ne/ruby_module_co_ne_ne.c
 
 #include "ruby_module_co_ne_ne.h"
-
-void init_srand_by_time() {
-  long seed;
-  struct timeval tv;
-  gettimeofday(&tv, 0);
-  seed = ( tv.tv_sec << 24 ) + tv.tv_usec;
-  init_genrand( seed );
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -5,7 +5,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "mt.h"
+#include "core_mt.h"
 #include "transfer_module.h"
 
 typedef struct _mlp_layer_raw {

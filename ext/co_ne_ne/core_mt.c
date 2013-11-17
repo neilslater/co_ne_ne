@@ -45,7 +45,7 @@
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-#include "mt.h"
+#include "core_mt.h"
 
 static unsigned long mt[N]; /* the array for the state vector  */
 static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
@@ -154,4 +154,12 @@ double genrand_res53(void)
   long a = (long)(genrand_int32()>>5);
   long b = (long)(genrand_int32()>>6);
   return(a*67108864.0+b)*(1.0/9007199254740992.0);
+}
+
+void init_srand_by_time() {
+  long seed;
+  struct timeval tv;
+  gettimeofday(&tv, 0);
+  seed = ( tv.tv_sec << 24 ) + tv.tv_usec;
+  init_genrand( seed );
 }

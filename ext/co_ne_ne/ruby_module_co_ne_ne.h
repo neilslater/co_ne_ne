@@ -15,7 +15,7 @@
 #include "cnn_components.h"
 #include "transfer_module.h"
 #include "mlp_classes.h"
-#include "mt.h"
+#include "core_mt.h"
 
 void init_module_co_ne_ne();
 

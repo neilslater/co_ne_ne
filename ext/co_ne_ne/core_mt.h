@@ -48,7 +48,15 @@
 #define UPPER_MASK 0x80000000UL /* most significant w-r bits */
 #define LOWER_MASK 0x7fffffffUL /* least significant r bits */
 
+#ifndef CORE_MT_H
+#define CORE_MT_H
+
+#include <ruby.h>
+
 void init_genrand(unsigned long s);
 double genrand_res53(void);
 float genrand_real1(void);
 long genrand_int31(void);
+void init_srand_by_time();
+
+#endif
