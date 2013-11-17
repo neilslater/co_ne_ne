@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "mlp_layer_raw.h"
+#include "struct_mlp_layer.h"
 #include "ruby_module_transfer.h"
 
 void init_mlp_classes( VALUE parent );

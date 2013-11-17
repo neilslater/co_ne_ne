@@ -1,12 +1,14 @@
-// ext/con_ne_ne/mlp_layer_raw.h
+// ext/con_ne_ne/struct_mlp_layer.h
 
-#ifndef MLP_LAYER_RAW_H
-#define MLP_LAYER_RAW_H
+#ifndef STRUCT_MLP_LAYER_H
+#define STRUCT_MLP_LAYER_H
 
 #include <ruby.h>
 #include "narray.h"
 #include "core_mt.h"
 #include "ruby_module_transfer.h"
+#include "core_narray.h"
+#include <xmmintrin.h>
 
 typedef struct _mlp_layer_raw {
     int num_inputs;

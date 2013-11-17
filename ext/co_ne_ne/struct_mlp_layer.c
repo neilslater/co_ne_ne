@@ -1,8 +1,6 @@
-// ext/co_ne_ne/mlp_layer_raw.c
+// ext/co_ne_ne/strcut_mlp_layer.c
 
-#include "mlp_layer_raw.h"
-#include "core_narray.h"
-#include <xmmintrin.h>
+#include "struct_mlp_layer.h"
 
 MLP_Layer *create_mlp_layer_struct() {
   MLP_Layer *mlp_layer;
