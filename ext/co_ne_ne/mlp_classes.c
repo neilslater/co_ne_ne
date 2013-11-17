@@ -17,7 +17,7 @@
 #include "transfer_module.h"
 
 VALUE MLP = Qnil;
-VALUE NLayer = Qnil;
+VALUE Layer = Qnil;
 VALUE Network = Qnil;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
 void assert_value_wraps_mlp_layer( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)destroy_mlp_layer_struct) {
-    rb_raise( rb_eTypeError, "Expected a NLayer object, but got something else" );
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
   }
 }
 
@@ -89,7 +89,7 @@ void assert_not_in_input_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-//  NLayer method definitions
+//  Layer method definitions
 //
 
 VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
@@ -160,7 +160,7 @@ VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   }
 
   // Create and initialise new object
-  new_mlp_layer_value = mlp_layer_alloc( NLayer );
+  new_mlp_layer_value = mlp_layer_alloc( Layer );
   mlp_layer = get_mlp_layer_struct( new_mlp_layer_value );
   mlp_layer->num_inputs = i;
   mlp_layer->num_outputs = o;
@@ -465,35 +465,35 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 void init_mlp_classes( VALUE parent_module ) {
   // Define modules and classes
   MLP = rb_define_module_under( parent_module, "MLP" );
-  NLayer = rb_define_class_under( MLP, "NLayer", rb_cObject );
+  Layer = rb_define_class_under( MLP, "Layer", rb_cObject );
   Network = rb_define_class_under( MLP, "Network", rb_cObject );
 
-  // NLayer instantiation and class methods
-  rb_define_alloc_func( NLayer, mlp_layer_alloc );
-  rb_define_method( NLayer, "initialize", mlp_layer_class_initialize, -1 );
-  rb_define_method( NLayer, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
-  rb_define_singleton_method( NLayer, "from_weights", mlp_layer_class_from_weights, -1 );
+  // Layer instantiation and class methods
+  rb_define_alloc_func( Layer, mlp_layer_alloc );
+  rb_define_method( Layer, "initialize", mlp_layer_class_initialize, -1 );
+  rb_define_method( Layer, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
+  rb_define_singleton_method( Layer, "from_weights", mlp_layer_class_from_weights, -1 );
 
-  // NLayer attributes
-  rb_define_method( NLayer, "num_inputs", mlp_layer_object_num_inputs, 0 );
-  rb_define_method( NLayer, "num_outputs", mlp_layer_object_num_outputs, 0 );
-  rb_define_method( NLayer, "transfer", mlp_layer_object_transfer, 0 );
-  rb_define_method( NLayer, "input", mlp_layer_object_input, 0 );
-  rb_define_method( NLayer, "output", mlp_layer_object_output, 0 );
-  rb_define_method( NLayer, "weights", mlp_layer_object_weights, 0 );
-  rb_define_method( NLayer, "input_layer", mlp_layer_object_input_layer, 0 );
-  rb_define_method( NLayer, "output_layer", mlp_layer_object_output_layer, 0 );
-  rb_define_method( NLayer, "output_deltas", mlp_layer_object_output_deltas, 0 );
-  rb_define_method( NLayer, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
+  // Layer attributes
+  rb_define_method( Layer, "num_inputs", mlp_layer_object_num_inputs, 0 );
+  rb_define_method( Layer, "num_outputs", mlp_layer_object_num_outputs, 0 );
+  rb_define_method( Layer, "transfer", mlp_layer_object_transfer, 0 );
+  rb_define_method( Layer, "input", mlp_layer_object_input, 0 );
+  rb_define_method( Layer, "output", mlp_layer_object_output, 0 );
+  rb_define_method( Layer, "weights", mlp_layer_object_weights, 0 );
+  rb_define_method( Layer, "input_layer", mlp_layer_object_input_layer, 0 );
+  rb_define_method( Layer, "output_layer", mlp_layer_object_output_layer, 0 );
+  rb_define_method( Layer, "output_deltas", mlp_layer_object_output_deltas, 0 );
+  rb_define_method( Layer, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
 
-  // NLayer methods
-  rb_define_method( NLayer, "init_weights", mlp_layer_object_init_weights, -1 );
-  rb_define_method( NLayer, "set_input", mlp_layer_object_set_input, 1 );
-  rb_define_method( NLayer, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
-  rb_define_method( NLayer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
-  rb_define_method( NLayer, "run", mlp_layer_object_run, 0 );
-  rb_define_method( NLayer, "ms_error", mlp_layer_object_ms_error, 1 );
-  rb_define_method( NLayer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
-  rb_define_method( NLayer, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
-  rb_define_method( NLayer, "update_weights", mlp_layer_object_update_weights, -1 );
+  // Layer methods
+  rb_define_method( Layer, "init_weights", mlp_layer_object_init_weights, -1 );
+  rb_define_method( Layer, "set_input", mlp_layer_object_set_input, 1 );
+  rb_define_method( Layer, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
+  rb_define_method( Layer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
+  rb_define_method( Layer, "run", mlp_layer_object_run, 0 );
+  rb_define_method( Layer, "ms_error", mlp_layer_object_ms_error, 1 );
+  rb_define_method( Layer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
+  rb_define_method( Layer, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
+  rb_define_method( Layer, "update_weights", mlp_layer_object_update_weights, -1 );
 }

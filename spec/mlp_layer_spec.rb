@@ -1,25 +1,25 @@
 require 'helpers'
 
-describe CoNeNe::MLP::NLayer do
+describe CoNeNe::MLP::Layer do
   describe "class methods" do
     describe "#new" do
       it "creates a new layer" do
-        CoNeNe::MLP::NLayer.new( 2, 1 ).should be_a CoNeNe::MLP::NLayer
+        CoNeNe::MLP::Layer.new( 2, 1 ).should be_a CoNeNe::MLP::Layer
       end
 
       it "refuses to create new layers for bad parameters" do
-        expect { CoNeNe::MLP::NLayer.new( 0, 2 ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( 3, -1 ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( "hello", 2 ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( 3, 2, "garbage" ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( 3, 2, :foobar ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( 3, 2, :tanh, 17 ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 0, 2 ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 3, -1 ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( "hello", 2 ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 3, 2, "garbage" ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 3, 2, :foobar ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 3, 2, :tanh, 17 ) }.to raise_error
       end
 
       it "sets values of attributes based on input and output size" do
         CoNeNe.srand( 7000 )
 
-        layer = CoNeNe::MLP::NLayer.new( 3, 2 )
+        layer = CoNeNe::MLP::Layer.new( 3, 2 )
         layer.num_inputs.should == 3
         layer.num_outputs.should == 2
         layer.transfer.should be CoNeNe::Transfer::Sigmoid
@@ -39,13 +39,13 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "accepts an optional transfer function type param" do
-        layer = CoNeNe::MLP::NLayer.new( 4, 1, :sigmoid )
+        layer = CoNeNe::MLP::Layer.new( 4, 1, :sigmoid )
         layer.transfer.should be CoNeNe::Transfer::Sigmoid
 
-        layer = CoNeNe::MLP::NLayer.new( 5, 3, :tanh )
+        layer = CoNeNe::MLP::Layer.new( 5, 3, :tanh )
         layer.transfer.should be CoNeNe::Transfer::TanH
 
-        layer = CoNeNe::MLP::NLayer.new( 7, 2, :relu )
+        layer = CoNeNe::MLP::Layer.new( 7, 2, :relu )
         layer.transfer.should be CoNeNe::Transfer::ReLU
       end
 
@@ -53,10 +53,10 @@ describe CoNeNe::MLP::NLayer do
         number_of_layers = 50000
 
         CoNeNe.srand(800)
-        layer = CoNeNe::MLP::NLayer.new( 10, 5 )
+        layer = CoNeNe::MLP::Layer.new( 10, 5 )
         new_layer = nil
         number_of_layers.times do
-          new_layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
+          new_layer = CoNeNe::MLP::Layer.new( rand(100)+1, rand(50)+1 )
         end
         GC.start
         sleep 0.5
@@ -64,7 +64,7 @@ describe CoNeNe::MLP::NLayer do
         layer.weights.should be_a NArray
         layer.weights[2,1].should be_within(0.000001).of -0.181608
         number_of_layers.times do
-          layer = CoNeNe::MLP::NLayer.new( rand(100)+1, rand(50)+1 )
+          layer = CoNeNe::MLP::Layer.new( rand(100)+1, rand(50)+1 )
         end
         sleep 0.5
         new_layer.output.should be_a NArray
@@ -74,11 +74,11 @@ describe CoNeNe::MLP::NLayer do
 
     describe "#from_weights" do
       it "creates a new layer" do
-        CoNeNe::MLP::NLayer.from_weights( NArray.sfloat(4,5) ).should be_a CoNeNe::MLP::NLayer
+        CoNeNe::MLP::Layer.from_weights( NArray.sfloat(4,5) ).should be_a CoNeNe::MLP::Layer
       end
 
       it "initialises sizes and output arrays" do
-        layer = CoNeNe::MLP::NLayer.from_weights( NArray.sfloat(4,5) )
+        layer = CoNeNe::MLP::Layer.from_weights( NArray.sfloat(4,5) )
 
         layer.num_inputs.should be 3
         layer.num_outputs.should be 5
@@ -89,31 +89,31 @@ describe CoNeNe::MLP::NLayer do
 
       it "assigns to the weights attribute directly (not a copy)" do
         w =  NArray.sfloat(12,7)
-        layer = CoNeNe::MLP::NLayer.from_weights( w )
+        layer = CoNeNe::MLP::Layer.from_weights( w )
         layer.weights.should be w
       end
 
       it "accepts an optional transfer function type param" do
         w =  NArray.sfloat(3,2)
-        layer = CoNeNe::MLP::NLayer.from_weights( w, :sigmoid )
+        layer = CoNeNe::MLP::Layer.from_weights( w, :sigmoid )
         layer.transfer.should be CoNeNe::Transfer::Sigmoid
 
         w =  NArray.sfloat(3,2)
-        layer = CoNeNe::MLP::NLayer.from_weights( w, :tanh )
+        layer = CoNeNe::MLP::Layer.from_weights( w, :tanh )
         layer.transfer.should be CoNeNe::Transfer::TanH
 
         w =  NArray.sfloat(3,2)
-        layer = CoNeNe::MLP::NLayer.from_weights( w, :relu )
+        layer = CoNeNe::MLP::Layer.from_weights( w, :relu )
         layer.transfer.should be CoNeNe::Transfer::ReLU
       end
 
       it "refuses to create new layers for bad parameters" do
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(3,2,1) ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(1,2) ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(7)) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(5,2), "NOTVALID" ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(4,1), :blah ) }.to raise_error
-        expect { CoNeNe::MLP::NLayer.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(3,2,1) ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(1,2) ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(7)) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(5,2), "NOTVALID" ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(4,1), :blah ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
       end
 
     end
@@ -123,8 +123,8 @@ describe CoNeNe::MLP::NLayer do
   describe "instance methods" do
     let :layer do
       weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
-      CoNeNe::MLP::NLayer.new( 3, 2 )
-      CoNeNe::MLP::NLayer.from_weights( weights )
+      CoNeNe::MLP::Layer.new( 3, 2 )
+      CoNeNe::MLP::Layer.from_weights( weights )
     end
 
     describe "#init_weights" do
@@ -201,7 +201,7 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "disconnects connected layers" do
-        lower_layer = CoNeNe::MLP::NLayer.new( 7, 3 )
+        lower_layer = CoNeNe::MLP::Layer.new( 7, 3 )
         layer.attach_input_layer( lower_layer )
 
         i = NArray.sfloat(3).random()
@@ -214,20 +214,20 @@ describe CoNeNe::MLP::NLayer do
 
     describe "#attach_input_layer" do
       it "uses parameter as new input_layer attribute directly" do
-        il = CoNeNe::MLP::NLayer.new( 7, 3 )
+        il = CoNeNe::MLP::Layer.new( 7, 3 )
         layer.attach_input_layer il
         layer.input_layer.should be il
         layer.input.should be il.output
       end
 
       it "refuses to attach wrong size of input" do
-        il = CoNeNe::MLP::NLayer.new( 7, 4 )
+        il = CoNeNe::MLP::Layer.new( 7, 4 )
         expect { layer.attach_input_layer il }.to raise_error
         layer.input_layer.should be nil
       end
 
       it "refuses to create cyclic connections" do
-        il = CoNeNe::MLP::NLayer.new( 3, 3 )
+        il = CoNeNe::MLP::Layer.new( 3, 3 )
         layer.attach_input_layer( il )
 
         expect { il.attach_input_layer layer }.to raise_error
@@ -237,10 +237,10 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "replaces existing input layer" do
-        prev_layer = CoNeNe::MLP::NLayer.new( 7, 3 )
+        prev_layer = CoNeNe::MLP::Layer.new( 7, 3 )
         layer.attach_input_layer( prev_layer )
 
-        il = CoNeNe::MLP::NLayer.new( 3, 3 )
+        il = CoNeNe::MLP::Layer.new( 3, 3 )
         layer.attach_input_layer( il )
 
         layer.attach_input_layer il
@@ -253,20 +253,20 @@ describe CoNeNe::MLP::NLayer do
 
     describe "#attach_output_layer" do
       it "uses parameter as new output_layer attribute directly" do
-        ol = CoNeNe::MLP::NLayer.new( 2, 1 )
+        ol = CoNeNe::MLP::Layer.new( 2, 1 )
         layer.attach_output_layer ol
         layer.output_layer.should be ol
         ol.input.should be layer.output
       end
 
       it "refuses to attach wrong size of output" do
-        ol = CoNeNe::MLP::NLayer.new( 4, 1 )
+        ol = CoNeNe::MLP::Layer.new( 4, 1 )
         expect { layer.attach_output_layer ol }.to raise_error
         layer.output_layer.should be nil
       end
 
       it "refuses to create cyclic connections" do
-        ol = CoNeNe::MLP::NLayer.new( 2, 2 )
+        ol = CoNeNe::MLP::Layer.new( 2, 2 )
         layer.attach_output_layer( ol )
 
         expect { ol.attach_output_layer layer }.to raise_error
@@ -276,10 +276,10 @@ describe CoNeNe::MLP::NLayer do
       end
 
       it "replaces existing output connection" do
-        next_layer = CoNeNe::MLP::NLayer.new( 2, 2 )
+        next_layer = CoNeNe::MLP::Layer.new( 2, 2 )
         layer.attach_output_layer( next_layer )
 
-        ol = CoNeNe::MLP::NLayer.new( 2, 3 )
+        ol = CoNeNe::MLP::Layer.new( 2, 3 )
         layer.attach_output_layer( ol )
 
         layer.attach_output_layer ol
@@ -377,7 +377,7 @@ describe CoNeNe::MLP::NLayer do
     describe "#backprop_deltas" do
       before :each do
         weights = NArray.cast( [ [ -0.1, 0.5, -0.2 ] ], 'sfloat' )
-        @ol = CoNeNe::MLP::NLayer.from_weights( weights )
+        @ol = CoNeNe::MLP::Layer.from_weights( weights )
 
         layer.set_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
         layer.attach_output_layer( @ol )
