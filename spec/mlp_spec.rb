@@ -49,7 +49,6 @@ describe CoNeNe::MLP::Network do
 
     describe "#run" do
       it "modifies output" do
-        nn.output.should eq NArray.sfloat(1)
         nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
         nn.output.should_not eq NArray.sfloat(1)
       end
