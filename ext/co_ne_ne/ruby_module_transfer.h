@@ -13,7 +13,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "narray_shared.h"
+#include "core_narray.h"
 #include "core_transfer_functions.h"
 
 void init_transfer_module( VALUE parent_module );

@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include <xmmintrin.h>
-#include "narray_shared.h"
+#include "core_narray.h"
 
 #define LARGEST_RANK 16
 

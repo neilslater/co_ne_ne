@@ -1,6 +1,6 @@
 // ext/co_ne_ne/narray_shared.c
 
-#include "narray_shared.h"
+#include "core_narray.h"
 
 // This is copied from na_array.c, with safety checks and temp vars removed
 int na_quick_idxs_to_pos( int rank, int *shape, int *idxs ) {

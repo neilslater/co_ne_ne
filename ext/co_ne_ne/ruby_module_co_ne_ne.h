@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "narray_shared.h"
+#include "core_narray.h"
 #include "convolve_raw.h"
 #include "cnn_components.h"
 #include "ruby_module_transfer.h"

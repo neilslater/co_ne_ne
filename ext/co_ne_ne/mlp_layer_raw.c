@@ -1,7 +1,7 @@
 // ext/co_ne_ne/mlp_layer_raw.c
 
 #include "mlp_layer_raw.h"
-#include "narray_shared.h"
+#include "core_narray.h"
 #include <xmmintrin.h>
 
 MLP_Layer *create_mlp_layer_struct() {
