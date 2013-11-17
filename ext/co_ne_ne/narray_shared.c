@@ -39,3 +39,11 @@ inline void na_inline_pos_to_idxs( int rank, int *shape, int pos, int *idxs ) {
   }
   return;
 }
+
+void na_sfloat_set( int size, float *idxs, float new_value ) {
+  int i;
+    for ( i = 0; i < size; i++ ) {
+    idxs[ i ] = new_value;
+  }
+  return;
+}

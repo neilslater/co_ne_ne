@@ -434,6 +434,32 @@ VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
   return mlp_layer_input->narr_output_deltas;
 }
 
+VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
+  VALUE learning_rate, momentum;
+  MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
+  float eta, m;
+  rb_scan_args( argc, argv, "11", &learning_rate, &momentum );
+
+  eta = NUM2FLT( learning_rate );
+  if ( eta < 0.0 || eta > 10.0 ) {
+    rb_raise( rb_eArgError, "Learning rate %0.6f out of bounds (0.0 to 10.0).", eta );
+  }
+
+  m = 0.0;
+
+  if ( ! NIL_P(momentum) ) {
+    m = NUM2FLT( momentum );
+    if ( m < 0.0 || m > 0.95 ) {
+      rb_raise( rb_eArgError, "Momentum %0.6f out of bounds (0.0 to 0.95).", m );
+    }
+  }
+
+  mlp_layer_struct_update_weights( mlp_layer, eta, m );
+
+  return Qnil;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_classes( VALUE parent_module ) {
@@ -469,5 +495,5 @@ void init_mlp_classes( VALUE parent_module ) {
   rb_define_method( NLayer, "ms_error", mlp_layer_object_ms_error, 1 );
   rb_define_method( NLayer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
   rb_define_method( NLayer, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
-
+  rb_define_method( NLayer, "update_weights", mlp_layer_object_update_weights, -1 );
 }

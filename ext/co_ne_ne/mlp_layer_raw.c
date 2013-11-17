@@ -25,17 +25,19 @@ MLP_Layer *create_mlp_layer_struct() {
 // Creates weights, outputs etc
 void mlp_layer_struct_create_arrays( MLP_Layer *mlp_layer ) {
   int shape[2];
+  struct NARRAY *narr;
 
   shape[0] = mlp_layer->num_outputs;
   mlp_layer->narr_output = na_make_object( NA_SFLOAT, 1, shape, cNArray );
   mlp_layer->narr_output_deltas = na_make_object( NA_SFLOAT, 1, shape, cNArray );
   mlp_layer->narr_output_slope = na_make_object( NA_SFLOAT, 1, shape, cNArray );
 
-
   shape[0] = mlp_layer->num_inputs + 1;
   shape[1] = mlp_layer->num_outputs;
   mlp_layer->narr_weights = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   mlp_layer->narr_weights_last_deltas = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+  GetNArray( mlp_layer->narr_weights_last_deltas, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   return;
 }
@@ -224,4 +226,42 @@ void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
   backprop_deltas_raw( mlp_layer->num_inputs, mlp_layer->num_outputs,
         (float *) na_in_deltas->ptr, (float *) na_in_slopes->ptr,
         (float *) na_weights->ptr, (float *) na_out_deltas->ptr );
+}
+
+void mlp_layer_struct_update_weights( MLP_Layer *mlp_layer, float eta, float m ) {
+  struct NARRAY *na_input;
+  struct NARRAY *na_weights;
+  struct NARRAY *na_weights_last_deltas;
+  struct NARRAY *na_output_deltas;
+
+  GetNArray( mlp_layer->narr_input, na_input );
+  GetNArray( mlp_layer->narr_weights, na_weights );
+  GetNArray( mlp_layer->narr_weights_last_deltas, na_weights_last_deltas );
+  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
+
+  update_weights_raw( eta, m, mlp_layer->num_inputs, mlp_layer->num_outputs,
+        (float *) na_input->ptr, (float *) na_weights->ptr,
+        (float *) na_weights_last_deltas->ptr, (float *) na_output_deltas->ptr );
+}
+
+void update_weights_raw( float eta, float m, int in_size, int out_size,
+        float *inputs, float *weights, float *weights_last_deltas, float *output_deltas) {
+
+  int i,j, offset;
+  float wupdate;
+
+  for ( j = 0; j < out_size; j++ ) {
+    offset = j * ( in_size + 1 );
+    for ( i = 0; i < in_size; i++ ) {
+      wupdate = (eta * output_deltas[j] * inputs[i]) + m * weights_last_deltas[ offset + i ];
+      weights_last_deltas[ offset + i ] = wupdate;
+      weights[ offset + i ] += wupdate;
+    }
+    // Update the bias value
+    wupdate = (eta * output_deltas[j]) + m * weights_last_deltas[ offset + in_size ];
+    weights_last_deltas[ offset + in_size ] = wupdate;
+    weights[ offset + in_size ] += wupdate;
+  }
+
+  return;
 }

@@ -17,4 +17,6 @@ int na_quick_idxs_to_pos( int rank, int *shape, int *idxs );
 // This is inverse of above
 void na_quick_pos_to_idxs( int rank, int *shape, int pos, int *idxs );
 
+void na_sfloat_set( int size, float *idxs, float new_value );
+
 #endif

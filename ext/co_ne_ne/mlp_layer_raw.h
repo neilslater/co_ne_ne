@@ -51,4 +51,8 @@ void backprop_deltas_raw( int in_size, int out_size, float *in_deltas, float *in
 
 void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input );
 
+void mlp_layer_struct_update_weights( MLP_Layer *mlp_layer, float eta, float m );
+
+void update_weights_raw( float eta, float m, int in_size, int out_size, float *inputs, float *weights, float *weights_last_deltas, float *output_deltas);
+
 #endif
