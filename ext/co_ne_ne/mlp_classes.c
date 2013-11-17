@@ -8,10 +8,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include <stdio.h>
-#include <xmmintrin.h>
 
-#include "narray_shared.h"
 #include "mlp_classes.h"
 #include "mlp_layer_raw.h"
 #include "transfer_module.h"
