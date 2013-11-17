@@ -12,7 +12,7 @@
 #include "narray.h"
 #include "core_narray.h"
 #include "core_convolve.h"
-#include "cnn_components.h"
+#include "core_max_pool.h"
 #include "ruby_module_transfer.h"
 #include "ruby_class_mlp_layer.h"
 #include "core_mt.h"

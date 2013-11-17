@@ -1,7 +1,6 @@
-// ext/co_ne_ne/cnn_components.c
+// ext/co_ne_ne/core_max_pool.c
 
-#include <xmmintrin.h>
-#include "cnn_components.h"
+#include "core_max_pool.h"
 
 // This is copied from na_array.c, with safety checks and temp vars removed
 inline int cnnc_inline_idxs_to_pos( int rank, int *shape, int *idxs ) {

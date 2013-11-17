@@ -1,12 +1,14 @@
-// ext/co_ne_ne/cnn_components.h
+// ext/co_ne_ne/core_max_pool.h
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Declarations of narray helper functions
 //
 
-#ifndef CNN_COMPONENTS_H
-#define CNN_COMPONENTS_H
+#ifndef CORE_MAX_POOL_H
+#define CORE_MAX_POOL_H
+
+#include <xmmintrin.h>
 
 void max_pool_raw( int rank, int *input_shape, float *input_ptr,
     int *output_shape, float *output_ptr, int tile_by, int pool_by );
