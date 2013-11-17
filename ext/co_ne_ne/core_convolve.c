@@ -1,6 +1,6 @@
-// ext/co_ne_ne/convolve_raw.c
+// ext/co_ne_ne/core_convolve.c
 
-#include "convolve_raw.h"
+#include "core_convolve.h"
 
 inline int size_from_shape( int rank, int *shape ) {
   int size = 1;

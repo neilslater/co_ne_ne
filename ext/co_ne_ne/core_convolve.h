@@ -1,12 +1,12 @@
-// ext/co_ne_ne/convolve_raw.h
+// ext/co_ne_ne/core_convolve.h
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Declarations of narray helper functions
 //
 
-#ifndef CONVOLVE_RAW_H
-#define CONVOLVE_RAW_H
+#ifndef CORE_CONVOLVE_H
+#define CORE_CONVOLVE_H
 
 #include <ruby.h>
 #include <xmmintrin.h>
