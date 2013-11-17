@@ -1,4 +1,4 @@
-// ext/co_ne_ne/mlp_classes.c
+// ext/co_ne_ne/ruby_class_mlp_layer.c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -6,12 +6,7 @@
 //  mlp_layer_raw.c and mlp_network_raw.c
 //
 
-#include <ruby.h>
-#include "narray.h"
-
-#include "mlp_classes.h"
-#include "mlp_layer_raw.h"
-#include "ruby_module_transfer.h"
+#include "ruby_class_mlp_layer.h"
 
 VALUE MLP = Qnil;
 VALUE Layer = Qnil;

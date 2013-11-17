@@ -14,7 +14,7 @@
 #include "convolve_raw.h"
 #include "cnn_components.h"
 #include "ruby_module_transfer.h"
-#include "mlp_classes.h"
+#include "ruby_class_mlp_layer.h"
 #include "core_mt.h"
 
 void init_module_co_ne_ne();

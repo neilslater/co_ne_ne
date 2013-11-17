@@ -5,8 +5,8 @@
 // Declarations of narray helper functions
 //
 
-#ifndef CONVOLVER_NARRAY_SHARED_H
-#define CONVOLVER_NARRAY_SHARED_H
+#ifndef CORE_NARRAY_H
+#define CORE_NARRAY_H
 
 #include <ruby.h>
 #include "narray.h"
