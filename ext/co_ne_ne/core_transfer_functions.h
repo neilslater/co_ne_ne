@@ -1,24 +1,16 @@
-// ext/co_ne_ne/transfer_module.h
+// ext/co_ne_ne/core_transfer_functions.h
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Declarations of Transfer module
 //
 
-#ifndef TRANSFER_MODULE_H
-#define TRANSFER_MODULE_H
+#ifndef CORE_TRANSFER_FUNCTIONS_H
+#define CORE_TRANSFER_FUNCTIONS_H
 
-#define NUM2FLT(x) ((float)NUM2DBL(x))
-#define FLT2NUM(x) (rb_float_new((double)x))
+#include <math.h>
 
 typedef enum {SIGMOID, TANH, RELU} transfer_type;
-
-void init_transfer_module( VALUE parent_module );
-
-extern VALUE Transfer;
-extern VALUE Sigmoid;
-extern VALUE TanH;
-extern VALUE ReLU;
 
 float transfer_function( transfer_type t, float x );
 void transfer_bulk_apply_function( transfer_type t, int n, float *ptr );

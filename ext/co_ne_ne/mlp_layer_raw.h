@@ -6,7 +6,7 @@
 #include <ruby.h>
 #include "narray.h"
 #include "core_mt.h"
-#include "transfer_module.h"
+#include "ruby_module_transfer.h"
 
 typedef struct _mlp_layer_raw {
     int num_inputs;

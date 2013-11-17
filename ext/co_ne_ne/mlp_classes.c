@@ -11,7 +11,7 @@
 
 #include "mlp_classes.h"
 #include "mlp_layer_raw.h"
-#include "transfer_module.h"
+#include "ruby_module_transfer.h"
 
 VALUE MLP = Qnil;
 VALUE Layer = Qnil;
