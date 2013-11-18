@@ -84,20 +84,6 @@ void p_mlp_layer_gc_mark( MLP_Layer *mlp_layer ) {
   return;
 }
 
-// Note this isn't called from initialize_copy, it's for internal copies
-// Also note - it is incomplete., and unused.
-MLP_Layer *p_mlp_layer_copy( MLP_Layer *orig ) {
-  MLP_Layer *mlp_layer = p_mlp_layer_create();
-
-  mlp_layer->num_inputs = orig->num_inputs;
-  mlp_layer->num_outputs = orig->num_outputs;
-  mlp_layer->transfer_fn = orig->transfer_fn;
-
-  // TODO: Clone whatever needs cloning . . .
-
-  return mlp_layer;
-}
-
 void p_mlp_layer_init_from_weights( MLP_Layer *mlp_layer, VALUE weights ) {
   int shape[2];
 

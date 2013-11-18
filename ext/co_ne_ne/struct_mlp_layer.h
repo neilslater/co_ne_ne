@@ -36,9 +36,6 @@ void p_mlp_layer_destroy( MLP_Layer *mlp_layer );
 // space, so that they don't get deleted.
 void p_mlp_layer_gc_mark( MLP_Layer *mlp_layer );
 
-// Note this isn't called from initialize_copy, it's for internal copies
-MLP_Layer *p_mlp_layer_copy( MLP_Layer *orig );
-
 void p_mlp_layer_new_narrays( MLP_Layer *mlp_layer );
 
 void p_mlp_layer_init_weights( MLP_Layer *mlp_layer, float min, float max );

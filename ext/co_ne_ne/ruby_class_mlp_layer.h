@@ -13,6 +13,10 @@
 #include "struct_mlp_layer.h"
 #include "ruby_module_transfer.h"
 
-void init_mlp_classes( VALUE parent );
+void init_mlp_layer_class( VALUE parent );
+
+extern VALUE MLP;
+extern VALUE Layer;
+extern VALUE Network;
 
 #endif

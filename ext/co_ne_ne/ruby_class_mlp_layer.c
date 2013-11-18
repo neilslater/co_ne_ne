@@ -454,7 +454,7 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_mlp_classes( VALUE parent_module ) {
+void init_mlp_layer_class( VALUE parent_module ) {
   // Define modules and classes
   MLP = rb_define_module_under( parent_module, "MLP" );
   Layer = rb_define_class_under( MLP, "Layer", rb_cObject );
