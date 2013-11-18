@@ -119,7 +119,7 @@ void mlp_layer_run( MLP_Layer *mlp_layer ) {
   GetNArray( mlp_layer->narr_weights, na_weights );
   GetNArray( mlp_layer->narr_output, na_out );
 
-  activate_nn_layer_raw( mlp_layer->num_inputs, mlp_layer->num_outputs,
+  core_activate_layer_output( mlp_layer->num_inputs, mlp_layer->num_outputs,
       (float*) na_in->ptr, (float*) na_weights->ptr, (float*) na_out->ptr );
 
   transfer_bulk_apply_function( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float*) na_out->ptr  );
@@ -147,7 +147,7 @@ void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
   transfer_bulk_derivative_at( mlp_layer_input->transfer_fn, mlp_layer_input->num_outputs,
          (float *) na_inputs->ptr, (float *) na_in_slopes->ptr );
 
-  backprop_deltas_raw( mlp_layer->num_inputs, mlp_layer->num_outputs,
+  core_backprop_deltas( mlp_layer->num_inputs, mlp_layer->num_outputs,
         (float *) na_in_deltas->ptr, (float *) na_in_slopes->ptr,
         (float *) na_weights->ptr, (float *) na_out_deltas->ptr );
 }
@@ -163,7 +163,7 @@ void mlp_layer_struct_update_weights( MLP_Layer *mlp_layer, float eta, float m )
   GetNArray( mlp_layer->narr_weights_last_deltas, na_weights_last_deltas );
   GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
 
-  update_weights_raw( eta, m, mlp_layer->num_inputs, mlp_layer->num_outputs,
+  core_update_weights( eta, m, mlp_layer->num_inputs, mlp_layer->num_outputs,
         (float *) na_input->ptr, (float *) na_weights->ptr,
         (float *) na_weights_last_deltas->ptr, (float *) na_output_deltas->ptr );
 }

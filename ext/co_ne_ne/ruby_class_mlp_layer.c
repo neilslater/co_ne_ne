@@ -377,7 +377,7 @@ VALUE mlp_layer_object_ms_error( VALUE self, VALUE target ) {
 
   GetNArray( mlp_layer->narr_output, na_output );
 
-  return FLT2NUM( ms_error_raw( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
+  return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
 VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
@@ -405,7 +405,7 @@ VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
 
   transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float *) na_output->ptr, (float *) na_output_slope->ptr );
 
-  calc_output_deltas_raw( mlp_layer->num_outputs, (float *) na_output->ptr,
+  core_calc_output_deltas( mlp_layer->num_outputs, (float *) na_output->ptr,
       (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
 
   return mlp_layer->narr_output_deltas;
