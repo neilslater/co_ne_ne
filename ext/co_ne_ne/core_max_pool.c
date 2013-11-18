@@ -48,7 +48,7 @@ inline int size_from_shape2( int rank, int *shape ) {
 //
 //
 
-void max_pool_raw( int rank, int *input_shape, float *input_ptr,
+void core_max_pool( int rank, int *input_shape, float *input_ptr,
     int *output_shape, float *output_ptr, int tile_by, int pool_by ) {
   int i, j, k, pool_size, output_size, pos;
   int output_idx[16], input_idx[16], pool_idx[16], pool_shape[16];

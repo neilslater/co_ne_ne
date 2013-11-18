@@ -4,7 +4,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// C implementations
+//  Definitions of transfer functions used to map activation values
 //
 
 float raw_sigmoid_function( float x ) {
@@ -93,7 +93,7 @@ void raw_relu_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// These intended to be called from C and switch between sub-types
+//  These intended to be called from neural-net routines in C
 //
 
 float transfer_function( transfer_type t, float x ) {

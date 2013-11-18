@@ -10,7 +10,7 @@
 
 #include <xmmintrin.h>
 
-void max_pool_raw( int rank, int *input_shape, float *input_ptr,
+void core_max_pool( int rank, int *input_shape, float *input_ptr,
     int *output_shape, float *output_ptr, int tile_by, int pool_by );
 
 #endif

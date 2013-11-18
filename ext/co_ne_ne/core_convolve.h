@@ -14,7 +14,7 @@
 
 #define LARGEST_RANK 16
 
-void convolve_raw(
+void core_convole(
     int in_rank, int *in_shape, float *in_ptr,
     int kernel_rank, int *kernel_shape, float *kernel_ptr,
     int out_rank, int *out_shape, float *out_ptr );

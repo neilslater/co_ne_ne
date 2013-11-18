@@ -44,7 +44,7 @@ inline void calc_co_increment( int rank, int *outer_shape, int *inner_shape, int
 //    Benchmark: 640x480 image, 8x8 kernel, 1000 iterations. 12.3 seconds.
 //
 
-void convolve_raw(
+void core_convole(
     int in_rank, int *in_shape, float *in_ptr,
     int kernel_rank, int *kernel_shape, float *kernel_ptr,
     int out_rank, int *out_shape, float *out_ptr ) {

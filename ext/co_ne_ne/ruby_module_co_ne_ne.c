@@ -47,7 +47,7 @@ static VALUE narray_convolve( VALUE self, VALUE a, VALUE b ) {
   val_c = na_make_object( NA_SFLOAT, target_rank, target_shape, CLASS_OF( val_a ) );
   GetNArray( val_c, na_c );
 
-  convolve_raw(
+  core_convole(
     target_rank, na_a->shape, (float*) na_a->ptr,
     target_rank, na_b->shape, (float*) na_b->ptr,
     target_rank, target_shape, (float*) na_c->ptr );
@@ -95,7 +95,7 @@ static VALUE narray_max_pool( VALUE self, VALUE a, VALUE tile_size, VALUE pool_s
   val_b = na_make_object( NA_SFLOAT, target_rank, target_shape, CLASS_OF( val_a ) );
   GetNArray( val_b, na_b );
 
-  max_pool_raw(
+  core_max_pool(
     target_rank, na_a->shape, (float*) na_a->ptr,
     target_shape, (float*) na_b->ptr,
     tile, pool );
