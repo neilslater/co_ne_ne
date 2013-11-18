@@ -6,10 +6,15 @@
  *  Naming conventions used in this C code:
  *
  *  File names
- *    ruby_module_<foo>   :   Ruby bindings for module Foo
- *    ruby_class_<bar>    :   Ruby bindings for class Bar
- *    struct_<baz>        :   C structs for class or module Baz, with memory-management and "methods"
- *    core_<feature>      :   Base C code that works with ints, floats and pointers
+ *    ruby_module_<foo>     :  Ruby bindings for module Foo
+ *    ruby_class_<bar>      :  Ruby bindings for class Bar
+ *    struct_<baz>          :  C structs for class or module Baz, with memory-management and "methods"
+ *    core_<feature>        :  Base C code that works with ints, floats and pointers
+ *
+ *  Method names
+ *    core_<description>    :  Base C code with little or no Ruby interaction, and no validations
+ *    pmlp_layer_<desc>     :  OO-style code that takes an MLP_Layer C struct as first param
+ *    ruby_mlp_layer_<desc> :  Ruby-bound method for working with CoNeNe::MLP::Layer object
  *
 */
 

@@ -2,7 +2,12 @@
 
 #include "struct_mlp_layer.h"
 
-MLP_Layer *create_mlp_layer_struct() {
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Definitions of OO-style functions for manipulating MLP_Layer structs
+//
+
+MLP_Layer *p_mlp_layer_create() {
   MLP_Layer *mlp_layer;
   mlp_layer = xmalloc( sizeof(MLP_Layer) );
   mlp_layer->num_inputs = 0;
@@ -21,7 +26,7 @@ MLP_Layer *create_mlp_layer_struct() {
 }
 
 // Creates weights, outputs etc
-void mlp_layer_struct_create_arrays( MLP_Layer *mlp_layer ) {
+void p_mlp_layer_new_narrays( MLP_Layer *mlp_layer ) {
   int shape[2];
   struct NARRAY *narr;
 
@@ -41,7 +46,7 @@ void mlp_layer_struct_create_arrays( MLP_Layer *mlp_layer ) {
 }
 
 // Creates weights, outputs etc
-void mlp_layer_struct_init_weights( MLP_Layer *mlp_layer, float min, float max ) {
+void p_mlp_layer_init_weights( MLP_Layer *mlp_layer, float min, float max ) {
   int i, t;
   float mul, *ptr;
   struct NARRAY *narr;
@@ -58,8 +63,7 @@ void mlp_layer_struct_init_weights( MLP_Layer *mlp_layer, float min, float max )
   return;
 }
 
-
-void destroy_mlp_layer_struct( MLP_Layer *mlp_layer ) {
+void p_mlp_layer_destroy( MLP_Layer *mlp_layer ) {
   xfree( mlp_layer );
   // No need to free NArrays - they will be handled by Ruby's GC, and may still be reachable
   return;
@@ -67,7 +71,7 @@ void destroy_mlp_layer_struct( MLP_Layer *mlp_layer ) {
 
 // Called by Ruby's GC, we have to mark all child objects that could be in Ruby
 // space, so that they don't get deleted.
-void mark_mlp_layer_struct( MLP_Layer *mlp_layer ) {
+void p_mlp_layer_gc_mark( MLP_Layer *mlp_layer ) {
   rb_gc_mark( mlp_layer->narr_input );
   rb_gc_mark( mlp_layer->narr_output );
   rb_gc_mark( mlp_layer->narr_weights );
@@ -82,8 +86,8 @@ void mark_mlp_layer_struct( MLP_Layer *mlp_layer ) {
 
 // Note this isn't called from initialize_copy, it's for internal copies
 // Also note - it is incomplete., and unused.
-MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig ) {
-  MLP_Layer *mlp_layer = create_mlp_layer_struct();
+MLP_Layer *p_mlp_layer_copy( MLP_Layer *orig ) {
+  MLP_Layer *mlp_layer = p_mlp_layer_create();
 
   mlp_layer->num_inputs = orig->num_inputs;
   mlp_layer->num_outputs = orig->num_outputs;
@@ -94,7 +98,7 @@ MLP_Layer *copy_mlp_layer_struct( MLP_Layer *orig ) {
   return mlp_layer;
 }
 
-void mlp_layer_struct_use_weights( MLP_Layer *mlp_layer, VALUE weights ) {
+void p_mlp_layer_init_from_weights( MLP_Layer *mlp_layer, VALUE weights ) {
   int shape[2];
 
   shape[0] = mlp_layer->num_outputs;
@@ -110,7 +114,7 @@ void mlp_layer_struct_use_weights( MLP_Layer *mlp_layer, VALUE weights ) {
   return;
 }
 
-void mlp_layer_run( MLP_Layer *mlp_layer ) {
+void p_mlp_layer_run( MLP_Layer *mlp_layer ) {
   struct NARRAY *na_in;
   struct NARRAY *na_weights;
   struct NARRAY *na_out;
@@ -127,7 +131,7 @@ void mlp_layer_run( MLP_Layer *mlp_layer ) {
   return;
 }
 
-void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
+void p_mlp_layer_backprop_deltas( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
   struct NARRAY *na_inputs; // Only required to pre-calc slopes
 
   struct NARRAY *na_in_deltas;
@@ -152,7 +156,7 @@ void mlp_layer_backprop( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input ) {
         (float *) na_weights->ptr, (float *) na_out_deltas->ptr );
 }
 
-void mlp_layer_struct_update_weights( MLP_Layer *mlp_layer, float eta, float m ) {
+void p_mlp_layer_update_weights( MLP_Layer *mlp_layer, float eta, float m ) {
   struct NARRAY *na_input;
   struct NARRAY *na_weights;
   struct NARRAY *na_weights_last_deltas;

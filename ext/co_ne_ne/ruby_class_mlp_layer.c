@@ -15,11 +15,11 @@ VALUE Network = Qnil;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline VALUE mlp_layer_as_ruby_class( MLP_Layer *mlp_layer , VALUE klass ) {
-  return Data_Wrap_Struct( klass, mark_mlp_layer_struct, destroy_mlp_layer_struct, mlp_layer );
+  return Data_Wrap_Struct( klass, p_mlp_layer_gc_mark, p_mlp_layer_destroy, mlp_layer );
 }
 
 VALUE mlp_layer_alloc(VALUE klass) {
-  return mlp_layer_as_ruby_class( create_mlp_layer_struct(), klass );
+  return mlp_layer_as_ruby_class( p_mlp_layer_create(), klass );
 }
 
 inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
@@ -30,7 +30,7 @@ inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
 
 void assert_value_wraps_mlp_layer( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)destroy_mlp_layer_struct) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_mlp_layer_destroy) {
     rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
   }
 }
@@ -104,8 +104,8 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
 
   set_transfer_fn_from_symbol( mlp_layer, tfn_type );
 
-  mlp_layer_struct_create_arrays( mlp_layer );
-  mlp_layer_struct_init_weights( mlp_layer, -0.8, 0.8 );
+  p_mlp_layer_new_narrays( mlp_layer );
+  p_mlp_layer_init_weights( mlp_layer, -0.8, 0.8 );
 
   return self;
 }
@@ -157,7 +157,7 @@ VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   mlp_layer->num_inputs = i;
   mlp_layer->num_outputs = o;
   set_transfer_fn_from_symbol( mlp_layer, tfn_type );
-  mlp_layer_struct_use_weights( mlp_layer, val_weights );
+  p_mlp_layer_init_from_weights( mlp_layer, val_weights );
 
   return new_mlp_layer_value;
 }
@@ -243,7 +243,7 @@ VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
     max_weight = 0.8;
   }
 
-  mlp_layer_struct_init_weights( mlp_layer, min_weight, max_weight );
+  p_mlp_layer_init_weights( mlp_layer, min_weight, max_weight );
 
   return Qnil;
 }
@@ -353,7 +353,7 @@ VALUE mlp_layer_object_run( VALUE self ) {
     rb_raise( rb_eArgError, "No input. Cannot run MLP layer." );
   }
 
-  mlp_layer_run( mlp_layer );
+  p_mlp_layer_run( mlp_layer );
 
   return Qnil;
 }
@@ -421,7 +421,7 @@ VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
 
   mlp_layer_input = get_mlp_layer_struct( mlp_layer->input_layer );
 
-  mlp_layer_backprop( mlp_layer, mlp_layer_input );
+  p_mlp_layer_backprop_deltas( mlp_layer, mlp_layer_input );
 
   return mlp_layer_input->narr_output_deltas;
 }
@@ -446,7 +446,7 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
     }
   }
 
-  mlp_layer_struct_update_weights( mlp_layer, eta, m );
+  p_mlp_layer_update_weights( mlp_layer, eta, m );
 
   return Qnil;
 }

@@ -2,6 +2,12 @@
 
 #include "core_backprop.h"
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//   Definitions of C-only methods that calculate neural network activations and training results
+//   from arrays of floats
+//
+
 void core_activate_layer_output( int in_size, int out_size,
     float *in_ptr, float *weights, float *out_ptr ) {
   int i, j, in_aligned_size, offset;
