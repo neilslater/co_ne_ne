@@ -131,5 +131,6 @@ void init_module_co_ne_ne() {
   rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
   init_transfer_module( CoNeNe );
   init_mlp_layer_class( CoNeNe );
+  init_mlp_network_class( CoNeNe );
   init_srand_by_time();
 }
