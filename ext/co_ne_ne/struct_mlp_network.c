@@ -13,13 +13,16 @@ MLP_Network *p_mlp_network_create() {
   mlp_network->num_layers = 0;
   mlp_network->num_outputs = 0;
   mlp_network->num_inputs = 0;
+  mlp_network->layer_sizes = NULL;
 
   return mlp_network;
 }
 
 void p_mlp_network_destroy( MLP_Network *mlp_network ) {
+  xfree( mlp_network->layer_sizes );
   xfree( mlp_network );
-  // No need to free NArrays - they will be handled by Ruby's GC, and may still be reachable
+  // VALUEs are not cleared here, they need to be left for GC to handle
+
   return;
 }
 

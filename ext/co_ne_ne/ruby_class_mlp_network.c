@@ -35,6 +35,32 @@ void assert_value_wraps_mlp_network( VALUE obj ) {
 //
 
 VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
+  int ninputs, noutputs, i, nhlayers, hlsize, *hlayer_sizes;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  ninputs = NUM2INT( num_inputs );
+  noutputs = NUM2INT( num_outputs );
+
+  // Pre-check all array entries before initialising child objects
+  Check_Type( hidden_layers, T_ARRAY );
+  nhlayers = FIX2INT( rb_funcall( hidden_layers, rb_intern("count"), 0 ) );
+  for ( i = 0; i < nhlayers; i++ ) {
+    hlsize = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+    if ( hlsize < 1 ) {
+      rb_raise( rb_eArgError, "Hidden layer size %d not allowed.", hlsize );
+    }
+  }
+
+  mlp_network->num_inputs = ninputs;
+  mlp_network->num_outputs = noutputs;
+  mlp_network->num_layers = nhlayers + 1;
+  hlayer_sizes = ALLOC_N( int, nhlayers );
+  for ( i = 0; i < nhlayers; i++ ) {
+    hlayer_sizes[i] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+  }
+
+  // TODO: Pass this to internal init routine
+
+  xfree( hlayer_sizes );
   return self;
 }
 

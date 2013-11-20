@@ -14,9 +14,10 @@
 #include "ruby_class_mlp_layer.h"
 
 typedef struct _mlp_network_raw {
-    int num_layers;
     int num_inputs;
     int num_outputs;
+    int num_layers;
+    int *layer_sizes;
   } MLP_Network;
 
 MLP_Network *p_mlp_network_create();
