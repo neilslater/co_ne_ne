@@ -14,6 +14,8 @@
 #include "ruby_module_transfer.h"
 
 void init_mlp_layer_class( VALUE parent );
+VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn );
+VALUE mlp_layer_new_ruby_object_with_weights( VALUE weights );
 
 extern VALUE MLP;
 extern VALUE Layer;

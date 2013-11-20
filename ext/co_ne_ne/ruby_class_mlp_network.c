@@ -40,25 +40,32 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
   ninputs = NUM2INT( num_inputs );
   noutputs = NUM2INT( num_outputs );
 
-  // Pre-check all array entries before initialising child objects
+  if (ninputs < 1) {
+    rb_raise( rb_eArgError, "Input size %d not allowed.", ninputs );
+  }
+
+  if (noutputs < 1) {
+    rb_raise( rb_eArgError, "Output size %d not allowed.", noutputs );
+  }
+
+  // Pre-check all array entries before initialising further
   Check_Type( hidden_layers, T_ARRAY );
   nhlayers = FIX2INT( rb_funcall( hidden_layers, rb_intern("count"), 0 ) );
   for ( i = 0; i < nhlayers; i++ ) {
     hlsize = FIX2INT( rb_ary_entry( hidden_layers, i ) );
     if ( hlsize < 1 ) {
-      rb_raise( rb_eArgError, "Hidden layer size %d not allowed.", hlsize );
+      rb_raise( rb_eArgError, "Hidden layer output size %d not allowed.", hlsize );
     }
   }
 
-  mlp_network->num_inputs = ninputs;
-  mlp_network->num_outputs = noutputs;
-  mlp_network->num_layers = nhlayers + 1;
-  hlayer_sizes = ALLOC_N( int, nhlayers );
+  hlayer_sizes = ALLOC_N( int, nhlayers + 2 );
+  hlayer_sizes[0] = ninputs;
   for ( i = 0; i < nhlayers; i++ ) {
-    hlayer_sizes[i] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+    hlayer_sizes[i+1] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
   }
+  hlayer_sizes[nhlayers+1] = noutputs;
 
-  // TODO: Pass this to internal init routine
+  p_mlp_network_init_layers( mlp_network, nhlayers + 1, hlayer_sizes );
 
   xfree( hlayer_sizes );
   return self;

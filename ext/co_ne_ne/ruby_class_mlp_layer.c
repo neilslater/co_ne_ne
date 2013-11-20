@@ -15,7 +15,7 @@ VALUE Network = Qnil;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline VALUE mlp_layer_as_ruby_class( MLP_Layer *mlp_layer , VALUE klass ) {
+inline VALUE mlp_layer_as_ruby_class( MLP_Layer *mlp_layer, VALUE klass ) {
   return Data_Wrap_Struct( klass, p_mlp_layer_gc_mark, p_mlp_layer_destroy, mlp_layer );
 }
 
@@ -23,10 +23,26 @@ VALUE mlp_layer_alloc(VALUE klass) {
   return mlp_layer_as_ruby_class( p_mlp_layer_create(), klass );
 }
 
+
 inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
   MLP_Layer *mlp_layer;
   Data_Get_Struct( obj, MLP_Layer, mlp_layer );
   return mlp_layer;
+}
+
+VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn ) {
+  MLP_Layer *mlp_layer;
+  VALUE mlp_layer_ruby = mlp_layer_alloc( Layer );
+  mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
+
+  mlp_layer->num_inputs = n_inputs;
+  mlp_layer->num_outputs = n_inputs;
+  mlp_layer->transfer_fn = tfn;
+
+  p_mlp_layer_new_narrays( mlp_layer );
+  p_mlp_layer_init_weights( mlp_layer, -0.8, 0.8 );
+
+  return mlp_layer_ruby;
 }
 
 void assert_value_wraps_mlp_layer( VALUE obj ) {
