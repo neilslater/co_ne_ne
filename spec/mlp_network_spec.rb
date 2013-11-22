@@ -21,6 +21,28 @@ describe CoNeNe::MLP::ZNetwork do
         expect { CoNeNe::MLP::ZNetwork.new( 2, [3], nil ) }.to raise_error
         expect { CoNeNe::MLP::ZNetwork.new( 2, [3], 'a frog' ) }.to raise_error
       end
+      it "creates a network with right number of Layers" do
+        network = CoNeNe::MLP::ZNetwork.new( 2, [], 1 )
+        network.num_layers.should == 1
+        network.layers.count.should == 1
+        layer = network.layers.first
+        layer.num_inputs.should == 2
+        layer.num_outputs.should == 1
+
+        network = CoNeNe::MLP::ZNetwork.new( 2, [2], 1 )
+        network.num_layers.should == 2
+        layer = network.layers.first
+        layer.num_inputs.should == 2
+        layer.num_outputs.should == 2
+        layer = network.layers.last
+        layer.num_inputs.should == 2
+        layer.num_outputs.should == 1
+
+        network = CoNeNe::MLP::ZNetwork.new( 2, [5,6,2,1], 1 )
+        network.num_layers.should == 5
+      end
     end
+
+
   end
 end

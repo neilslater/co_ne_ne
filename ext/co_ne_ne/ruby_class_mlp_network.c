@@ -35,7 +35,7 @@ void assert_value_wraps_mlp_network( VALUE obj ) {
 //
 
 VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
-  int ninputs, noutputs, i, nhlayers, hlsize, *hlayer_sizes;
+  int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   ninputs = NUM2INT( num_inputs );
   noutputs = NUM2INT( num_outputs );
@@ -58,22 +58,65 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
     }
   }
 
-  hlayer_sizes = ALLOC_N( int, nhlayers + 2 );
-  hlayer_sizes[0] = ninputs;
+  layer_sizes = ALLOC_N( int, nhlayers + 2 );
+  layer_sizes[0] = ninputs;
   for ( i = 0; i < nhlayers; i++ ) {
-    hlayer_sizes[i+1] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+    layer_sizes[i+1] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
   }
-  hlayer_sizes[nhlayers+1] = noutputs;
+  layer_sizes[nhlayers+1] = noutputs;
 
-  p_mlp_network_init_layers( mlp_network, nhlayers + 1, hlayer_sizes );
+  p_mlp_network_init_layers( mlp_network, nhlayers + 1, layer_sizes );
 
-  xfree( hlayer_sizes );
+  xfree( layer_sizes );
   return self;
 }
 
 // Special initialize to support "clone"
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
+  rb_raise( rb_eArgError, "Cannot clone CoNeNe::MLP::Network (yet)." );
   return copy;
+}
+
+VALUE mlp_network_object_num_layers( VALUE self ) {
+  int count = 0;
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    count++;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return INT2NUM( count );
+}
+
+VALUE mlp_network_object_layers( VALUE self ) {
+  int count = 0;
+  VALUE layer_object, all_layers;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    count++;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  all_layers = rb_ary_new2( count );
+  count = 0;
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    rb_ary_store( all_layers, count, layer_object );
+    count++;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return all_layers;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,6 +128,8 @@ void init_mlp_network_class( VALUE parent_module ) {
   rb_define_method( Network, "initialize_copy", mlp_network_class_initialize_copy, 1 );
 
   // Network attributes
+  rb_define_method( Network, "num_layers", mlp_network_object_num_layers, 0 );
+  rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
 
   // Network methods
 

@@ -36,7 +36,7 @@ VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn 
   mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
 
   mlp_layer->num_inputs = n_inputs;
-  mlp_layer->num_outputs = n_inputs;
+  mlp_layer->num_outputs = n_outputs;
   mlp_layer->transfer_fn = tfn;
 
   p_mlp_layer_new_narrays( mlp_layer );
