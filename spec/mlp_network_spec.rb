@@ -8,6 +8,7 @@ describe CoNeNe::MLP::ZNetwork do
         CoNeNe::MLP::ZNetwork.new( 2, [4], 1 ).should be_a CoNeNe::MLP::ZNetwork
         CoNeNe::MLP::ZNetwork.new( 2, [4,2], 1 ).should be_a CoNeNe::MLP::ZNetwork
       end
+
       it "does not create a new network if any params are missing or bad" do
         expect { CoNeNe::MLP::ZNetwork.new( -2, [4], 1 ) }.to raise_error
         expect { CoNeNe::MLP::ZNetwork.new( nil, [4], 1 ) }.to raise_error
@@ -21,6 +22,7 @@ describe CoNeNe::MLP::ZNetwork do
         expect { CoNeNe::MLP::ZNetwork.new( 2, [3], nil ) }.to raise_error
         expect { CoNeNe::MLP::ZNetwork.new( 2, [3], 'a frog' ) }.to raise_error
       end
+
       it "creates a network with right number of Layers" do
         network = CoNeNe::MLP::ZNetwork.new( 2, [], 1 )
         network.num_layers.should == 1
@@ -38,11 +40,78 @@ describe CoNeNe::MLP::ZNetwork do
         layer.num_inputs.should == 2
         layer.num_outputs.should == 1
 
-        network = CoNeNe::MLP::ZNetwork.new( 2, [5,6,2,1], 1 )
+        network = CoNeNe::MLP::ZNetwork.new( 2, [5,6,4,2], 1 )
         network.num_layers.should == 5
+        layers = network.layers
+        [ [2,5], [5,6], [6,4], [4,2], [2,1] ].each do |xp_in, xp_out|
+          layer = layers.shift
+          layer.num_inputs.should == xp_in
+          layer.num_outputs.should == xp_out
+        end
       end
     end
+  end
 
+  describe "instance methods" do
+    let( :nn ) { CoNeNe::MLP::ZNetwork.new( 2, [4], 1 ) }
+    let( :nn2 ) { CoNeNe::MLP::ZNetwork.new( 2, [5,3], 1 ) }
+    let( :nn3 ) { CoNeNe::MLP::ZNetwork.new( 2, [4,3,2], 1 ) }
+    let( :xor_train_set ) {
+      [
+        [  NArray.cast( [-1.0, -1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
+        [  NArray.cast( [-1.0, 1.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
+        [  NArray.cast( [1.0, -1.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) ],
+        [  NArray.cast( [1.0, 1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ]
+      ]
+    }
+
+    describe "#init_weights" do
+      before :each do
+        CoNeNe.srand(900)
+      end
+
+      it "generates new values for weights" do
+        layers = nn.layers
+        old_weights0 = layers[0].weights.clone
+        old_weights1 = layers[1].weights.clone
+
+        nn.init_weights
+
+        layers[0].weights.should_not be_narray_like old_weights0
+        layers[1].weights.should_not be_narray_like old_weights1
+
+        layers[0].weights.should be_narray_like NArray[ [ 0.29383, 0.33766, 0.747574 ],
+              [ -0.59579, -0.590868, -0.436368 ],
+              [ 0.528037, 0.62401, -0.44007 ],
+              [ 0.679676, -0.0280843, 0.212935 ] ]
+
+        layers[1].weights.should be_narray_like NArray[ [ 0.737034, 0.514718, -0.50875, -0.129045, -0.46841 ] ]
+      end
+
+      it "takes optional scaling params, affecting all layers" do
+        layers = nn.layers
+
+        nn.init_weights( 1.6 )
+        layers = nn.layers
+
+        layers[0].weights.should be_narray_like NArray[ [ 0.58766, 0.675321, 1.49515 ],
+              [ -1.19158, -1.18174, -0.872735 ],
+              [ 1.05607, 1.24802, -0.88014 ],
+              [ 1.35935, -0.0561687, 0.42587 ] ]
+
+        layers[1].weights.should be_narray_like NArray[ [ 1.47407, 1.02944, -1.0175, -0.25809, -0.936819 ] ]
+
+        nn.init_weights( 1.0, 3.0 )
+
+        layers[0].weights.should be_narray_like NArray[ [ 2.03394, 2.44456, 1.62576 ],
+              [ 2.78554, 1.73815, 1.91262 ],
+              [ 1.51784, 1.61086, 2.34845 ],
+              [ 1.42056, 1.55768, 2.44562 ] ]
+
+        layers[1].weights.should be_narray_like NArray[ [ 2.55728, 2.45761, 2.34661, 2.9218, 2.18352 ] ]
+      end
+
+    end
 
   end
 end

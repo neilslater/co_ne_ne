@@ -119,6 +119,38 @@ VALUE mlp_network_object_layers( VALUE self ) {
   return all_layers;
 }
 
+VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
+  VALUE minw, maxw;
+  float min_weight, max_weight;
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  rb_scan_args( argc, argv, "02", &minw, &maxw );
+
+  if ( ! NIL_P(minw) ) {
+    min_weight = NUM2FLT( minw );
+    if ( ! NIL_P(maxw) ) {
+      max_weight = NUM2FLT( maxw );
+    } else {
+      max_weight = min_weight;
+      min_weight = -max_weight;
+    }
+  } else {
+    min_weight = -0.8;
+    max_weight = 0.8;
+  }
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    p_mlp_layer_init_weights( mlp_layer, min_weight, max_weight );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return Qnil;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_network_class( VALUE parent_module ) {
@@ -132,5 +164,5 @@ void init_mlp_network_class( VALUE parent_module ) {
   rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
 
   // Network methods
-
+  rb_define_method( Network, "init_weights", mlp_network_object_init_weights, -1 );
 }
