@@ -198,6 +198,50 @@ VALUE mlp_network_object_input( VALUE self ) {
   return mlp_layer->narr_input;
 }
 
+
+VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
+  struct NARRAY *na_input;
+  volatile VALUE val_input;
+  volatile VALUE layer_object;
+  MLP_Layer *mlp_old_input_layer;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  layer_object = mlp_network->first_layer;
+  Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+
+  val_input = na_cast_object(new_input, NA_SFLOAT);
+  GetNArray( val_input, na_input );
+
+  if ( na_input->rank != 1 ) {
+    rb_raise( rb_eArgError, "Inputs rank should be 1, but got %d", na_input->rank );
+  }
+
+  if ( na_input->total != mlp_layer->num_inputs ) {
+    rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, mlp_layer->num_inputs );
+  }
+
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    // This layer has an existing input layer, it needs to stop pointing its output here
+    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_old_input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+
+  mlp_layer->narr_input = val_input;
+  mlp_layer->input_layer = Qnil;
+  p_mlp_layer_run( mlp_layer );
+
+  layer_object = mlp_layer->output_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+    p_mlp_layer_run( mlp_layer );
+  }
+
+  return mlp_layer->narr_output;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_network_class( VALUE parent_module ) {
@@ -217,4 +261,5 @@ void init_mlp_network_class( VALUE parent_module ) {
 
   // Network methods
   rb_define_method( Network, "init_weights", mlp_network_object_init_weights, -1 );
+  rb_define_method( Network, "run", mlp_network_object_run, 1 );
 }

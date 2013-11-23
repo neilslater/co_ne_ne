@@ -57,6 +57,13 @@ describe CoNeNe::MLP::ZNetwork do
         network.num_outputs.should == 1
         network.output.should be_a NArray
         network.output.shape.should == [1]
+
+        network = CoNeNe::MLP::ZNetwork.new( 2, [7,3,2], 2 )
+        network.num_inputs.should == 2
+        network.input.should be_nil
+        network.num_outputs.should == 2
+        network.output.should be_a NArray
+        network.output.shape.should == [2]
       end
     end
   end
@@ -119,7 +126,13 @@ describe CoNeNe::MLP::ZNetwork do
 
         layers[1].weights.should be_narray_like NArray[ [ 2.55728, 2.45761, 2.34661, 2.9218, 2.18352 ] ]
       end
+    end
 
+    describe "#run" do
+      it "modifies output" do
+        nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
+        nn.output.should_not eq NArray.sfloat(1)
+      end
     end
 
   end
