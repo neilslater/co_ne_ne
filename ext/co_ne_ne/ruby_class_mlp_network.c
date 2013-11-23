@@ -284,6 +284,7 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
 
   MLP_Layer *mlp_old_input_layer;
   MLP_Layer *mlp_layer;
+  MLP_Layer *mlp_layer_input;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
   ////////////////////////////////////////////////////////////////////////////////////
@@ -358,19 +359,19 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   // Back-propagate delta
 
   while ( ! NIL_P(mlp_layer->input_layer) ) {
-
-    layer_object = mlp_layer->input_layer;
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_layer_input );
+    p_mlp_layer_backprop_deltas( mlp_layer, mlp_layer_input );
+    mlp_layer = mlp_layer_input;
   }
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Adjust weights
 
   while ( ! NIL_P(mlp_layer->output_layer) ) {
-
-    layer_object = mlp_layer->output_layer;
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    p_mlp_layer_update_weights( mlp_layer, 1.0, 0.5 );
+    Data_Get_Struct( mlp_layer->output_layer, MLP_Layer, mlp_layer );
   }
+  p_mlp_layer_update_weights( mlp_layer, 1.0, 0.5 );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Return ms_error
