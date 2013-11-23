@@ -154,5 +154,33 @@ describe CoNeNe::MLP::ZNetwork do
       end
     end
 
+    describe "#ms_error" do
+      it "should calculate mean square error of current output compared to target" do
+        CoNeNe.srand(900)
+        nn.init_weights
+        nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
+        nn.ms_error( NArray.cast( [1.0], 'sfloat' ) ).should be_within(1e-6).of 0.367103
+      end
+    end
+
+    describe "#train_once" do
+      it "modifies output and weights" do
+        CoNeNe.srand(900)
+
+        nn.init_weights
+        layers = nn.layers
+        w1 = layers[0].weights.clone
+        w2 = layers[1].weights.clone
+
+        nn.train_once( NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) )
+
+        layers[0].output.should be_narray_like NArray[ 0.778442, -0.774772, 0.0877405, 0.712681 ]
+        layers[1].output.should be_narray_like NArray[ 0.39411 ]
+
+        layers[0].weights.should_not be_narray_like w1
+        layers[1].weights.should_not be_narray_like w2
+      end
+    end
+
   end
 end

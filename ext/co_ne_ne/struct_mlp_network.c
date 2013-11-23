@@ -30,7 +30,6 @@ void p_mlp_network_gc_mark( MLP_Network *mlp_network ) {
 }
 
 void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *layer_sizes ) {
-  transfer_type tfn;
   MLP_Layer *mlp_layer, *mlp_layer_prev;
   VALUE layer_object;
   VALUE prev_layer_object;
