@@ -194,6 +194,74 @@ describe CoNeNe::MLP::ZNetwork do
         layers[0].weights.should_not be_narray_like w1
         layers[1].weights.should_not be_narray_like w2
       end
+
+      it "can learn xor when run repeatedly" do
+        ms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn.run xin
+          ms_total += nn.ms_error( xtarg )
+        end
+        ms_total /= 4
+
+        tries = 0
+        while ( tries < 10 && ! xor_test(nn) )
+          tries += 1
+          nn.init_weights
+          2000.times do
+            xor_train_set.each do | xin, xtarg |
+              nn.train_once xin, xtarg
+            end
+          end
+        end
+
+        after_ms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn.run xin
+          after_ms_total += nn.ms_error( xtarg )
+        end
+        after_ms_total /= 4
+
+        after_ms_total.should be < ms_total
+
+        nn.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+        nn.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+      end
+
+      it "can learn xor with 2 hidden layers" do
+        ms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn2.run xin
+          ms_total += nn2.ms_error( xtarg )
+        end
+        ms_total /= 4
+
+        tries = 0
+        while ( tries < 10 && ! xor_test(nn2) )
+          tries += 1
+          nn2.init_weights
+          4000.times do
+            xor_train_set.each do | xin, xtarg |
+              nn2.train_once xin, xtarg
+            end
+          end
+        end
+
+        after_ms_total = 0.0
+        xor_train_set.each do | xin, xtarg |
+          nn2.run xin
+          after_ms_total += nn2.ms_error( xtarg )
+        end
+        after_ms_total /= 4
+
+        after_ms_total.should be < ms_total
+
+        nn2.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+        nn2.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn2.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0].should be_within(0.1).of 1.0
+        nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
+      end
     end
 
   end
