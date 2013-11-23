@@ -133,6 +133,25 @@ describe CoNeNe::MLP::ZNetwork do
         nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
         nn.output.should_not eq NArray.sfloat(1)
       end
+
+      it "alters output of each layer" do
+        CoNeNe.srand(900)
+
+        nn.init_weights
+        nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
+        layers = nn.layers
+
+        layers[0].output.should be_narray_like NArray[ 0.778442, -0.774772, 0.0877405, 0.712681 ]
+        layers[1].output.should be_narray_like NArray[ 0.39411 ]
+
+        nn2.init_weights
+        nn2.run( NArray.cast( [0.3, -0.4], 'sfloat' ) )
+        layers = nn2.layers
+
+        layers[0].output.should be_narray_like NArray[ -0.217227, -0.120661, -0.153031, -0.130874, 0.622694 ]
+        layers[1].output.should be_narray_like NArray[ -0.183053, 0.528921, -0.806468 ]
+        layers[2].output.should be_narray_like NArray[ 0.585357 ]
+      end
     end
 
   end
