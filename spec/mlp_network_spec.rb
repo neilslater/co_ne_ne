@@ -49,6 +49,15 @@ describe CoNeNe::MLP::ZNetwork do
           layer.num_outputs.should == xp_out
         end
       end
+
+      it "creates a network with right number of inputs and outputs" do
+        network = CoNeNe::MLP::ZNetwork.new( 2, [], 1 )
+        network.num_inputs.should == 2
+        network.input.should be_nil
+        network.num_outputs.should == 1
+        network.output.should be_a NArray
+        network.output.shape.should == [1]
+      end
     end
   end
 

@@ -151,6 +151,53 @@ VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   return Qnil;
 }
 
+VALUE mlp_network_object_num_outputs( VALUE self ) {
+  int count_outputs = 0;
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    count_outputs = mlp_layer->num_outputs;
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return INT2NUM( count_outputs );
+}
+
+VALUE mlp_network_object_num_inputs( VALUE self ) {
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
+  return INT2NUM( mlp_layer->num_inputs );
+}
+
+
+VALUE mlp_network_object_output( VALUE self ) {
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return mlp_layer->narr_output;
+}
+
+VALUE mlp_network_object_input( VALUE self ) {
+  MLP_Layer *mlp_layer;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
+  return mlp_layer->narr_input;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_network_class( VALUE parent_module ) {
@@ -161,6 +208,11 @@ void init_mlp_network_class( VALUE parent_module ) {
 
   // Network attributes
   rb_define_method( Network, "num_layers", mlp_network_object_num_layers, 0 );
+  rb_define_method( Network, "num_inputs", mlp_network_object_num_inputs, 0 );
+  rb_define_method( Network, "num_outputs", mlp_network_object_num_outputs, 0 );
+  rb_define_method( Network, "input", mlp_network_object_input, 0 );
+  rb_define_method( Network, "output", mlp_network_object_output, 0 );
+
   rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
 
   // Network methods
