@@ -164,7 +164,24 @@ describe CoNeNe::MLP::ZNetwork do
     end
 
     describe "#train_once" do
-      it "modifies output and weights" do
+      it "returns ms_error value of target" do
+        CoNeNe.srand(900)
+        nn.init_weights
+        layers = nn.layers
+        result = nn.train_once( NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) )
+        result.should be_within(1e-6).of 0.367103
+      end
+
+      it "modifies outputs" do
+        CoNeNe.srand(900)
+        nn.init_weights
+        layers = nn.layers
+        nn.train_once( NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) )
+        layers[0].output.should be_narray_like NArray[ 0.778442, -0.774772, 0.0877405, 0.712681 ]
+        layers[1].output.should be_narray_like NArray[ 0.39411 ]
+      end
+
+      it "modifies weights" do
         CoNeNe.srand(900)
 
         nn.init_weights
@@ -173,9 +190,6 @@ describe CoNeNe::MLP::ZNetwork do
         w2 = layers[1].weights.clone
 
         nn.train_once( NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) )
-
-        layers[0].output.should be_narray_like NArray[ 0.778442, -0.774772, 0.0877405, 0.712681 ]
-        layers[1].output.should be_narray_like NArray[ 0.39411 ]
 
         layers[0].weights.should_not be_narray_like w1
         layers[1].weights.should_not be_narray_like w2

@@ -276,8 +276,12 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   volatile VALUE val_input;
   struct NARRAY *na_target;
   struct NARRAY *na_output;
+  struct NARRAY *na_output_slope;
+  struct NARRAY *na_output_deltas;
+
   volatile VALUE val_target;
   volatile VALUE layer_object;
+
   MLP_Layer *mlp_old_input_layer;
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
@@ -341,18 +345,32 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Calculate delta on output
+  GetNArray( mlp_layer->narr_output, na_output );
+  GetNArray( mlp_layer->narr_output_slope, na_output_slope );
+  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
 
+  transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float *) na_output->ptr, (float *) na_output_slope->ptr );
 
+  core_calc_output_deltas( mlp_layer->num_outputs, (float *) na_output->ptr,
+      (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Back-propagate delta
 
+  while ( ! NIL_P(mlp_layer->input_layer) ) {
 
+    layer_object = mlp_layer->input_layer;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Adjust weights
 
+  while ( ! NIL_P(mlp_layer->output_layer) ) {
 
+    layer_object = mlp_layer->output_layer;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Return ms_error
