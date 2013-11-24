@@ -45,6 +45,9 @@ VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn 
   return mlp_layer_ruby;
 }
 
+// TODO: Create new layer object from weights
+//       Clone a layer object
+
 void assert_value_wraps_mlp_layer( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_mlp_layer_destroy) {
@@ -136,9 +139,19 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   mlp_layer_copy = get_mlp_layer_struct( copy );
   mlp_layer_orig = get_mlp_layer_struct( orig );
 
-  memcpy( mlp_layer_copy, mlp_layer_orig, sizeof(MLP_Layer) );
+  mlp_layer_copy->num_inputs = mlp_layer_orig->num_inputs;
+  mlp_layer_copy->num_outputs = mlp_layer_orig->num_outputs;
+  mlp_layer_copy->transfer_fn = SIGMOID;
 
-  // TODO: Deep clone all NArrays that are created on instantiation
+  mlp_layer_copy->narr_input = Qnil;
+  mlp_layer_copy->input_layer = Qnil;
+  mlp_layer_copy->output_layer = Qnil;
+
+  mlp_layer_copy->narr_output = na_clone( mlp_layer_orig->narr_output );
+  mlp_layer_copy->narr_weights = na_clone( mlp_layer_orig->narr_weights );
+  mlp_layer_copy->narr_output_deltas = na_clone( mlp_layer_orig->narr_output_deltas );
+  mlp_layer_copy->narr_weights_last_deltas = na_clone( mlp_layer_orig->narr_weights_last_deltas );
+  mlp_layer_copy->narr_output_slope = na_clone( mlp_layer_orig->narr_output_slope );
 
   return copy;
 }
@@ -415,6 +428,8 @@ VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
   if ( na_target->total != mlp_layer->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer output size %d", na_target->total, mlp_layer->num_outputs );
   }
+
+  // TODO: Move this to p_mlp_layer_calc_output_deltas
 
   GetNArray( mlp_layer->narr_output, na_output );
   GetNArray( mlp_layer->narr_output_slope, na_output_slope );

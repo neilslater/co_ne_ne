@@ -123,8 +123,45 @@ describe CoNeNe::MLP::Layer do
   describe "instance methods" do
     let :layer do
       weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
-      CoNeNe::MLP::Layer.new( 3, 2 )
       CoNeNe::MLP::Layer.from_weights( weights )
+    end
+
+    describe "#clone" do
+      it "should make a simple copy of number of inputs, outputs and transfer function" do
+        copy = layer.clone
+        copy.num_inputs.should == layer.num_inputs
+        copy.num_outputs.should == layer.num_outputs
+        copy.transfer.should == layer.transfer
+      end
+
+      it "should deep clone all arrays of weights and output" do
+        copy = layer.clone
+
+        copy.weights.should_not be layer.weights
+        copy.weights.should be_narray_like layer.weights
+
+        copy.output.should_not be layer.output
+        copy.output.should be_narray_like layer.output
+
+        copy.weights.should_not be layer.weights
+        copy.weights.should be_narray_like layer.weights
+
+        copy.output_deltas.should_not be layer.output_deltas
+        copy.output_deltas.should be_narray_like layer.output_deltas
+
+        copy.weights_last_deltas.should_not be layer.weights_last_deltas
+        copy.weights_last_deltas.should be_narray_like layer.weights_last_deltas
+      end
+
+      it "should disconnect inputs and outputs" do
+        layer.attach_input_layer CoNeNe::MLP::Layer.new( 4, 3 )
+        layer.attach_output_layer CoNeNe::MLP::Layer.new( 2, 1 )
+        copy = layer.clone
+
+        copy.input.should be_nil
+        copy.input_layer.should be_nil
+        copy.output_layer.should be_nil
+      end
     end
 
     describe "#init_weights" do
@@ -135,36 +172,36 @@ describe CoNeNe::MLP::Layer do
       it "should set weights in range -0.8 to 0.8 by default" do
         layer.init_weights
         layer.weights.should be_narray_like NArray[
-          [ 0.458294, -0.067838, -0.342399, 0.455698 ],
-          [ 0.790833, -0.181608, 0.752776, 0.1745 ] ]
+            [ 0.130206, 0.520598, 0.614333, -0.275051 ],
+            [ 0.564844, -0.236939, 0.256392, -0.466942 ] ]
       end
 
       it "should accept a single param to set +- range" do
         layer.init_weights( 4.0 )
         layer.weights.should be_narray_like NArray[
-          [ 2.29147, -0.33919, -1.712, 2.27849 ],
-          [ 3.95417, -0.908039, 3.76388, 0.872502 ] ]
+            [ 0.65103, 2.60299, 3.07167, -1.37525 ],
+            [ 2.82422, -1.18469, 1.28196, -2.33471 ] ]
       end
 
       it "should accept two params to select from a range" do
         layer.init_weights( 0.2, 1.8 )
         layer.weights.should be_narray_like NArray[
-          [ 1.45829, 0.932162, 0.657601, 1.4557 ],
-          [ 1.79083, 0.818392, 1.75278, 1.1745 ] ]
+            [ 1.13021, 1.5206, 1.61433, 0.724949 ],
+            [ 1.56484, 0.763061, 1.25639, 0.533058 ] ]
       end
 
       it "should work with a negative single param" do
         layer.init_weights( -0.8 )
         layer.weights.should be_narray_like NArray[
-          [ -0.458294, 0.067838, 0.342399, -0.455698 ],
-          [ -0.790833, 0.181608, -0.752776, -0.1745 ] ]
+            [ -0.130206, -0.520598, -0.614333, 0.275051 ],
+            [ -0.564844, 0.236939, -0.256392, 0.466942 ] ]
       end
 
       it "should work with a 'reversed' range" do
         layer.init_weights( 1.0, 0.0 )
         layer.weights.should be_narray_like NArray[
-         [ 0.213566, 0.542399, 0.714, 0.215189 ],
-         [ 0.00572914, 0.613505, 0.029515, 0.390937 ] ]
+            [ 0.418621, 0.174627, 0.116042, 0.671907 ],
+            [ 0.146972, 0.648087, 0.339755, 0.791839 ] ]
       end
 
       it "should raise an error for non-numeric params" do
