@@ -15,7 +15,7 @@
 
 void init_mlp_layer_class( VALUE parent );
 VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn );
-VALUE mlp_layer_new_ruby_object_with_weights( VALUE weights );
+VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn );
 
 extern VALUE MLP;
 extern VALUE Layer;

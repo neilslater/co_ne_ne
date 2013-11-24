@@ -45,9 +45,6 @@ VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn 
   return mlp_layer_ruby;
 }
 
-// TODO: Create new layer object from weights
-//       Clone a layer object
-
 void assert_value_wraps_mlp_layer( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_mlp_layer_destroy) {
@@ -97,6 +94,21 @@ void assert_not_in_input_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
     mlp_next_layer = get_mlp_layer_struct( mlp_next_layer->input_layer );
   }
   return;
+}
+
+VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
+  MLP_Layer *mlp_layer;
+  struct NARRAY *na_weights;
+  VALUE mlp_layer_ruby = mlp_layer_alloc( Layer );
+  mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
+
+  GetNArray( weights, na_weights );
+  mlp_layer->num_inputs = na_weights->shape[0] - 1;
+  mlp_layer->num_outputs = na_weights->shape[1];
+  mlp_layer->transfer_fn = tfn;
+  p_mlp_layer_init_from_weights( mlp_layer, weights );
+
+  return mlp_layer_ruby;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

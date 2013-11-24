@@ -115,9 +115,7 @@ describe CoNeNe::MLP::Layer do
         expect { CoNeNe::MLP::Layer.new( NArray.sfloat(4,1), :blah ) }.to raise_error
         expect { CoNeNe::MLP::Layer.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
       end
-
     end
-
   end
 
   describe "instance methods" do
@@ -286,7 +284,6 @@ describe CoNeNe::MLP::Layer do
         prev_layer.output_layer.should be_nil
       end
     end
-
 
     describe "#attach_output_layer" do
       it "uses parameter as new output_layer attribute directly" do
@@ -461,6 +458,5 @@ describe CoNeNe::MLP::Layer do
         (original_err - new_err).should be > 0.05
       end
     end
-
   end
 end
