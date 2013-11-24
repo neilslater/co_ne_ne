@@ -157,3 +157,23 @@ void p_mlp_layer_update_weights( MLP_Layer *mlp_layer, float eta, float m ) {
         (float *) na_input->ptr, (float *) na_weights->ptr,
         (float *) na_weights_last_deltas->ptr, (float *) na_output_deltas->ptr );
 }
+
+void p_mlp_layer_calc_output_deltas( MLP_Layer *mlp_layer, VALUE target ) {
+  struct NARRAY *na_target;
+  struct NARRAY *na_output;
+  struct NARRAY *na_output_slope;
+  struct NARRAY *na_output_deltas;
+
+  GetNArray( target, na_target );
+  GetNArray( mlp_layer->narr_output, na_output );
+  GetNArray( mlp_layer->narr_output_slope, na_output_slope );
+  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
+
+  transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs,
+      (float *) na_output->ptr, (float *) na_output_slope->ptr );
+
+  core_calc_output_deltas( mlp_layer->num_outputs, (float *) na_output->ptr,
+      (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
+
+  return;
+}

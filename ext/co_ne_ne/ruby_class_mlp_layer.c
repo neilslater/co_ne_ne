@@ -419,9 +419,6 @@ VALUE mlp_layer_object_ms_error( VALUE self, VALUE target ) {
 
 VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
-  struct NARRAY *na_output;
-  struct NARRAY *na_output_slope;
-  struct NARRAY *na_output_deltas;
   volatile VALUE val_target;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
 
@@ -436,16 +433,7 @@ VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer output size %d", na_target->total, mlp_layer->num_outputs );
   }
 
-  // TODO: Move this to p_mlp_layer_calc_output_deltas
-
-  GetNArray( mlp_layer->narr_output, na_output );
-  GetNArray( mlp_layer->narr_output_slope, na_output_slope );
-  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
-
-  transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float *) na_output->ptr, (float *) na_output_slope->ptr );
-
-  core_calc_output_deltas( mlp_layer->num_outputs, (float *) na_output->ptr,
-      (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
+  p_mlp_layer_calc_output_deltas( mlp_layer, val_target );
 
   return mlp_layer->narr_output_deltas;
 }

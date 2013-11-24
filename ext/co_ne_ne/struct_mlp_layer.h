@@ -48,4 +48,6 @@ void p_mlp_layer_backprop_deltas( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_inp
 
 void p_mlp_layer_update_weights( MLP_Layer *mlp_layer, float eta, float m );
 
+void p_mlp_layer_calc_output_deltas( MLP_Layer *mlp_layer, VALUE target );
+
 #endif
