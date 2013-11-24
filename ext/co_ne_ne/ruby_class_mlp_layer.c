@@ -475,7 +475,7 @@ void init_mlp_layer_class( VALUE parent_module ) {
   // Define modules and classes
   MLP = rb_define_module_under( parent_module, "MLP" );
   Layer = rb_define_class_under( MLP, "Layer", rb_cObject );
-  Network = rb_define_class_under( MLP, "ZNetwork", rb_cObject );
+  Network = rb_define_class_under( MLP, "Network", rb_cObject );
 
   // Layer instantiation and class methods
   rb_define_alloc_func( Layer, mlp_layer_alloc );

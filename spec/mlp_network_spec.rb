@@ -1,37 +1,37 @@
 require 'helpers'
 
-describe CoNeNe::MLP::ZNetwork do
+describe CoNeNe::MLP::Network do
   describe "class methods" do
     describe "#new" do
       it "creates a new network" do
-        CoNeNe::MLP::ZNetwork.new( 2, [], 1 ).should be_a CoNeNe::MLP::ZNetwork
-        CoNeNe::MLP::ZNetwork.new( 2, [4], 1 ).should be_a CoNeNe::MLP::ZNetwork
-        CoNeNe::MLP::ZNetwork.new( 2, [4,2], 1 ).should be_a CoNeNe::MLP::ZNetwork
+        CoNeNe::MLP::Network.new( 2, [], 1 ).should be_a CoNeNe::MLP::Network
+        CoNeNe::MLP::Network.new( 2, [4], 1 ).should be_a CoNeNe::MLP::Network
+        CoNeNe::MLP::Network.new( 2, [4,2], 1 ).should be_a CoNeNe::MLP::Network
       end
 
       it "does not create a new network if any params are missing or bad" do
-        expect { CoNeNe::MLP::ZNetwork.new( -2, [4], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( nil, [4], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( "a fish", [4], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( [4], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, 3, 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, ["z"], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, [-3], 1 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, [3,4], -81 ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, [3] ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, [3], nil ) }.to raise_error
-        expect { CoNeNe::MLP::ZNetwork.new( 2, [3], 'a frog' ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( -2, [4], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( nil, [4], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( "a fish", [4], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( [4], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, 3, 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, ["z"], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, [-3], 1 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, [3,4], -81 ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, [3] ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, [3], nil ) }.to raise_error
+        expect { CoNeNe::MLP::Network.new( 2, [3], 'a frog' ) }.to raise_error
       end
 
       it "creates a network with right number of Layers" do
-        network = CoNeNe::MLP::ZNetwork.new( 2, [], 1 )
+        network = CoNeNe::MLP::Network.new( 2, [], 1 )
         network.num_layers.should == 1
         network.layers.count.should == 1
         layer = network.layers.first
         layer.num_inputs.should == 2
         layer.num_outputs.should == 1
 
-        network = CoNeNe::MLP::ZNetwork.new( 2, [2], 1 )
+        network = CoNeNe::MLP::Network.new( 2, [2], 1 )
         network.num_layers.should == 2
         layer = network.layers.first
         layer.num_inputs.should == 2
@@ -40,7 +40,7 @@ describe CoNeNe::MLP::ZNetwork do
         layer.num_inputs.should == 2
         layer.num_outputs.should == 1
 
-        network = CoNeNe::MLP::ZNetwork.new( 2, [5,6,4,2], 1 )
+        network = CoNeNe::MLP::Network.new( 2, [5,6,4,2], 1 )
         network.num_layers.should == 5
         layers = network.layers
         [ [2,5], [5,6], [6,4], [4,2], [2,1] ].each do |xp_in, xp_out|
@@ -51,14 +51,14 @@ describe CoNeNe::MLP::ZNetwork do
       end
 
       it "creates a network with right number of inputs and outputs" do
-        network = CoNeNe::MLP::ZNetwork.new( 2, [], 1 )
+        network = CoNeNe::MLP::Network.new( 2, [], 1 )
         network.num_inputs.should == 2
         network.input.should be_nil
         network.num_outputs.should == 1
         network.output.should be_a NArray
         network.output.shape.should == [1]
 
-        network = CoNeNe::MLP::ZNetwork.new( 2, [7,3,2], 2 )
+        network = CoNeNe::MLP::Network.new( 2, [7,3,2], 2 )
         network.num_inputs.should == 2
         network.input.should be_nil
         network.num_outputs.should == 2
@@ -69,9 +69,9 @@ describe CoNeNe::MLP::ZNetwork do
   end
 
   describe "instance methods" do
-    let( :nn ) { CoNeNe::MLP::ZNetwork.new( 2, [4], 1 ) }
-    let( :nn2 ) { CoNeNe::MLP::ZNetwork.new( 2, [5,3], 1 ) }
-    let( :nn3 ) { CoNeNe::MLP::ZNetwork.new( 2, [4,3,2], 1 ) }
+    let( :nn ) { CoNeNe::MLP::Network.new( 2, [4], 1 ) }
+    let( :nn2 ) { CoNeNe::MLP::Network.new( 2, [5,3], 1 ) }
+    let( :nn3 ) { CoNeNe::MLP::Network.new( 2, [4,3,2], 1 ) }
     let( :xor_train_set ) {
       [
         [  NArray.cast( [-1.0, -1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
