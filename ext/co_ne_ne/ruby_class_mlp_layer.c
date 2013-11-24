@@ -52,7 +52,7 @@ void assert_value_wraps_mlp_layer( VALUE obj ) {
   }
 }
 
-void set_transfer_fn_from_symbol( MLP_Layer *mlp_layer , VALUE tfn_type ) {
+transfer_type transfer_fn_from_symbol( VALUE tfn_type ) {
   ID tfn_id;
 
   tfn_id = rb_intern("sigmoid");
@@ -64,14 +64,18 @@ void set_transfer_fn_from_symbol( MLP_Layer *mlp_layer , VALUE tfn_type ) {
   }
 
   if ( rb_intern("sigmoid") == tfn_id ) {
-    mlp_layer->transfer_fn = SIGMOID;
+    return SIGMOID;
   } else if ( rb_intern("tanh") == tfn_id ) {
-     mlp_layer->transfer_fn = TANH;
+    return TANH;
   } else if ( rb_intern("relu") == tfn_id ) {
-     mlp_layer->transfer_fn = RELU;
+    return RELU;
   } else {
     rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
   }
+}
+
+void set_transfer_fn_from_symbol( MLP_Layer *mlp_layer , VALUE tfn_type ) {
+  mlp_layer->transfer_fn = transfer_fn_from_symbol( tfn_type );
 }
 
 void assert_not_in_output_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
@@ -169,11 +173,10 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
 }
 
 VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
-  VALUE weights_in, tfn_type, new_mlp_layer_value;
+  VALUE weights_in, tfn_type;
   struct NARRAY *na_weights;
   volatile VALUE val_weights;
   int i, o;
-  MLP_Layer *mlp_layer;
 
   rb_scan_args( argc, argv, "11", &weights_in, &tfn_type );
 
@@ -193,15 +196,7 @@ VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
     rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", o );
   }
 
-  // Create and initialise new object
-  new_mlp_layer_value = mlp_layer_alloc( Layer );
-  mlp_layer = get_mlp_layer_struct( new_mlp_layer_value );
-  mlp_layer->num_inputs = i;
-  mlp_layer->num_outputs = o;
-  set_transfer_fn_from_symbol( mlp_layer, tfn_type );
-  p_mlp_layer_init_from_weights( mlp_layer, val_weights );
-
-  return new_mlp_layer_value;
+  return mlp_layer_new_ruby_object_from_weights( val_weights, transfer_fn_from_symbol( tfn_type ) );
 }
 
 VALUE mlp_layer_object_num_inputs( VALUE self ) {
