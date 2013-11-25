@@ -21,6 +21,7 @@ MLP_Layer *p_mlp_layer_create() {
   mlp_layer->narr_output_deltas = Qnil;
   mlp_layer->narr_weights_last_deltas = Qnil;
   mlp_layer->narr_output_slope = Qnil;
+  mlp_layer->locked_input = 0;
 
   return mlp_layer;
 }

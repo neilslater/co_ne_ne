@@ -17,6 +17,7 @@
 typedef struct _mlp_layer_raw {
     int num_inputs;
     int num_outputs;
+    int locked_input;
     transfer_type transfer_fn;
     VALUE narr_input;
     VALUE narr_output;

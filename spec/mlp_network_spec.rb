@@ -263,6 +263,24 @@ describe CoNeNe::MLP::Network do
         nn2.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0].should be_within(0.1).of 0.0
       end
     end
-
   end
+
+  describe "first layer" do
+    let( :nn ) { CoNeNe::MLP::Network.new( 2, [4], 1 ) }
+    let( :first_layer ) { nn.layers.first }
+    let( :second_layer ) { nn.layers.last }
+
+    it "does not accept a new input_layer" do
+      alt_layer = CoNeNe::MLP::Layer.new( 3, 2 )
+      expect { first_layer.attach_input_layer( alt_layer ) }.to raise_error
+    end
+
+    it "can be cloned, and the clone does accept a new input_layer" do
+      clone_of_first_layer = first_layer.clone
+      alt_layer = CoNeNe::MLP::Layer.new( 3, 2 )
+      expect { clone_of_first_layer.attach_input_layer( alt_layer ) }.to_not raise_error
+      expect { first_layer.attach_input_layer( alt_layer ) }.to raise_error
+    end
+  end
+
 end

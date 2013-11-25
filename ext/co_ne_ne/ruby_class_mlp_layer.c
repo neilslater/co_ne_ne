@@ -319,6 +319,10 @@ VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   MLP_Layer *mlp_old_output_layer, *mlp_old_input_layer;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
 
+  if ( mlp_layer->locked_input > 0 ) {
+    rb_raise( rb_eArgError, "Layer has been marked as 'first layer' and may not have another input layer attached." );
+  }
+
   assert_value_wraps_mlp_layer( new_input_layer );
   mlp_new_input_layer = get_mlp_layer_struct( new_input_layer );
 

@@ -31,8 +31,8 @@ void p_mlp_network_gc_mark( MLP_Network *mlp_network ) {
 
 void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *layer_sizes ) {
   MLP_Layer *mlp_layer, *mlp_layer_prev;
-  VALUE layer_object;
-  VALUE prev_layer_object;
+  volatile VALUE layer_object;
+  volatile VALUE prev_layer_object;
   int i;
 
   // build layers backwards
@@ -47,6 +47,8 @@ void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *laye
     mlp_layer_prev->output_layer = layer_object;
     layer_object = prev_layer_object;
   }
+  Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+  mlp_layer->locked_input = 1;
 
   mlp_network->first_layer = layer_object;
   return;

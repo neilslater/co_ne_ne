@@ -1,0 +1,17 @@
+CoNeNe TODOs:
+
+    Lock first layer in network, to prevent adding earlier layers
+
+    Factor training cycle et al to struct_mlp_network
+
+    Init network from array of layers (Ruby?)
+
+    Marshalling, for layers and network
+
+    Learning rate and momentum for network
+
+    Add concept of training set
+
+    Bulk training
+
+    Use SIMD for weight updates

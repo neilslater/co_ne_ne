@@ -25,8 +25,8 @@ void core_activate_layer_output( int in_size, int out_size,
 
     // Use SIMD for all the aligned values in groups of 4
     for ( j = 0; j < in_aligned_size; j +=4 ) {
-      simd_x = _mm_load_ps( in_ptr + j );
-      // Weights might not align to 16 bytes due to size of layers
+      // Unfortunately loadu is required, we just don't know the offset
+      simd_x = _mm_loadu_ps( in_ptr + j );
       simd_y = _mm_loadu_ps( weights + (offset + j) );
       simd_x = _mm_mul_ps( simd_x, simd_y );
       simd_t = _mm_add_ps( simd_x, simd_t );
@@ -88,6 +88,7 @@ void core_update_weights( float eta, float m, int in_size, int out_size,
   int i,j, offset;
   float wupdate;
 
+  // If j were the inner loop, this might be able to use SIMD
   for ( j = 0; j < out_size; j++ ) {
     offset = j * ( in_size + 1 );
     for ( i = 0; i < in_size; i++ ) {
