@@ -78,35 +78,19 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
 }
 
 VALUE mlp_network_object_num_layers( VALUE self ) {
-  int count = 0;
-  VALUE layer_object;
-  MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
-
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    count++;
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-  }
-
-  return INT2NUM( count );
+  return INT2NUM( p_mlp_network_count_layers( mlp_network ) );
 }
 
 VALUE mlp_network_object_layers( VALUE self ) {
-  int count = 0;
+  int num_layers, count;
   VALUE layer_object, all_layers;
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    count++;
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-  }
+  num_layers = p_mlp_network_count_layers( mlp_network );
 
-  all_layers = rb_ary_new2( count );
+  all_layers = rb_ary_new2( num_layers );
   count = 0;
   layer_object = mlp_network->first_layer;
   while ( ! NIL_P(layer_object) ) {
@@ -122,8 +106,6 @@ VALUE mlp_network_object_layers( VALUE self ) {
 VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
   float min_weight, max_weight;
-  VALUE layer_object;
-  MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
   rb_scan_args( argc, argv, "02", &minw, &maxw );
@@ -141,51 +123,26 @@ VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
     max_weight = 0.8;
   }
 
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    p_mlp_layer_init_weights( mlp_layer, min_weight, max_weight );
-    layer_object = mlp_layer->output_layer;
-  }
+  p_mlp_network_init_layer_weights( mlp_network, min_weight, max_weight );
 
   return Qnil;
 }
 
 VALUE mlp_network_object_num_outputs( VALUE self ) {
-  int count_outputs = 0;
-  VALUE layer_object;
-  MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
-
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    count_outputs = mlp_layer->num_outputs;
-    layer_object = mlp_layer->output_layer;
-  }
-
-  return INT2NUM( count_outputs );
+  return INT2NUM( p_mlp_network_num_outputs( mlp_network ) );
 }
 
 VALUE mlp_network_object_num_inputs( VALUE self ) {
-  MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
-
-  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
-  return INT2NUM( mlp_layer->num_inputs );
+  return INT2NUM( p_mlp_network_num_inputs( mlp_network ) );
 }
 
 VALUE mlp_network_object_output( VALUE self ) {
-  VALUE layer_object;
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-  }
-
+  mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
   return mlp_layer->narr_output;
 }
 
@@ -201,7 +158,6 @@ VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   volatile VALUE layer_object;
-  MLP_Layer *mlp_old_input_layer;
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
@@ -219,23 +175,9 @@ VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, mlp_layer->num_inputs );
   }
 
-  if ( ! NIL_P( mlp_layer->input_layer ) ) {
-    // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_old_input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
-  }
-
-  mlp_layer->narr_input = val_input;
-  mlp_layer->input_layer = Qnil;
-  p_mlp_layer_run( mlp_layer );
-
-  layer_object = mlp_layer->output_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-    p_mlp_layer_run( mlp_layer );
-  }
-
+  p_mlp_layer_set_input( mlp_layer, val_input );
+  p_mlp_network_run( mlp_network );
+  mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
   return mlp_layer->narr_output;
 }
 
@@ -243,7 +185,6 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
-  VALUE layer_object;
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
@@ -254,11 +195,7 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  layer_object = mlp_network->first_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-  }
+  mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
 
   if ( na_target->total != mlp_layer->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, mlp_layer->num_outputs );
@@ -268,7 +205,6 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
 
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
-
 
 
 VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
@@ -282,7 +218,6 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   volatile VALUE val_target;
   volatile VALUE layer_object;
 
-  MLP_Layer *mlp_old_input_layer;
   MLP_Layer *mlp_layer;
   MLP_Layer *mlp_layer_input;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
@@ -303,7 +238,6 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
     rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, mlp_layer->num_inputs );
   }
 
-
   ////////////////////////////////////////////////////////////////////////////////////
   // Check target is valid
   val_target = na_cast_object(target, NA_SFLOAT);
@@ -313,10 +247,7 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-  }
+  mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
 
   if ( na_target->total != mlp_layer->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, mlp_layer->num_outputs );
@@ -326,26 +257,15 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   // Attach input
   layer_object = mlp_network->first_layer;
   Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-  if ( ! NIL_P( mlp_layer->input_layer ) ) {
-    // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_old_input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
-  }
-  mlp_layer->narr_input = val_input;
-  mlp_layer->input_layer = Qnil;
+  p_mlp_layer_set_input( mlp_layer, val_input );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Run the network forward
-  p_mlp_layer_run( mlp_layer );
-  layer_object = mlp_layer->output_layer;
-  while ( ! NIL_P(layer_object) ) {
-    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-    layer_object = mlp_layer->output_layer;
-    p_mlp_layer_run( mlp_layer );
-  }
+  p_mlp_network_run( mlp_network );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Calculate delta on output
+  mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
   GetNArray( mlp_layer->narr_output, na_output );
   GetNArray( mlp_layer->narr_output_slope, na_output_slope );
   GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );

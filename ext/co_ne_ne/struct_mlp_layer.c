@@ -178,3 +178,18 @@ void p_mlp_layer_calc_output_deltas( MLP_Layer *mlp_layer, VALUE target ) {
 
   return;
 }
+
+void p_mlp_layer_set_input( MLP_Layer *mlp_layer, VALUE val_input ) {
+  MLP_Layer *mlp_old_input_layer;
+
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    // This layer has an existing input layer, it needs to stop pointing its output here
+    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_old_input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+
+  mlp_layer->narr_input = val_input;
+  mlp_layer->input_layer = Qnil;
+
+  return;
+}

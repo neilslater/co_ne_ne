@@ -51,4 +51,6 @@ void p_mlp_layer_update_weights( MLP_Layer *mlp_layer, float eta, float m );
 
 void p_mlp_layer_calc_output_deltas( MLP_Layer *mlp_layer, VALUE target );
 
+void p_mlp_layer_set_input( MLP_Layer *mlp_layer, VALUE val_input );
+
 #endif

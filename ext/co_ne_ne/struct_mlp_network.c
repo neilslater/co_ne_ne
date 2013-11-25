@@ -12,6 +12,8 @@ MLP_Network *p_mlp_network_create() {
   mlp_network = xmalloc( sizeof(MLP_Network) );
 
   mlp_network->first_layer = Qnil;
+  mlp_network->eta = 1.0;
+  mlp_network->momentum = 0.5;
 
   return mlp_network;
 }
@@ -52,4 +54,82 @@ void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *laye
 
   mlp_network->first_layer = layer_object;
   return;
+}
+
+int p_mlp_network_count_layers( MLP_Network *mlp_network ) {
+  int count = 0;
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    count++;
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return count;
+}
+
+void p_mlp_network_init_layer_weights( MLP_Network *mlp_network, float min_weight, float max_weight ) {
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    p_mlp_layer_init_weights( mlp_layer, min_weight, max_weight );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return;
+}
+
+int p_mlp_network_num_outputs( MLP_Network *mlp_network ) {
+  int count_outputs = 0;
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    count_outputs = mlp_layer->num_outputs;
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return count_outputs;
+}
+
+int p_mlp_network_num_inputs( MLP_Network *mlp_network ) {
+  MLP_Layer *mlp_layer;
+  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
+  return mlp_layer->num_inputs;
+}
+
+// This assumes input has been assigned already to first layer
+void p_mlp_network_run( MLP_Network *mlp_network ) {
+  volatile VALUE layer_object;
+  MLP_Layer *mlp_layer;
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    p_mlp_layer_run( mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return;
+}
+
+MLP_Layer *p_mlp_network_last_mlp_layer( MLP_Network *mlp_network ) {
+  VALUE layer_object;
+  MLP_Layer *mlp_layer;
+
+  layer_object = mlp_network->first_layer;
+  while ( ! NIL_P(layer_object) ) {
+    Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
+    layer_object = mlp_layer->output_layer;
+  }
+
+  return mlp_layer;
 }

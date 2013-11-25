@@ -288,7 +288,6 @@ VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
 VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
-  MLP_Layer *mlp_old_input_layer;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
@@ -302,14 +301,7 @@ VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, mlp_layer->num_inputs );
   }
 
-  if ( ! NIL_P( mlp_layer->input_layer ) ) {
-    // This layer has an existing input layer, it needs to stop pointing its output here
-    mlp_old_input_layer = get_mlp_layer_struct( mlp_layer->input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
-  }
-
-  mlp_layer->narr_input = val_input;
-  mlp_layer->input_layer = Qnil;
+  p_mlp_layer_set_input( mlp_layer, val_input );
 
   return val_input;
 }

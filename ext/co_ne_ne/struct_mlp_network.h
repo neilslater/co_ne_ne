@@ -15,6 +15,8 @@
 
 typedef struct _mlp_network_raw {
     VALUE first_layer; // Arrays of layers are inferred from connectivity
+    float eta;
+    float momentum;
   } MLP_Network;
 
 MLP_Network *p_mlp_network_create();
@@ -26,5 +28,17 @@ void p_mlp_network_destroy( MLP_Network *mlp_network );
 void p_mlp_network_gc_mark( MLP_Network *mlp_network );
 
 void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *layer_sizes );
+
+int p_mlp_network_count_layers( MLP_Network *mlp_network );
+
+void p_mlp_network_init_layer_weights( MLP_Network *mlp_network, float min_weight, float max_weight );
+
+int p_mlp_network_num_outputs( MLP_Network *mlp_network );
+
+int p_mlp_network_num_inputs( MLP_Network *mlp_network );
+
+void p_mlp_network_run( MLP_Network *mlp_network );
+
+MLP_Layer *p_mlp_network_last_mlp_layer( MLP_Network *mlp_network );
 
 #endif

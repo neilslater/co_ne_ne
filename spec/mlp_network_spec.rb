@@ -134,6 +134,12 @@ describe CoNeNe::MLP::Network do
         nn.output.should_not eq NArray.sfloat(1)
       end
 
+      it "returns the output object" do
+        result = nn.run( NArray.cast( [1.0, 0.0], 'sfloat' ) )
+        nn.output.should eq result
+        nn.output.should be result
+      end
+
       it "alters output of each layer" do
         CoNeNe.srand(900)
 
