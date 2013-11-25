@@ -133,3 +133,34 @@ MLP_Layer *p_mlp_network_last_mlp_layer( MLP_Network *mlp_network ) {
 
   return mlp_layer;
 }
+
+void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_target ) {
+  struct NARRAY *na_target;
+  struct NARRAY *na_output;
+  struct NARRAY *na_output_slope;
+  struct NARRAY *na_output_deltas;
+  MLP_Layer *mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
+
+  GetNArray( val_target, na_target );
+  GetNArray( mlp_layer->narr_output, na_output );
+  GetNArray( mlp_layer->narr_output_slope, na_output_slope );
+  GetNArray( mlp_layer->narr_output_deltas, na_output_deltas );
+
+  transfer_bulk_derivative_at( mlp_layer->transfer_fn, mlp_layer->num_outputs, (float *) na_output->ptr, (float *) na_output_slope->ptr );
+
+  core_calc_output_deltas( mlp_layer->num_outputs, (float *) na_output->ptr,
+      (float *) na_output_slope->ptr, (float *) na_target->ptr, (float *) na_output_deltas->ptr );
+
+  return;
+}
+
+void p_mlp_network_backprop_deltas( MLP_Network *mlp_network ) {
+  MLP_Layer *mlp_layer_input;
+  MLP_Layer *mlp_layer = p_mlp_network_last_mlp_layer( mlp_network );
+  while ( ! NIL_P(mlp_layer->input_layer) ) {
+    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_layer_input );
+    p_mlp_layer_backprop_deltas( mlp_layer, mlp_layer_input );
+    mlp_layer = mlp_layer_input;
+  }
+  return;
+}

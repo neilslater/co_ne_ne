@@ -41,4 +41,8 @@ void p_mlp_network_run( MLP_Network *mlp_network );
 
 MLP_Layer *p_mlp_network_last_mlp_layer( MLP_Network *mlp_network );
 
+void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_target );
+
+void p_mlp_network_backprop_deltas( MLP_Network *mlp_network );
+
 #endif
