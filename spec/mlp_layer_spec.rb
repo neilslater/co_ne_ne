@@ -160,6 +160,16 @@ describe CoNeNe::MLP::Layer do
         copy.input_layer.should be_nil
         copy.output_layer.should be_nil
       end
+
+      it "should copy the transfer function" do
+        layer2 = CoNeNe::MLP::Layer.new( 4, 3, :tanh )
+        copy = layer2.clone
+        copy.transfer.should be CoNeNe::Transfer::TanH
+
+        layer3 = CoNeNe::MLP::Layer.new( 4, 3, :relu )
+        copy = layer3.clone
+        copy.transfer.should be CoNeNe::Transfer::ReLU
+      end
     end
 
     describe "#init_weights" do

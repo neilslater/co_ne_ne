@@ -73,7 +73,8 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
 
 // Special initialize to support "clone"
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
-  rb_raise( rb_eArgError, "Cannot clone CoNeNe::MLP::Network (yet)." );
+
+
   return copy;
 }
 

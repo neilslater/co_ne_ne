@@ -45,6 +45,32 @@ VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn 
   return mlp_layer_ruby;
 }
 
+VALUE mlp_layer_clone_ruby_object( VALUE orig ) {
+  volatile VALUE copy;
+  MLP_Layer *mlp_layer_copy;
+  MLP_Layer *mlp_layer_orig;
+  mlp_layer_orig = get_mlp_layer_struct( orig );
+
+  copy =  mlp_layer_alloc( Layer );
+  mlp_layer_copy = get_mlp_layer_struct( copy );
+
+  mlp_layer_copy->num_inputs = mlp_layer_orig->num_inputs;
+  mlp_layer_copy->num_outputs = mlp_layer_orig->num_outputs;
+  mlp_layer_copy->transfer_fn = mlp_layer_orig->transfer_fn;
+
+  mlp_layer_copy->narr_input = Qnil;
+  mlp_layer_copy->input_layer = Qnil;
+  mlp_layer_copy->output_layer = Qnil;
+
+  mlp_layer_copy->narr_output = na_clone( mlp_layer_orig->narr_output );
+  mlp_layer_copy->narr_weights = na_clone( mlp_layer_orig->narr_weights );
+  mlp_layer_copy->narr_output_deltas = na_clone( mlp_layer_orig->narr_output_deltas );
+  mlp_layer_copy->narr_weights_last_deltas = na_clone( mlp_layer_orig->narr_weights_last_deltas );
+  mlp_layer_copy->narr_output_slope = na_clone( mlp_layer_orig->narr_output_slope );
+
+  return copy;
+}
+
 void assert_value_wraps_mlp_layer( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_mlp_layer_destroy) {
@@ -157,7 +183,7 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
 
   mlp_layer_copy->num_inputs = mlp_layer_orig->num_inputs;
   mlp_layer_copy->num_outputs = mlp_layer_orig->num_outputs;
-  mlp_layer_copy->transfer_fn = SIGMOID;
+  mlp_layer_copy->transfer_fn = mlp_layer_orig->transfer_fn;
 
   mlp_layer_copy->narr_input = Qnil;
   mlp_layer_copy->input_layer = Qnil;
