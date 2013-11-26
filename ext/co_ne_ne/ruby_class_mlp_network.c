@@ -217,7 +217,6 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   volatile VALUE layer_object;
 
   MLP_Layer *mlp_layer;
-  MLP_Layer *mlp_layer_input;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
   ////////////////////////////////////////////////////////////////////////////////////
@@ -252,37 +251,12 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   }
 
   ////////////////////////////////////////////////////////////////////////////////////
-  // Attach input
-  layer_object = mlp_network->first_layer;
-  Data_Get_Struct( layer_object, MLP_Layer, mlp_layer );
-  p_mlp_layer_set_input( mlp_layer, val_input );
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Run the network forward
-  p_mlp_network_run( mlp_network );
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Calculate delta on output
-  p_mlp_network_calc_output_deltas( mlp_network, val_target );
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Back-propagate delta
-  p_mlp_network_backprop_deltas( mlp_network );
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  // Adjust weights
-
-  while ( ! NIL_P(mlp_layer->output_layer) ) {
-    p_mlp_layer_update_weights( mlp_layer, 1.0, 0.5 );
-    Data_Get_Struct( mlp_layer->output_layer, MLP_Layer, mlp_layer );
-  }
-  p_mlp_layer_update_weights( mlp_layer, 1.0, 0.5 );
+  // Run the training
+  p_mlp_network_train_once( mlp_network, val_input, val_target );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Return ms_error
-
   GetNArray( mlp_layer->narr_output, na_output );
-
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 

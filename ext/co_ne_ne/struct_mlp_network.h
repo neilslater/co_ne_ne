@@ -45,4 +45,8 @@ void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_targe
 
 void p_mlp_network_backprop_deltas( MLP_Network *mlp_network );
 
+void p_mlp_network_update_weights( MLP_Network *mlp_network );
+
+void p_mlp_network_train_once( MLP_Network *mlp_network, VALUE val_input, VALUE val_target );
+
 #endif

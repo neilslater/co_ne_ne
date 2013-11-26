@@ -164,3 +164,42 @@ void p_mlp_network_backprop_deltas( MLP_Network *mlp_network ) {
   }
   return;
 }
+
+void p_mlp_network_update_weights( MLP_Network *mlp_network ) {
+  MLP_Layer *mlp_layer;
+  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
+
+  while ( ! NIL_P(mlp_layer->output_layer) ) {
+    p_mlp_layer_update_weights( mlp_layer, 1.0, 0.5 );
+    Data_Get_Struct( mlp_layer->output_layer, MLP_Layer, mlp_layer );
+  }
+  p_mlp_layer_update_weights( mlp_layer, mlp_network->eta, mlp_network->momentum );
+  return;
+}
+
+void p_mlp_network_train_once( MLP_Network *mlp_network, VALUE val_input, VALUE val_target ) {
+  MLP_Layer *mlp_layer;
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // Attach input
+  Data_Get_Struct( mlp_network->first_layer, MLP_Layer, mlp_layer );
+  p_mlp_layer_set_input( mlp_layer, val_input );
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // Run the network forward
+  p_mlp_network_run( mlp_network );
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // Calculate delta on output
+  p_mlp_network_calc_output_deltas( mlp_network, val_target );
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // Back-propagate delta
+  p_mlp_network_backprop_deltas( mlp_network );
+
+  ////////////////////////////////////////////////////////////////////////////////////
+  // Adjust weights
+  p_mlp_network_update_weights( mlp_network );
+
+  return;
+}
