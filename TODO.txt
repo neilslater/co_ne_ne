@@ -1,7 +1,5 @@
 CoNeNe TODOs:
 
-    Clone a network
-
     Init network from first layer
 
     Init network from array of layers (in Ruby?)
@@ -24,3 +22,5 @@ CoNeNe DONE:
     Lock first layer in network, to prevent adding earlier layers
 
     Factor training cycle et al to struct_mlp_network
+
+    Clone a network

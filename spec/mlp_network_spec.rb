@@ -81,6 +81,37 @@ describe CoNeNe::MLP::Network do
       ]
     }
 
+    describe "#clone" do
+      it "makes a deep copy of all connected layers" do
+        nn_copy = nn.clone
+        nn_copy.should_not be nn
+        nn_copy.num_inputs.should == 2
+        nn_copy.num_outputs.should == 1
+        nn_copy.num_layers.should == 2
+        orig_layers = nn.layers
+        copy_layers = nn_copy.layers
+        copy_layers[0].weights.should_not be orig_layers[0].weights
+        copy_layers[0].weights.should be_narray_like orig_layers[0].weights
+        copy_layers[1].weights.should_not be orig_layers[1].weights
+        copy_layers[1].weights.should be_narray_like orig_layers[1].weights
+      end
+
+      it "creates a network that outputs same result for same inputs" do
+        inputs =  [ NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [-1.0, -1.0], 'sfloat' ),
+                    NArray.cast( [0.4, 0.9], 'sfloat' ), NArray.cast( [-0.7, -0.9], 'sfloat' ),
+                    NArray.cast( [0.5, 0.5], 'sfloat' ), NArray.cast( [-0.5, -0.6], 'sfloat' ),
+                    NArray.cast( [0.0, 1.0], 'sfloat' ), NArray.cast( [-1.3, -1.4], 'sfloat' ) ]
+        nn_copy = nn.clone
+
+        inputs.each do |i|
+          r1 = nn.run( i )
+          r2 = nn_copy.run( i )
+          r1.should_not be r2
+          r1.should be_narray_like r2
+        end
+      end
+    end
+
     describe "#init_weights" do
       before :each do
         CoNeNe.srand(900)

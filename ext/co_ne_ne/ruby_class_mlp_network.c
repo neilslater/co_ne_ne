@@ -73,7 +73,43 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
 
 // Special initialize to support "clone"
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
+  MLP_Network *mlp_network_copy;
+  MLP_Network *mlp_network_orig;
+  volatile VALUE orig_layer;
+  volatile VALUE copy_layer;
+  volatile VALUE copy_layer_prev;
+  MLP_Layer *mlp_layer_orig;
+  MLP_Layer *mlp_layer_copy;
+  MLP_Layer *mlp_layer_copy_prev;
 
+  if (copy == orig) return copy;
+  mlp_network_copy = get_mlp_network_struct( copy );
+  mlp_network_orig = get_mlp_network_struct( orig );
+  mlp_network_copy->eta = mlp_network_orig->eta;
+  mlp_network_copy->momentum = mlp_network_orig->momentum;
+
+  // Copy first layer
+  orig_layer = mlp_network_orig->first_layer;
+  copy_layer = mlp_layer_clone_ruby_object( orig_layer );
+  mlp_network_copy->first_layer = copy_layer;
+  Data_Get_Struct( orig_layer, MLP_Layer, mlp_layer_orig );
+  Data_Get_Struct( copy_layer, MLP_Layer, mlp_layer_copy_prev );
+  copy_layer_prev = copy_layer;
+
+  // Copy and attach each layer in turn
+  while ( ! NIL_P(mlp_layer_orig->output_layer) ) {
+    orig_layer = mlp_layer_orig->output_layer;
+    copy_layer = mlp_layer_clone_ruby_object( orig_layer );
+    Data_Get_Struct( orig_layer, MLP_Layer, mlp_layer_orig );
+    Data_Get_Struct( copy_layer, MLP_Layer, mlp_layer_copy );
+
+    mlp_layer_copy_prev->output_layer = copy_layer;
+    mlp_layer_copy->input_layer = copy_layer_prev;
+    mlp_layer_copy->narr_input = mlp_layer_copy_prev->narr_output;
+
+    copy_layer_prev = copy_layer;
+    mlp_layer_copy_prev = mlp_layer_copy;
+  }
 
   return copy;
 }
