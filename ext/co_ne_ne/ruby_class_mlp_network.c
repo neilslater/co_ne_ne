@@ -323,6 +323,43 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
+VALUE mlp_network_object_learning_rate( VALUE self ) {
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  return FLT2NUM( mlp_network->eta );
+}
+
+VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
+  float new_eta;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  new_eta = NUM2FLT( new_learning_rate );
+  if ( new_eta < 1.0e-6 || new_eta > 1000.0 ) {
+    rb_raise( rb_eArgError, "Learning rate %0.f out of bounds (0.000001 to 1000.0)", new_eta );
+  }
+
+  mlp_network->eta = new_eta;
+
+  return FLT2NUM( mlp_network->eta );
+}
+
+VALUE mlp_network_object_momentum( VALUE self ) {
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  return FLT2NUM( mlp_network->momentum );
+}
+
+VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
+  float new_momentum;
+  MLP_Network *mlp_network = get_mlp_network_struct( self );
+
+  new_momentum = NUM2FLT( val_momentum );
+  if ( new_momentum < 0.0 || new_momentum > 0.9 ) {
+    rb_raise( rb_eArgError, "Momentum %0.f out of bounds (0.0 to 0.9)", new_momentum );
+  }
+
+  mlp_network->momentum = new_momentum;
+  return FLT2NUM( mlp_network->momentum );
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_network_class( VALUE parent_module ) {
@@ -338,6 +375,10 @@ void init_mlp_network_class( VALUE parent_module ) {
   rb_define_method( Network, "input", mlp_network_object_input, 0 );
   rb_define_method( Network, "output", mlp_network_object_output, 0 );
   rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
+  rb_define_method( Network, "learning_rate", mlp_network_object_learning_rate, 0 );
+  rb_define_method( Network, "momentum", mlp_network_object_momentum, 0 );
+  rb_define_method( Network, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
+  rb_define_method( Network, "momentum=", mlp_network_object_set_momentum, 1 );
 
   // Network methods
   rb_define_method( Network, "init_weights", mlp_network_object_init_weights, -1 );
