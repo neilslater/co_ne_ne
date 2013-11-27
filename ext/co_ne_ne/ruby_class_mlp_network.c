@@ -29,6 +29,22 @@ void assert_value_wraps_mlp_network( VALUE obj ) {
   }
 }
 
+VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum ) {
+  MLP_Network *mlp_network;
+  MLP_Layer *mlp_layer;
+  volatile VALUE mlp_network_ruby = mlp_network_alloc( Network );
+  mlp_network = get_mlp_network_struct( mlp_network_ruby );
+  Data_Get_Struct( layer, MLP_Layer, mlp_layer );
+
+  p_mlp_layer_clear_input( mlp_layer );
+  mlp_layer->locked_input = 1;
+  mlp_network->first_layer = layer;
+  mlp_network->eta = eta;
+  mlp_network->momentum = momentum;
+
+  return mlp_network_ruby;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Layer method definitions
@@ -112,6 +128,16 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   }
 
   return copy;
+}
+
+VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
+  MLP_Layer *mlp_layer;
+  assert_value_wraps_mlp_layer( layer );
+  Data_Get_Struct( layer, MLP_Layer, mlp_layer );
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    rb_raise( rb_eArgError, "Cannot create network from layer with an attached input layer." );
+  }
+  return mlp_network_new_ruby_object_from_layer( layer, 1.0, 0.5 );
 }
 
 VALUE mlp_network_object_num_layers( VALUE self ) {
@@ -318,4 +344,5 @@ void init_mlp_network_class( VALUE parent_module ) {
   rb_define_method( Network, "run", mlp_network_object_run, 1 );
   rb_define_method( Network, "ms_error", mlp_network_object_ms_error, 1 );
   rb_define_method( Network, "train_once", mlp_network_object_train_once, 2 );
+  rb_define_singleton_method( Network, "from_layer", mlp_network_class_from_layer, 1 );
 }

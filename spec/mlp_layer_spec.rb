@@ -48,28 +48,6 @@ describe CoNeNe::MLP::Layer do
         layer = CoNeNe::MLP::Layer.new( 7, 2, :relu )
         layer.transfer.should be CoNeNe::Transfer::ReLU
       end
-
-      it "plays nicely with Ruby's garbage collection" do
-        number_of_layers = 50000
-
-        CoNeNe.srand(800)
-        layer = CoNeNe::MLP::Layer.new( 10, 5 )
-        new_layer = nil
-        number_of_layers.times do
-          new_layer = CoNeNe::MLP::Layer.new( rand(100)+1, rand(50)+1 )
-        end
-        GC.start
-        sleep 0.5
-        layer.output.should be_a NArray
-        layer.weights.should be_a NArray
-        layer.weights[2,1].should be_within(0.000001).of -0.181608
-        number_of_layers.times do
-          layer = CoNeNe::MLP::Layer.new( rand(100)+1, rand(50)+1 )
-        end
-        sleep 0.5
-        new_layer.output.should be_a NArray
-        new_layer.weights.should be_a NArray
-      end
     end
 
     describe "#from_weights" do

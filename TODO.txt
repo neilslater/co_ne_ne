@@ -1,9 +1,5 @@
 CoNeNe TODOs:
 
-    Init network from first layer
-
-    Init network from array of layers (in Ruby?)
-
     Marshalling, for layers and network
 
     Learning rate and momentum for network
@@ -16,6 +12,8 @@ CoNeNe TODOs:
 
     Use SIMD for weight updates
 
+    Layer.clear_input (?)
+
 
 CoNeNe DONE:
 
@@ -24,3 +22,9 @@ CoNeNe DONE:
     Factor training cycle et al to struct_mlp_network
 
     Clone a network
+
+    Fill starting NArrays with 0.0
+
+    Init network from first layer
+
+    Init network from array of layers (in Ruby)

@@ -33,12 +33,23 @@ void p_mlp_layer_new_narrays( MLP_Layer *mlp_layer ) {
 
   shape[0] = mlp_layer->num_outputs;
   mlp_layer->narr_output = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  GetNArray( mlp_layer->narr_output, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
+
   mlp_layer->narr_output_deltas = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  GetNArray( mlp_layer->narr_output_deltas, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
+
   mlp_layer->narr_output_slope = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  GetNArray( mlp_layer->narr_output_slope, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   shape[0] = mlp_layer->num_inputs + 1;
   shape[1] = mlp_layer->num_outputs;
   mlp_layer->narr_weights = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+  GetNArray( mlp_layer->narr_weights, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
+
   mlp_layer->narr_weights_last_deltas = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( mlp_layer->narr_weights_last_deltas, narr );
   na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
@@ -189,6 +200,21 @@ void p_mlp_layer_set_input( MLP_Layer *mlp_layer, VALUE val_input ) {
   }
 
   mlp_layer->narr_input = val_input;
+  mlp_layer->input_layer = Qnil;
+
+  return;
+}
+
+void p_mlp_layer_clear_input( MLP_Layer *mlp_layer ) {
+  MLP_Layer *mlp_old_input_layer;
+
+  if ( ! NIL_P( mlp_layer->input_layer ) ) {
+    // This layer has an existing input layer, it needs to stop pointing its output here
+    Data_Get_Struct( mlp_layer->input_layer, MLP_Layer, mlp_old_input_layer );
+    mlp_old_input_layer->output_layer = Qnil;
+  }
+
+  mlp_layer->narr_input = Qnil;
   mlp_layer->input_layer = Qnil;
 
   return;

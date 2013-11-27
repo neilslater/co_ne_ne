@@ -66,6 +66,73 @@ describe CoNeNe::MLP::Network do
         network.output.shape.should == [2]
       end
     end
+
+    describe "#from_layer" do
+      let( :layer ) { CoNeNe::MLP::Layer.new( 5, 3, :tanh ) }
+
+      it "creates a new network" do
+        CoNeNe::MLP::Network.from_layer( layer ).should be_a CoNeNe::MLP::Network
+      end
+
+      it "uses layer 'as-is'" do
+        network = CoNeNe::MLP::Network.from_layer( layer )
+        network.layers[0].should be layer
+      end
+
+      it "uses a layer with an attached output layer" do
+        layer.attach_output_layer( CoNeNe::MLP::Layer.new( 3, 2, :sigmoid ) )
+        network = CoNeNe::MLP::Network.from_layer( layer )
+        network.num_layers.should == 2
+        network.num_outputs.should == 2
+      end
+
+      it "refuses to use a layer with an attached input layer" do
+        layer.attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) )
+        expect { CoNeNe::MLP::Network.from_layer( layer ) }.to raise_error
+      end
+
+      it "locks first layer inputs" do
+        network = CoNeNe::MLP::Network.from_layer( layer )
+        expect { layer.attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
+        layer.attach_output_layer( CoNeNe::MLP::Layer.new( 3, 2, :sigmoid ) )
+        network.num_layers.should == 2
+        network.num_outputs.should == 2
+      end
+    end
+
+    describe "#from_layers" do
+      let( :layers ) {  [ CoNeNe::MLP::Layer.new( 5, 3, :tanh ),
+              CoNeNe::MLP::Layer.new( 3, 2, :sigmoid ) ] }
+
+      it "creates a new network" do
+        CoNeNe::MLP::Network.from_layers( layers ).should be_a CoNeNe::MLP::Network
+      end
+
+      it "uses layer objects directly" do
+        network = CoNeNe::MLP::Network.from_layers( layers )
+        network.layers[0].should be layers[0]
+        network.layers[1].should be layers[1]
+        network.num_layers.should == 2
+        network.num_outputs.should == 2
+      end
+
+      it "re-assigns input" do
+        layers[0].attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) )
+        network = CoNeNe::MLP::Network.from_layers( layers )
+        network.layers[0].should be layers[0]
+        network.layers[1].should be layers[1]
+        network.num_layers.should == 2
+        network.num_outputs.should == 2
+      end
+
+      it "locks first layer inputs" do
+        network = CoNeNe::MLP::Network.from_layers( layers )
+        expect { layers[0].attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
+        layers[1].attach_output_layer( CoNeNe::MLP::Layer.new( 2, 1, :sigmoid ) )
+        network.num_layers.should == 3
+        network.num_outputs.should == 1
+      end
+    end
   end
 
   describe "instance methods" do
@@ -96,7 +163,7 @@ describe CoNeNe::MLP::Network do
         copy_layers[1].weights.should be_narray_like orig_layers[1].weights
       end
 
-      it "creates a network that outputs same result for same inputs" do
+      it "clones run behaviour of the network" do
         inputs =  [ NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [-1.0, -1.0], 'sfloat' ),
                     NArray.cast( [0.4, 0.9], 'sfloat' ), NArray.cast( [-0.7, -0.9], 'sfloat' ),
                     NArray.cast( [0.5, 0.5], 'sfloat' ), NArray.cast( [-0.5, -0.6], 'sfloat' ),
