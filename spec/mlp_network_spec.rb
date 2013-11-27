@@ -94,6 +94,7 @@ describe CoNeNe::MLP::Network do
       it "locks first layer inputs" do
         network = CoNeNe::MLP::Network.from_layer( layer )
         expect { layer.attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 7, 5, :tanh ).attach_output_layer( layer ) }.to raise_error
         layer.attach_output_layer( CoNeNe::MLP::Layer.new( 3, 2, :sigmoid ) )
         network.num_layers.should == 2
         network.num_outputs.should == 2
@@ -128,9 +129,45 @@ describe CoNeNe::MLP::Network do
       it "locks first layer inputs" do
         network = CoNeNe::MLP::Network.from_layers( layers )
         expect { layers[0].attach_input_layer( CoNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
+        expect { CoNeNe::MLP::Layer.new( 7, 5, :tanh ).attach_output_layer( layers[0] ) }.to raise_error
         layers[1].attach_output_layer( CoNeNe::MLP::Layer.new( 2, 1, :sigmoid ) )
         network.num_layers.should == 3
         network.num_outputs.should == 1
+      end
+    end
+
+    describe "with Marshal" do
+      before do
+        @orig_network = CoNeNe::MLP::Network.new( 2, [4], 1 )
+        @saved_network = Marshal.dump( @orig_network )
+        @copy_network =  Marshal.load( @saved_network )
+      end
+
+      it "can save and retrieve a network, preserving weights" do
+        @copy_network.should_not be @orig_network
+        @copy_network.num_inputs.should == 2
+        @copy_network.num_outputs.should == 1
+        @copy_network.num_layers.should == 2
+        orig_layers = @orig_network.layers
+        copy_layers = @copy_network.layers
+        copy_layers[0].weights.should_not be orig_layers[0].weights
+        copy_layers[0].weights.should be_narray_like orig_layers[0].weights
+        copy_layers[1].weights.should_not be orig_layers[1].weights
+        copy_layers[1].weights.should be_narray_like orig_layers[1].weights
+      end
+
+      it "restores behaviour of the network" do
+        inputs =  [ NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [-1.0, -1.0], 'sfloat' ),
+                    NArray.cast( [0.4, 0.9], 'sfloat' ), NArray.cast( [-0.7, -0.9], 'sfloat' ),
+                    NArray.cast( [0.5, 0.5], 'sfloat' ), NArray.cast( [-0.5, -0.6], 'sfloat' ),
+                    NArray.cast( [0.0, 1.0], 'sfloat' ), NArray.cast( [-1.3, -1.4], 'sfloat' ) ]
+
+        inputs.each do |i|
+          r1 = @orig_network.run( i )
+          r2 = @copy_network.run( i )
+          r1.should_not be r2
+          r1.should be_narray_like r2
+        end
       end
     end
   end

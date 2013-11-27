@@ -379,6 +379,10 @@ VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer )
   assert_value_wraps_mlp_layer( new_output_layer );
   mlp_new_output_layer = get_mlp_layer_struct( new_output_layer );
 
+  if ( mlp_new_output_layer->locked_input > 0 ) {
+    rb_raise( rb_eArgError, "Target layer has been marked as 'first layer' and may not have another input layer attached." );
+  }
+
   if ( mlp_new_output_layer->num_inputs != mlp_layer->num_outputs ) {
     rb_raise( rb_eArgError, "Output layer input size %d does not match layer output size %d", mlp_new_output_layer->num_inputs, mlp_layer->num_outputs );
   }

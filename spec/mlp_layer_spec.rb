@@ -94,6 +94,21 @@ describe CoNeNe::MLP::Layer do
         expect { CoNeNe::MLP::Layer.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
       end
     end
+
+    describe "with Marshal" do
+      it "can save and retrieve a layer, preserving weights and transfer function" do
+        orig_layer = CoNeNe::MLP::Layer.new( 5, 3, :sigmoid )
+        saved = Marshal.dump( orig_layer )
+        copy_layer = Marshal.load( saved )
+
+        copy_layer.should_not be orig_layer
+        copy_layer.num_inputs.should == 5
+        copy_layer.num_outputs.should == 3
+        copy_layer.transfer.should be CoNeNe::Transfer::Sigmoid
+        copy_layer.weights.should be_narray_like orig_layer.weights
+      end
+    end
+
   end
 
   describe "instance methods" do
