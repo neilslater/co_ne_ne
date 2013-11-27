@@ -216,6 +216,56 @@ describe CoNeNe::MLP::Network do
       end
     end
 
+    describe "#learning_rate" do
+      it "has a default value of 1.0" do
+        nn.learning_rate.should == 1.0
+        nn2.learning_rate.should == 1.0
+        nn3.learning_rate.should == 1.0
+      end
+    end
+
+    describe "#learning_rate=" do
+      it "sets new value" do
+        nn.learning_rate = 0.1
+        nn.learning_rate.should be_within(1.0e-7).of 0.1
+      end
+
+      it "does not set values below 1.0e-6 or greater than 1000.0" do
+        expect { nn.learning_rate = 9.0e-7 }.to raise_error
+        nn.learning_rate.should == 1.0
+        expect { nn.learning_rate = 1001 }.to raise_error
+        nn.learning_rate.should == 1.0
+      end
+    end
+
+    describe "#momentum" do
+      it "has a default value of 0.5" do
+        nn.momentum.should == 0.5
+        nn2.momentum.should == 0.5
+        nn3.momentum.should == 0.5
+      end
+    end
+
+    describe "#momentum=" do
+      it "sets new value" do
+        nn.momentum = 0.1
+        nn.momentum.should be_within(1.0e-7).of 0.1
+
+        nn.momentum = 0.0
+        nn.momentum.should be_within(1.0e-7).of 0.0
+
+        nn.momentum = 0.9
+        nn.momentum.should be_within(1.0e-7).of 0.9
+      end
+
+      it "does not set values below 0.0 or greater than 0.9" do
+        expect { nn.momentum = -0.01 }.to raise_error
+        nn.momentum.should == 0.5
+        expect { nn.momentum = 0.91 }.to raise_error
+        nn.momentum.should == 0.5
+      end
+    end
+
     describe "#init_weights" do
       before :each do
         CoNeNe.srand(900)
