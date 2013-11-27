@@ -169,6 +169,15 @@ describe CoNeNe::MLP::Network do
           r1.should be_narray_like r2
         end
       end
+
+      it "copies learning_rate and momentum" do
+        @orig_network.learning_rate = 0.3
+        @orig_network.momentum = 0.45
+        @saved_network = Marshal.dump( @orig_network )
+        @copy_network =  Marshal.load( @saved_network )
+        @copy_network.learning_rate.should be_within(1.0e-7).of 0.3
+        @copy_network.momentum.should be_within(1.0e-7).of 0.45
+      end
     end
   end
 
@@ -213,6 +222,14 @@ describe CoNeNe::MLP::Network do
           r1.should_not be r2
           r1.should be_narray_like r2
         end
+      end
+
+      it "copies learning_rate and momentum" do
+        nn.learning_rate = 0.35
+        nn.momentum = 0.65
+        nn_copy = nn.clone
+        nn_copy.learning_rate.should be_within(1.0e-7).of 0.35
+        nn_copy.momentum.should be_within(1.0e-7).of 0.65
       end
     end
 

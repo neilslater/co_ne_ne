@@ -94,13 +94,18 @@ class CoNeNe::MLP::Network
   def to_h
     Hash[
       :layers => self.layers.map { |l| l.to_h },
+      :lr => self.learning_rate,
+      :momentum => self.momentum,
     ]
   end
 
   def self.from_h h
     hashed_layers = h[:layers]
     restored_layers = hashed_layers.map { |lhash| CoNeNe::MLP::Layer.from_h( lhash ) }
-    CoNeNe::MLP::Network.from_layers( restored_layers )
+    network = CoNeNe::MLP::Network.from_layers( restored_layers )
+    network.learning_rate = h[:lr]
+    network.momentum = h[:momentum]
+    network
   end
 
   # @!visibility private
