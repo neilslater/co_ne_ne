@@ -1,7 +1,5 @@
 CoNeNe TODOs:
 
-    Learning rate and momentum for network
-
     YARD docs
 
     Add concept of training set
@@ -28,3 +26,5 @@ CoNeNe DONE:
     Init network from array of layers (in Ruby)
 
     Marshalling, for layers and network
+
+    Learning rate and momentum for network
