@@ -12,11 +12,11 @@ VALUE Sigmoid = Qnil;
 VALUE TanH = Qnil;
 VALUE ReLU = Qnil;
 
-/*
- * Document-module:  CoNeNe::Transfer::Sigmoid
+/* Document-module:  CoNeNe::Transfer::Sigmoid
  *
  * This is a tried-and-tested transfer function which has desirable properties
- * for backpropagation training.
+ * for backpropagation training. It returns from -1.0 at minus infinity and
+ * +1.0 at positive infinity.
  */
 
 /* @overload function( x )
@@ -48,17 +48,39 @@ static VALUE sigmoid_bulk_apply_function( VALUE self, VALUE r_narr ) {
   return val_a;
 }
 
+/* @overload derivative( x )
+ * Calculates value of dy/dx of sigmoid function, given x.
+ * @param [Float] x
+ * @return [Float] dy/dx, always between 0.0 and 0.5
+ */
 static VALUE sigmoid_derivative( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_sigmoid_derivative( x ) );
 }
 
+/* @overload derivative_at( y )
+ * Calculates value of dy/dx of sigmoid function, given x.
+ * @param [Float] y
+ * @return [Float] dy/dx, always between 0.0 and 0.5
+ */
 static VALUE sigmoid_derivative_at( VALUE self, VALUE r_y ) {
   float y = NUM2FLT( r_y );
   return FLT2NUM( raw_sigmoid_derivative_at( y ) );
 }
 
+/* Document-module:  CoNeNe::Transfer::TanH
+ *
+ * This is a tried-and-tested transfer function which has desirable properties
+ * for backpropagation training. It returns from -1.0 at minus infinity and
+ * +1.0 at positive infinity.
+ */
 
+/* @overload function( x )
+ * Calculates value of
+ *     y =  2.0 / (1.0 + exp(-2*x) ) ) - 1.0
+ * @param [Float] x
+ * @return [Float] y, always between 0.0 and 1.0
+ */
 static VALUE tanh_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_tanh_function( x ) );
@@ -86,6 +108,11 @@ static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_tanh_derivative_at( y ) );
 }
 
+/* Document-module:  CoNeNe::Transfer::ReLU
+ *
+ * ReLU stands for "Rectifiled Linear Unit". It returns 0.0 for negative input
+ * and y = x for positive values.
+ */
 
 static VALUE relu_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
