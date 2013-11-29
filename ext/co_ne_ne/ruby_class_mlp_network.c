@@ -362,7 +362,7 @@ VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_mlp_network_class( VALUE parent_module ) {
+void init_mlp_network_class( ) {
   // Layer instantiation and class methods
   rb_define_alloc_func( Network, mlp_network_alloc );
   rb_define_method( Network, "initialize", mlp_network_class_initialize, 3 );

@@ -16,7 +16,7 @@
 #include "core_narray.h"
 #include "core_transfer_functions.h"
 
-void init_transfer_module( VALUE parent_module );
+void init_transfer_module();
 
 extern VALUE Transfer;
 extern VALUE Sigmoid;

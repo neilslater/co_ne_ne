@@ -129,8 +129,8 @@ void init_module_co_ne_ne() {
   rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
   rb_define_singleton_method( CoNeNe, "srand", mt_srand, 1 );
   rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
-  init_transfer_module( CoNeNe );
-  init_mlp_layer_class( CoNeNe );
-  init_mlp_network_class( CoNeNe );
+  init_transfer_module();
+  init_mlp_layer_class();
+  init_mlp_network_class();
   init_srand_by_time();
 }

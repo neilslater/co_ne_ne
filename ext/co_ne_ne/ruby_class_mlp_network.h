@@ -14,6 +14,6 @@
 #include "ruby_module_transfer.h"
 #include "ruby_class_mlp_layer.h"
 
-void init_mlp_network_class( VALUE parent );
+void init_mlp_network_class( );
 
 #endif

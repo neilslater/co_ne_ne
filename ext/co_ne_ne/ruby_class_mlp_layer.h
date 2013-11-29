@@ -13,7 +13,7 @@
 #include "struct_mlp_layer.h"
 #include "ruby_module_transfer.h"
 
-void init_mlp_layer_class( VALUE parent );
+void init_mlp_layer_class();
 VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn );
 VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn );
 VALUE mlp_layer_clone_ruby_object( VALUE orig );

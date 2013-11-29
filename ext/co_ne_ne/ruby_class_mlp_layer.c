@@ -507,9 +507,11 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_mlp_layer_class( VALUE parent_module ) {
+void init_mlp_layer_class( ) {
+  volatile VALUE conene_root = rb_define_module( "CoNeNe" );
+
   // Define modules and classes
-  MLP = rb_define_module_under( parent_module, "MLP" );
+  MLP = rb_define_module_under( conene_root, "MLP" );
   Layer = rb_define_class_under( MLP, "Layer", rb_cObject );
   Network = rb_define_class_under( MLP, "Network", rb_cObject );
 

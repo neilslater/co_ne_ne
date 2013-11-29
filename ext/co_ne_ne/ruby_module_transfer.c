@@ -12,11 +12,30 @@ VALUE Sigmoid = Qnil;
 VALUE TanH = Qnil;
 VALUE ReLU = Qnil;
 
+/*
+ * Document-module:  CoNeNe::Transfer::Sigmoid
+ *
+ * This is a tried-and-tested transfer function which has desirable properties
+ * for backpropagation training.
+ */
+
+/* @overload function( x )
+ * Calculates value of
+ *     y = 1.0 / ( 1.0 + exp( -x ) )
+ * @param [Float] x
+ * @return [Float] y, always between 0.0 and 1.0
+ */
 static VALUE sigmoid_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_sigmoid_function( x ) );
 }
 
+
+/* @overload bulk_apply_function( narray )
+ * Maps an array of values. Converts arrays of single-precision floats in-place.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values, will be same object as narray if single-precision.
+ */
 static VALUE sigmoid_bulk_apply_function( VALUE self, VALUE r_narr ) {
   struct NARRAY *na_a;
   volatile VALUE val_a;
@@ -97,8 +116,10 @@ static VALUE relu_derivative_at( VALUE self, VALUE r_y ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_transfer_module( VALUE parent_module ) {
-  Transfer = rb_define_module_under( parent_module, "Transfer" );
+void init_transfer_module( ) {
+  volatile VALUE conene_root = rb_define_module( "CoNeNe" );
+
+  Transfer = rb_define_module_under( conene_root, "Transfer" );
 
   Sigmoid = rb_define_module_under( Transfer, "Sigmoid" );
   rb_define_singleton_method( Sigmoid, "function", sigmoid_function, 1 );
