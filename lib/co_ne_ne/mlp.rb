@@ -45,19 +45,25 @@ class NArray
 end
 
 module CoNeNe::Transfer::Sigmoid
-  def self.to_sym
+  # Short name for Sigmoid transfer function, used as a parameter to some methods.
+  # @return [Symbol] :sigmoid
+  def self.label
     :sigmoid
   end
 end
 
 module CoNeNe::Transfer::TanH
-  def self.to_sym
+  # Short name for TanH transfer function, used as a parameter to some methods.
+  # @return [Symbol] :tanh
+  def self.label
     :tanh
   end
 end
 
 module CoNeNe::Transfer::ReLU
-  def self.to_sym
+  # Short name for ReLU transfer function, used as a parameter to some methods.
+  # @return [Symbol] :tanh
+  def self.label
     :relu
   end
 end
@@ -68,7 +74,7 @@ class CoNeNe::MLP::Layer
   def to_h
     Hash[
       :weights => self.weights,
-      :transfer => self.transfer.to_sym,
+      :transfer => self.transfer.label,
     ]
   end
 

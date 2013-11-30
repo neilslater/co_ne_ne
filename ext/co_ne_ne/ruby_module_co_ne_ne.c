@@ -113,7 +113,6 @@ static VALUE mt_srand( VALUE self, VALUE seed ) {
   return Qnil;
 }
 
-
 /* @overload rand( )
  * @!visibility private
  * Use the random number generator (Ruby binding only used for tests)
