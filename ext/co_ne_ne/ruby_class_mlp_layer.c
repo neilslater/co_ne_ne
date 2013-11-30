@@ -141,11 +141,30 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
   return mlp_layer_ruby;
 }
 
+
+/* Document-module:  CoNeNe::MLP::Layer
+ *
+ * An object of this class represents a layer in a fully connected feed-forward network,
+ * with inputs, weights and outputs. The inputs and outputs may be shared with other
+ * layers by attaching the layers together. This can be done at any time.
+ *
+ * A layer may only be connected to a single input and output at any one time. Making a
+ * new attachment will remove existing attachments that conflict. The first layer in a network
+ * may not have a new input layer attached.
+ */
+
 //////////////////////////////////////////////////////////////////////////////////////
 //
 //  Layer method definitions
 //
 
+/* @overload initialize( num_inputs, num_outputs, transfer_label = :sigmoid )
+ * Creates a new layer and randomly initializes the weights (between -0.8 and 0.8).
+ * @param [Integer] num_inputs size of input array
+ * @param [Integer] num_outputs size of output array
+ * @param [Symbol] transfer_label type of transfer function to use.
+ * @return [CoNeNe::MLP::Layer] new layer with random weights.
+ */
 VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
   VALUE n_ins, n_outs, tfn_type;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );

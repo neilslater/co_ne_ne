@@ -26,7 +26,7 @@ class CoNeNe::MLP::Network
 
 end
 
-# This adds support for Marshal to NArray - found it at: http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/194510
+# CoNeNe adds support for Marshal to NArray. Code originally from http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/194510
 class NArray
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
@@ -62,7 +62,7 @@ end
 
 module CoNeNe::Transfer::ReLU
   # Short name for ReLU transfer function, used as a parameter to some methods.
-  # @return [Symbol] :tanh
+  # @return [Symbol] :relu
   def self.label
     :relu
   end
@@ -78,6 +78,10 @@ class CoNeNe::MLP::Layer
     ]
   end
 
+  # @!visibility private
+  # Constructs a Layer from hash description. Used internally to support Marshal.
+  # @param [Hash] h Keys are :weights and :transfer
+  # @return [CoNeNe::MLP::Layer] new object
   def self.from_h h
     CoNeNe::MLP::Layer.from_weights( h[:weights], h[:transfer] )
   end
@@ -105,6 +109,10 @@ class CoNeNe::MLP::Network
     ]
   end
 
+  # @!visibility private
+  # Constructs a Layer from hash description. Used internally to support Marshal.
+  # @param [Hash] h Keys are :layers, :lr and :momentum
+  # @return [CoNeNe::MLP::Network] new object
   def self.from_h h
     hashed_layers = h[:layers]
     restored_layers = hashed_layers.map { |lhash| CoNeNe::MLP::Layer.from_h( lhash ) }
