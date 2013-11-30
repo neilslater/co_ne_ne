@@ -257,6 +257,12 @@ VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   return mlp_layer_new_ruby_object_from_weights( val_weights, transfer_fn_from_symbol( tfn_type ) );
 }
 
+/* @overload num_inputs(  )
+ * @!attribute [r] num_inputs
+ * Number of inputs to the layer. When using #set_input or #attach_input_layer, the input arrays
+ * should be this size.
+ * @return [Integer]
+ */
 VALUE mlp_layer_object_num_inputs( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return INT2FIX( mlp_layer->num_inputs );
