@@ -151,6 +151,10 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
  * A layer may only be connected to a single input and output at any one time. Making a
  * new attachment will remove existing attachments that conflict. The first layer in a network
  * may not have a new input layer attached.
+ *
+ * A general rule for using NArray parameters with this class is that *sfloat* NArrays
+ * are used directly, and other types are cast to that type. This means that using
+ * *sfloat* sub-type to manage input data and weights is generally more efficient.
  */
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -192,7 +196,7 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
 }
 
 /* @overload clone
- * When cloned, the returned Layer conatins deep copies of weights and outputs,
+ * When cloned, the returned Layer has deep copies of weights and outputs,
  * and is *not* connected to the inputs and outputs that the original was.
  * @return [CoNeNe::MLP::Layer] new layer same weights and transfer function.
  */
@@ -257,10 +261,8 @@ VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   return mlp_layer_new_ruby_object_from_weights( val_weights, transfer_fn_from_symbol( tfn_type ) );
 }
 
-/* @overload num_inputs(  )
- * @!attribute [r] num_inputs
- * Number of inputs to the layer. When using #set_input or #attach_input_layer, the input arrays
- * should be this size.
+/* @!attribute [r] num_inputs
+ * Number of inputs to the layer. This affects the size of arrays when setting the input.
  * @return [Integer]
  */
 VALUE mlp_layer_object_num_inputs( VALUE self ) {
@@ -268,11 +270,19 @@ VALUE mlp_layer_object_num_inputs( VALUE self ) {
   return INT2FIX( mlp_layer->num_inputs );
 }
 
+/* @!attribute [r] num_outputs
+ * Number of outputs from the layer. This affects the size of arrays for training targets.
+ * @return [Integer]
+ */
 VALUE mlp_layer_object_num_outputs( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return INT2FIX( mlp_layer->num_outputs );
 }
 
+/* @!attribute [r] transfer
+ * The CoNeNe::Transfer *Module* that is used for transfer methods when the layer is #run.
+ * @return [Module]
+ */
 VALUE mlp_layer_object_transfer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   VALUE t;
@@ -290,41 +300,79 @@ VALUE mlp_layer_object_transfer( VALUE self ) {
   return t;
 }
 
+/* @!attribute [r] input
+ * The current input array. If there is another layer attached to the input, this will be the
+ * same object as the input layer's #output.
+ * @return [NArray<sfloat>,nil] one-dimensional array of #num_inputs single-precision floats
+ */
 VALUE mlp_layer_object_input( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->narr_input;
 }
 
+/* @!attribute [r] output
+ * The current output array.
+ * @return [NArray<sfloat>] one-dimensional array of #num_outputs single-precision floats
+ */
 VALUE mlp_layer_object_output( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->narr_output;
 }
 
+/* @!attribute [r] weights
+ * The connecting weights between #input and #output. This is two-dimensional, the first dimension
+ * is one per input, plus a *bias* (the last item in each "row"); the second dimension is set by
+ * number of outputs.
+ * @return [NArray<sfloat>] two-dimensional array of [#num_inputs+1, #num_outputs] single-precision floats
+ */
 VALUE mlp_layer_object_weights( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->narr_weights;
 }
 
+/* @!attribute [r] input_layer
+ * The current input layer.
+ * @return [CoNeNe::MLP::Layer,nil] a nil value means this is the first layer in a connected set.
+ */
 VALUE mlp_layer_object_input_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->input_layer;
 }
 
+/* @!attribute [r] output_layer
+ * The current output layer.
+ * @return [CoNeNe::MLP::Layer,nil] a nil value means this is the last layer in a connected set.
+ */
 VALUE mlp_layer_object_output_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->output_layer;
 }
 
+/* @!attribute [r] output_deltas
+ * Array of differences calculated during training.
+ * @return [NArray<sfloat>] one-dimensional array of #num_outputs single-precision floats
+ */
 VALUE mlp_layer_object_output_deltas( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->narr_output_deltas;
 }
 
+/* @!attribute [r] weights_last_deltas
+ * The last corrections made to each weight. The values are used with training that uses momentum.
+ * @return [NArray<sfloat>] two-dimensional array of [#num_inputs+1, #num_outputs] single-precision floats
+ */
 VALUE mlp_layer_object_weights_last_deltas( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
   return mlp_layer->narr_weights_last_deltas;
 }
 
+/* @overload init_weights( *limits )
+ * Sets the weights array to new random values. The limits are optional floats that set
+ * the range. Default range (no params) is *-0.8..0.8*. With one param *x*, the range is *-x..x*.
+ * With two params *x* ,*y*, the range is *x..y*.
+ * @param [Float] limits supply 0, 1 or 2 Float values
+ * @return [nil]
+ */
 VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -349,6 +397,11 @@ VALUE mlp_layer_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   return Qnil;
 }
 
+/* @overload set_input( input_array )
+ * Sets the input to the layer. Any existing inputs or input layers are dicsonnected.
+ * @param [NArray] input_array one-dimensional array of #num_inputs numbers
+ * @return [NArray<sfloat>] the new input array (may be same as parameter)
+ */
 VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
@@ -370,6 +423,12 @@ VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
   return val_input;
 }
 
+/* @overload attach_input_layer( input_layer )
+ * Sets the input layer to this layer. Any existing inputs or input layers are disconnected.
+ * The input layer also has this layer set as its output_layer.
+ * @param [CoNeNe::MLP::Layer] input_layer must have #num_outputs equal to #num_inputs of this layer
+ * @return [CoNeNe::MLP::Layer] the new input layer (always the same as parameter)
+ */
 VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   MLP_Layer *mlp_new_input_layer;
   MLP_Layer *mlp_old_output_layer, *mlp_old_input_layer;
@@ -408,7 +467,12 @@ VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   return new_input_layer;
 }
 
-
+/* @overload attach_input_layer( output_layer )
+ * Sets the output layer to this layer. Any existing output layer is disconnected.
+ * The output layer also has this layer set as its input_layer.
+ * @param [CoNeNe::MLP::Layer] output_layer must have #num_inputs equal to #num_outputs of this layer
+ * @return [CoNeNe::MLP::Layer] the new output layer (always the same as parameter)
+ */
 VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
   MLP_Layer *mlp_new_output_layer;
   MLP_Layer *mlp_old_output_layer, *mlp_old_input_layer;
@@ -447,6 +511,11 @@ VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer )
   return new_output_layer;
 }
 
+/* @overload run( )
+ * Sets values in #output based on current values in #input, using the #weights array
+ * and #transfer.
+ * @return [NArray<sfloat>] same as #output
+ */
 VALUE mlp_layer_object_run( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
 
@@ -456,9 +525,14 @@ VALUE mlp_layer_object_run( VALUE self ) {
 
   p_mlp_layer_run( mlp_layer );
 
-  return Qnil;
+  return mlp_layer->narr_output;
 }
 
+/* @overload ms_error( target )
+ * Calculates the mean squared error of the output compared to the target array.
+ * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
+ * @return [Float]
+ */
 VALUE mlp_layer_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
@@ -481,6 +555,12 @@ VALUE mlp_layer_object_ms_error( VALUE self, VALUE target ) {
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
+/* @overload calc_output_deltas( target )
+ * Sets values in #output_deltas array based on current values in #output compared to target
+ * array. Calculating these values is one step in the backpropagation algorithm.
+ * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
+ * @return [NArray<sfloat>] the #output_deltas
+ */
 VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   volatile VALUE val_target;
@@ -502,6 +582,12 @@ VALUE mlp_layer_object_calc_output_deltas( VALUE self, VALUE target ) {
   return mlp_layer->narr_output_deltas;
 }
 
+/* @overload backprop_deltas( )
+ * Sets values in #output_deltas array of the #input_layer, based on current values
+ * in #output_deltas in this layer and the #weights and #input. Calculating these values
+ * is one step in the backpropagation algorithm.
+ * @return [NArray<sfloat>] the #output_deltas from the #input_layer
+ */
 VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
   MLP_Layer *mlp_layer_input;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -517,6 +603,13 @@ VALUE mlp_layer_object_backprop_deltas( VALUE self ) {
   return mlp_layer_input->narr_output_deltas;
 }
 
+/* @overload update_weights( learning_rate, momentum = 0.0 )
+ * Alters values in #weights based on #output_deltas. The amount of change is also stored
+ * in #weights_last_deltas (which is also returned)
+ * @param [Float] learning_rate multiplier for amount of adjustment, 0.0..1000.0
+ * @param [Float] momentum amount of previous weight change to add in 0.0..0.95
+ * @return [NArray<sfloat>] value of #weights_last_deltas after calculation
+ */
 VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE learning_rate, momentum;
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -524,8 +617,8 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
   rb_scan_args( argc, argv, "11", &learning_rate, &momentum );
 
   eta = NUM2FLT( learning_rate );
-  if ( eta < 0.0 || eta > 10.0 ) {
-    rb_raise( rb_eArgError, "Learning rate %0.6f out of bounds (0.0 to 10.0).", eta );
+  if ( eta < 0.0 || eta > 1000.0 ) {
+    rb_raise( rb_eArgError, "Learning rate %0.6f out of bounds (0.0 to 1000.0).", eta );
   }
 
   m = 0.0;
@@ -539,7 +632,7 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 
   p_mlp_layer_update_weights( mlp_layer, eta, m );
 
-  return Qnil;
+  return mlp_layer->narr_weights_last_deltas;
 }
 
 
