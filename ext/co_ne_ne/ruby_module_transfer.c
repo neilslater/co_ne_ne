@@ -15,8 +15,9 @@ VALUE ReLU = Qnil;
 /* Document-module:  CoNeNe::Transfer::Sigmoid
  *
  * This is a tried-and-tested transfer function which has desirable properties
- * for backpropagation training. It returns from -1.0 at minus infinity and
- * +1.0 at positive infinity.
+ * for backpropagation training. It is used by default in CoNeNe for the last (output)
+ * layer. It returns from y =~ 0.0 for large negative x, y = 0.5 when x = 0.0, and  y=~ 1.0
+ * for large positive x.
  */
 
 /* @overload function( x )
@@ -59,7 +60,7 @@ static VALUE sigmoid_derivative( VALUE self, VALUE r_x ) {
 }
 
 /* @overload derivative_at( y )
- * Calculates value of dy/dx of sigmoid function, given x.
+ * Calculates value of dy/dx of sigmoid function, given y.
  * @param [Float] y
  * @return [Float] dy/dx, always between 0.0 and 0.5
  */
@@ -71,13 +72,14 @@ static VALUE sigmoid_derivative_at( VALUE self, VALUE r_y ) {
 /* Document-module:  CoNeNe::Transfer::TanH
  *
  * This is a tried-and-tested transfer function which has desirable properties
- * for backpropagation training. It returns from -1.0 at minus infinity and
- * +1.0 at positive infinity.
+ * for backpropagation training, and is used by default in CoNeNe for all hidden
+ * layers. It returns y =~ -1.0 for large negative x, y = 0.0 when x= 0.0 and
+ * y =~ 1.0 for large positive x.
  */
 
 /* @overload function( x )
  * Calculates value of
- *     y =  2.0 / (1.0 + exp(-2*x) ) ) - 1.0
+ *     y =  2.0 / (1.0 + exp(-2*x) ) - 1.0
  * @param [Float] x
  * @return [Float] y, always between 0.0 and 1.0
  */
@@ -86,6 +88,11 @@ static VALUE tanh_function( VALUE self, VALUE r_x ) {
   return FLT2NUM( raw_tanh_function( x ) );
 }
 
+/* @overload bulk_apply_function( narray )
+ * Maps an array of values. Converts arrays of single-precision floats in-place.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values, will be same object as narray if single-precision.
+ */
 static VALUE tanh_bulk_apply_function( VALUE self, VALUE r_narr ) {
   struct NARRAY *na_a;
   volatile VALUE val_a;
@@ -98,11 +105,21 @@ static VALUE tanh_bulk_apply_function( VALUE self, VALUE r_narr ) {
   return val_a;
 }
 
+/* @overload derivative( x )
+ * Calculates value of dy/dx of tanh function, given x.
+ * @param [Float] x
+ * @return [Float] dy/dx, always between 0.0 and 1.0
+ */
 static VALUE tanh_derivative( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_tanh_derivative( x ) );
 }
 
+/* @overload derivative_at( y )
+ * Calculates value of dy/dx of tanh function, given y.
+ * @param [Float] y
+ * @return [Float] dy/dx, always between 0.0 and 1.0
+ */
 static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
   float y = NUM2FLT( r_y );
   return FLT2NUM( raw_tanh_derivative_at( y ) );
@@ -111,14 +128,27 @@ static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
 /* Document-module:  CoNeNe::Transfer::ReLU
  *
  * ReLU stands for "Rectifiled Linear Unit". It returns 0.0 for negative input
- * and y = x for positive values.
+ * and y = x for positive values. It is fast to calculate, and for some scenarios is
+ * quicker to train. It is not used by default inside CoNeNe, but
+ * individual CoNeNe::MLP::Layer objects can be constructed to use it.
  */
 
+/* @overload function( x )
+ * Calculates value of
+ *     y =  ( x > 0.0 ) ? x : 0.0
+ * @param [Float] x
+ * @return [Float] y, always 0.0 or above
+ */
 static VALUE relu_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_relu_function( x ) );
 }
 
+/* @overload bulk_apply_function( narray )
+ * Maps an array of values. Converts arrays of single-precision floats in-place.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values, will be same object as narray if single-precision.
+ */
 static VALUE relu_bulk_apply_function( VALUE self, VALUE r_narr ) {
   struct NARRAY *na_a;
   volatile VALUE val_a;
@@ -131,11 +161,21 @@ static VALUE relu_bulk_apply_function( VALUE self, VALUE r_narr ) {
   return val_a;
 }
 
+/* @overload derivative( x )
+ * Calculates value of dy/dx of relu function, given x.
+ * @param [Float] x
+ * @return [Float] dy/dx, either 0.0 or 1.0
+ */
 static VALUE relu_derivative( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_relu_derivative( x ) );
 }
 
+/* @overload derivative_at( y )
+ * Calculates value of dy/dx of relu function, given y.
+ * @param [Float] y
+ * @return [Float] dy/dx, either 0.0 or 1.0
+ */
 static VALUE relu_derivative_at( VALUE self, VALUE r_y ) {
   float y = NUM2FLT( r_y );
   return FLT2NUM( raw_relu_derivative_at( y ) );
