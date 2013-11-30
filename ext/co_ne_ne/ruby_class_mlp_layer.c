@@ -142,7 +142,7 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
 }
 
 
-/* Document-module:  CoNeNe::MLP::Layer
+/* Document-class:  CoNeNe::MLP::Layer
  *
  * An object of this class represents a layer in a fully connected feed-forward network,
  * with inputs, weights and outputs. The inputs and outputs may be shared with other
@@ -191,7 +191,11 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
   return self;
 }
 
-// Special initialize to support "clone"
+/* @overload clone
+ * When cloned, the returned Layer conatins deep copies of weights and outputs,
+ * and is *not* connected to the inputs and outputs that the original was.
+ * @return [CoNeNe::MLP::Layer] new layer same weights and transfer function.
+ */
 VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Layer *mlp_layer_copy;
   MLP_Layer *mlp_layer_orig;
@@ -217,6 +221,15 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   return copy;
 }
 
+/* @overload from_weights( weights, transfer_label = :sigmoid )
+ * Creates a new layer using the supplied weights array, which must be rank 2.
+ * The inputs and bias are taken from the first dimension, and each output is assigned
+ * from the second dimension. For example an array with shape [5,3] has 4 inputs and
+ * 3 outputs.
+ * @param [NArray] weights
+ * @param [Symbol] transfer_label type of transfer function to use.
+ * @return [CoNeNe::MLP::Layer] new layer using supplied weights.
+ */
 VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE weights_in, tfn_type;
   struct NARRAY *na_weights;
