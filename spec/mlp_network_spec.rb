@@ -372,12 +372,12 @@ describe CoNeNe::MLP::Network do
     end
 
     describe "#train_once" do
-      it "returns ms_error value of target" do
+      it "returns nil" do
         CoNeNe.srand(900)
         nn.init_weights
         layers = nn.layers
         result = nn.train_once( NArray.cast( [1.0, 0.0], 'sfloat' ), NArray.cast( [1.0], 'sfloat' ) )
-        result.should be_within(1e-6).of 0.367103
+        result.should be_nil
       end
 
       it "modifies outputs" do

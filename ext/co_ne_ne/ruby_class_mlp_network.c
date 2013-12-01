@@ -356,13 +356,12 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
  * the error, then updates the weights in each layer. A single "unit of learning".
  * @param [NArray] new_input one-dimensional array of #num_inputs single-precision floats
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
- * @return [Float] ms_error value *before* learning
+ * @return [nil]
  */
 VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   struct NARRAY *na_target;
-  struct NARRAY *na_output;
 
   volatile VALUE val_target;
   volatile VALUE layer_object;
@@ -406,9 +405,8 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   p_mlp_network_train_once( mlp_network, val_input, val_target );
 
   ////////////////////////////////////////////////////////////////////////////////////
-  // Return ms_error
-  GetNArray( mlp_layer->narr_output, na_output );
-  return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
+  // Return nil
+  return Qnil;
 }
 
 /* @overload learning_rate

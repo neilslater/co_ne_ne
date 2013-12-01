@@ -1,10 +1,14 @@
 CoNeNe TODOs:
 
-    YARD docs
+    Don't return ms_error on normal training
 
     Add concept of training set
 
     Bulk training
+
+    Bulk error calculations
+
+    Holdout sets for generalisation
 
     Use SIMD for weight updates
 
@@ -28,3 +32,5 @@ CoNeNe DONE:
     Marshalling, for layers and network
 
     Learning rate and momentum for network
+
+    YARD docs
