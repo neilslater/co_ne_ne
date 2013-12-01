@@ -54,7 +54,8 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  *
  * The first layer of the network has special status. To ensure it remains the first layer, it
  * may not have another layer attached as its input. However, other changes to layers in the
- * network are generally allowed.
+ * network are generally allowed. This includes attaching new or alternative layers. Properties
+ * of the network as a whole are calculated dynamically from the attached layers.
  *
  * CoNeNe::MLP::Network supports persisting objects via Marshal.
  */
@@ -108,7 +109,11 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
   return self;
 }
 
-// Special initialize to support "clone"
+/* @overload clone
+ * When cloned, the new Network has deep copies of all layers (which in
+ * turn have deep copies of all weights etc)
+ * @return [CoNeNe::MLP::Network] new network with same weights.
+ */
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Network *mlp_network_copy;
   MLP_Network *mlp_network_orig;
@@ -151,6 +156,12 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   return copy;
 }
 
+/* @overload from_layer( layer )
+ * Creates a new network with supplied layer as the first layer. The layer can already
+ * be connected, or you can add new layers later using CoNeNe::MLP::Layer#attach_output_layer
+ * @param [CoNeNe::MLP::Layer] layer first layer of new network
+ * @return [CoNeNe::MLP::Network] new network
+ */
 VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
   MLP_Layer *mlp_layer;
   assert_value_wraps_mlp_layer( layer );
@@ -161,11 +172,21 @@ VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
   return mlp_network_new_ruby_object_from_layer( layer, 1.0, 0.5 );
 }
 
+/* @overload num_layers
+ * @!attribute [r] num_layers
+ * Total number of layers in the network.
+ * @return [Integer]
+ */
 VALUE mlp_network_object_num_layers( VALUE self ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   return INT2NUM( p_mlp_network_count_layers( mlp_network ) );
 }
 
+/* @overload layers
+ * @!attribute [r] layers
+ * Array of layer objects within the network, in order input to output.
+ * @return [Array<CoNeNe::MLP::Layer]
+ */
 VALUE mlp_network_object_layers( VALUE self ) {
   int num_layers, count;
   VALUE layer_object, all_layers;
@@ -187,6 +208,13 @@ VALUE mlp_network_object_layers( VALUE self ) {
   return all_layers;
 }
 
+/* @overload init_weights( *limits )
+ * Sets weights arrays in all layers to new random values. The limits are optional floats that set
+ * the range. Default range (no params) is *-0.8..0.8*. With one param *x*, the range is *-x..x*.
+ * With two params *x* ,*y*, the range is *x..y*.
+ * @param [Float] limits supply 0, 1 or 2 Float values
+ * @return [nil]
+ */
 VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
   float min_weight, max_weight;
@@ -212,16 +240,33 @@ VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   return Qnil;
 }
 
+/* @overload num_outputs
+ * @!attribute [r] num_outputs
+ * Size of output array of last layer in network. This is the size of array that should be
+ * used for training targets.
+ * @return [Integer]
+ */
 VALUE mlp_network_object_num_outputs( VALUE self ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   return INT2NUM( p_mlp_network_num_outputs( mlp_network ) );
 }
 
+/* @overload num_inputs
+ * @!attribute [r] num_inputs
+ * Size of input array of first layer in network. This is the size of array that should be
+ * used for all inputs to the network, and cannot be altered after the network is created.
+ * @return [Integer]
+ */
 VALUE mlp_network_object_num_inputs( VALUE self ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   return INT2NUM( p_mlp_network_num_inputs( mlp_network ) );
 }
 
+/* @overload output
+ * @!attribute [r] output
+ * Current output from the network.
+ * @return [NArray<sfloat>] one-dimensional array of single-precision floats
+ */
 VALUE mlp_network_object_output( VALUE self ) {
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
@@ -230,6 +275,11 @@ VALUE mlp_network_object_output( VALUE self ) {
   return mlp_layer->narr_output;
 }
 
+/* @overload input
+ * @!attribute [r] input
+ * Current input to the network.
+ * @return [NArray<sfloat>,nil] one-dimensional array of single-precision floats
+ */
 VALUE mlp_network_object_input( VALUE self ) {
   MLP_Layer *mlp_layer;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
@@ -238,6 +288,12 @@ VALUE mlp_network_object_input( VALUE self ) {
   return mlp_layer->narr_input;
 }
 
+/* @overload run( new_input )
+ * Uses supplied parameter as new input to the first layer and runs each layer in
+ * turn until the output array is set.
+ * @param [NArray] new_input one-dimensional array of #num_inputs single-precision floats
+ * @return [NArray<sfloat>] the #output array
+ */
 VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
@@ -265,6 +321,11 @@ VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
   return mlp_layer->narr_output;
 }
 
+/* @overload ms_error( target )
+ * Calculates the mean squared error of the network's output compared to the target array.
+ * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
+ * @return [Float]
+ */
 VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
@@ -290,7 +351,13 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
-
+/* @overload train_once( new_input, target )
+ * Takes a pair of input and desired output, runs the network forward, calculates and backpropagates
+ * the error, then updates the weights in each layer. A single "unit of learning".
+ * @param [NArray] new_input one-dimensional array of #num_inputs single-precision floats
+ * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
+ * @return [Float] ms_error value *before* learning
+ */
 VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
@@ -344,11 +411,22 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   return FLT2NUM( core_mean_square_error( mlp_layer->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
+/* @overload learning_rate
+ * @!attribute learning_rate
+ * Multiplies weight adjustments due to error deltas during training. Range from 1e-6 to 1000.0
+ * @return [Float]
+ */
 VALUE mlp_network_object_learning_rate( VALUE self ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   return FLT2NUM( mlp_network->eta );
 }
 
+/* @overload learning_rate=( new_learning_rate )
+ * @!attribute learning_rate
+ * Sets learning_rate.
+ * @param [Float] new_learning_rate Range from 1e-6 to 1000.0.
+ * @return [Float]
+ */
 VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
   float new_eta;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
@@ -363,11 +441,22 @@ VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate 
   return FLT2NUM( mlp_network->eta );
 }
 
+/* @overload momentum
+ * @!attribute momentum
+ * Multiplies weight adjustments due to previous adjustment during training. Range from 0.0 to 0.9
+ * @return [Float]
+ */
 VALUE mlp_network_object_momentum( VALUE self ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
   return FLT2NUM( mlp_network->momentum );
 }
 
+/* @overload momentum=( new_momentum )
+ * @!attribute momentum
+ * Sets momentum.
+ * @param [Float] new_momentum Range from 0.0 to 0.9
+ * @return [Float]
+ */
 VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
   float new_momentum;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
