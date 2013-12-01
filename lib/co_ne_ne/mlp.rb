@@ -1,5 +1,10 @@
 class CoNeNe::MLP::Network
 
+  # Creates new network from an array of layers. The layers are connected together to form the
+  # new network - this requires that they have matching input and output sizes on each
+  # connection, and they will be reconnected if neccessary to form the new network.
+  # @param [Array<CoNeNe::MLP::Layer>] layers an array of layers
+  # @return [CoNeNe::MLP::Network] the new network
   def self.from_layers layers
     unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( CoNeNe::MLP::Layer ) }
       raise TypeError, "Expecting an Array with one or more CoNeNe::MLP::Layer objects"

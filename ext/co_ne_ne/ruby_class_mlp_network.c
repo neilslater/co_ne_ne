@@ -45,11 +45,32 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
   return mlp_network_ruby;
 }
 
+
+/* Document-class:  CoNeNe::MLP::Network
+ *
+ * An object of this class represents a feed-forward network consisting of one or more layers. It
+ * can be trained by repeatedly showing it example inputs with target outputs. The training
+ * process alters weights in each layer.
+ *
+ * The first layer of the network has special status. To ensure it remains the first layer, it
+ * may not have another layer attached as its input. However, other changes to layers in the
+ * network are generally allowed.
+ *
+ * CoNeNe::MLP::Network supports persisting objects via Marshal.
+ */
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Layer method definitions
+//  Network method definitions
 //
 
+/* @overload initialize( num_inputs, hidden_layers, num_outputs )
+ * Creates a new network and initializes the weights in all layers.
+ * @param [Integer] num_inputs size of input array for first layer
+ * @param [Array<Integer>] hidden_layers sizes of output arrays for each hidden layer
+ * @param [Integer] num_outputs size of output array for last layer
+ * @return [CoNeNe::MLP::Network] new network consisting of new layers, with random weights
+ */
 VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
   MLP_Network *mlp_network = get_mlp_network_struct( self );
