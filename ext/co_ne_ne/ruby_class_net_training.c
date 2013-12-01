@@ -25,7 +25,7 @@ inline NetTraining *get_net_training_struct( VALUE obj ) {
 void assert_value_wraps_net_training( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_net_training_destroy) {
-    rb_raise( rb_eTypeError, "Expected a Network object, but got something else" );
+    rb_raise( rb_eTypeError, "Expected a Training object, but got something else" );
   }
 }
 
@@ -46,6 +46,9 @@ void assert_value_wraps_net_training( VALUE obj ) {
  */
 VALUE net_training_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
   NetTraining *net_training = get_net_training_struct( self );
+
+  p_net_training_init_simple( net_training, 20, 10, 100 );
+
   return self;
 }
 
@@ -73,5 +76,5 @@ void init_net_training_class( ) {
 
   // Network instantiation and class methods
   rb_define_alloc_func( training_class, net_training_alloc );
-  rb_define_method( training_class, "initialize", net_training_class_initialize, 3 );
+  rb_define_method( training_class, "initialize", net_training_class_initialize, 2 );
 }
