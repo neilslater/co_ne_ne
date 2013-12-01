@@ -80,8 +80,15 @@ float *p_net_training_current_output( NetTraining *net_training ) {
   return (float*) narr->ptr[ net_training->output_item_size * i ];
 }
 
+void p_net_training_next( NetTraining *net_training ) {
+  net_training->current_pos++;
+  net_training->current_pos %= net_training->num_items;
+  return;
+}
+
 // Init assuming 1-dimensional arrays for input and output
-void p_net_training_init_simple( NetTraining *net_training, int input_size, int output_size, int num_items ) {
+void p_net_training_init_simple( NetTraining *net_training, int input_size,
+      int output_size, int num_items ) {
   int in_shape[1], out_shape[1];
   in_shape[0] = input_size;
   out_shape[0] = output_size;
