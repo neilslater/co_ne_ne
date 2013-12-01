@@ -16,6 +16,7 @@
 #include "ruby_module_transfer.h"
 #include "ruby_class_mlp_layer.h"
 #include "ruby_class_mlp_network.h"
+#include "ruby_class_net_training.h"
 #include "core_mt.h"
 
 void init_module_co_ne_ne();

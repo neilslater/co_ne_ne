@@ -112,3 +112,38 @@ void p_net_training_gc_mark( NetTraining *net_training ) {
   rb_gc_mark( net_training->narr_outputs );
   return;
 }
+
+void p_net_training_init_from_narray( NetTraining *net_training, VALUE inputs, VALUE outputs ) {
+  int *tmp_shape, i, size, *pos, num_items;
+  struct NARRAY *na_inputs;
+  struct NARRAY *na_outputs;
+
+  net_training->narr_inputs = inputs;
+  net_training->narr_outputs = outputs;
+  GetNArray( net_training->narr_inputs, na_inputs );
+  GetNArray( net_training->narr_outputs, na_outputs );
+
+  tmp_shape = na_inputs->shape;
+  size = 1;
+  for( i = 0; i < na_inputs->rank - 1; i++ ) {
+    size *= tmp_shape[i];
+  }
+  num_items = tmp_shape[ na_inputs->rank - 1 ];
+  net_training->input_item_size = size;
+
+  tmp_shape = na_outputs->shape;
+  size = 1;
+  for( i = 0; i < na_outputs->rank - 1; i++ ) {
+    size *= tmp_shape[i];
+  }
+  net_training->output_item_size = size;
+
+  pos = ALLOC_N( int, num_items );
+  for( i = 0; i < num_items; i++ ) {
+    pos[i] = i;
+  }
+  net_training->pos_idx = pos;
+  net_training->current_pos = 0;
+  net_training->num_items = num_items;
+  return;
+}

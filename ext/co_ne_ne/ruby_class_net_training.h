@@ -7,6 +7,6 @@
 #include "narray.h"
 #include "struct_net_training.h"
 
-void init_net_training_class();
+void init_net_training_class( );
 
 #endif

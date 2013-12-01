@@ -37,6 +37,8 @@ void p_net_training_next( NetTraining *net_training );
 void p_net_training_init_simple( NetTraining *net_training, int input_size,
       int output_size, int num_items );
 
+void p_net_training_init_from_narray( NetTraining *net_training, VALUE inputs, VALUE outputs );
+
 void p_net_training_destroy( NetTraining *net_training );
 
 void p_net_training_gc_mark( NetTraining *net_training );

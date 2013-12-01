@@ -45,22 +45,34 @@ void assert_value_wraps_net_training( VALUE obj ) {
  * @return [CoNeNe::Net::Training] new network consisting of new layers, with random weights
  */
 VALUE net_training_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
+  volatile VALUE val_inputs;
+  volatile VALUE val_targets;
+  struct NARRAY *na_inputs;
+  struct NARRAY *na_targets;
   NetTraining *net_training = get_net_training_struct( self );
 
-  p_net_training_init_simple( net_training, 20, 10, 100 );
+  val_inputs = na_cast_object( inputs, NA_SFLOAT );
+  GetNArray( val_inputs, na_inputs );
+
+  val_targets = na_cast_object( targets, NA_SFLOAT );
+  GetNArray( val_targets, na_targets );
+
+  if ( na_inputs->rank < 2 ) {
+    rb_raise( rb_eArgError, "Inputs rank should be at least 2, but got %d", na_inputs->rank );
+  }
+
+  if ( na_targets->rank < 2 ) {
+    rb_raise( rb_eArgError, "Targets rank should be at least 2, but got %d", na_targets->rank );
+  }
+
+  if ( na_inputs->shape[ na_inputs->rank - 1 ] != na_targets->shape[ na_targets->rank - 1 ] ) {
+    rb_raise( rb_eArgError, "Number of input items %d not same as target items %d",
+        na_inputs->shape[ na_inputs->rank - 1 ], na_targets->shape[ na_targets->rank - 1 ] );
+  }
+
+  p_net_training_init_from_narray( net_training, val_inputs, val_targets );
 
   return self;
-}
-
-/* @overload clone
- * When cloned, the new Network has deep copies of all layers (which in
- * turn have deep copies of all weights etc)
- * @return [CoNeNe::MLP::Network] new network with same weights.
- */
-VALUE net_training_class_initialize_copy( VALUE copy, VALUE orig ) {
-  NetTraining *net_training_copy;
-  NetTraining *net_training_orig;
-  return copy;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
