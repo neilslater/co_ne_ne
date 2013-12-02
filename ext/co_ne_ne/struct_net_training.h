@@ -1,4 +1,4 @@
-// ext/con_ne_ne/struct_net_training.h
+// ext/con_ne_ne/struct_training_data.h
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -12,7 +12,7 @@
 #include "narray.h"
 #include "core_narray.h"
 
-typedef struct _net_training_raw {
+typedef struct _training_data_raw {
     int random_sequence;
     int input_item_size;
     int output_item_size;
@@ -21,26 +21,26 @@ typedef struct _net_training_raw {
     int num_items;
     VALUE narr_inputs;
     VALUE narr_outputs;
-  } NetTraining;
+  } TrainingData;
 
-NetTraining *p_net_training_create();
+TrainingData *p_training_data_create();
 
-void p_net_training_init( NetTraining *net_training, int input_rank, int *input_shape,
+void p_training_data_init( TrainingData *training_data, int input_rank, int *input_shape,
       int output_rank, int *output_shape, int num_items );
 
-float *p_net_training_current_input( NetTraining *net_training );
+float *p_training_data_current_input( TrainingData *training_data );
 
-float *p_net_training_current_output( NetTraining *net_training );
+float *p_training_data_current_output( TrainingData *training_data );
 
-void p_net_training_next( NetTraining *net_training );
+void p_training_data_next( TrainingData *training_data );
 
-void p_net_training_init_simple( NetTraining *net_training, int input_size,
+void p_training_data_init_simple( TrainingData *training_data, int input_size,
       int output_size, int num_items );
 
-void p_net_training_init_from_narray( NetTraining *net_training, VALUE inputs, VALUE outputs );
+void p_training_data_init_from_narray( TrainingData *training_data, VALUE inputs, VALUE outputs );
 
-void p_net_training_destroy( NetTraining *net_training );
+void p_training_data_destroy( TrainingData *training_data );
 
-void p_net_training_gc_mark( NetTraining *net_training );
+void p_training_data_gc_mark( TrainingData *training_data );
 
 #endif

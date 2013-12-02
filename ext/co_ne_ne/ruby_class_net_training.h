@@ -1,12 +1,12 @@
-// ext/co_ne_ne/ruby_class_net_training.h
+// ext/co_ne_ne/ruby_class_training_data.h
 
 #ifndef RUBY_CLASS_NET_TRAINING_H
 #define RUBY_CLASS_NET_TRAINING_H
 
 #include <ruby.h>
 #include "narray.h"
-#include "struct_net_training.h"
+#include "struct_training_data.h"
 
-void init_net_training_class( );
+void init_training_data_class( );
 
 #endif

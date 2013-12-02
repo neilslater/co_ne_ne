@@ -1,30 +1,30 @@
-// ext/co_ne_ne/ruby_class_net_training.c
+// ext/co_ne_ne/ruby_class_training_data.c
 
-#include "ruby_class_net_training.h"
+#include "ruby_class_training_data.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for multi-layer perceptron code - the deeper implementation is in
-//  struct_mlp_layer.c and struct_net_training.c
+//  struct_mlp_layer.c and struct_training_data.c
 //
 
-inline VALUE net_training_as_ruby_class( NetTraining *net_training , VALUE klass ) {
-  return Data_Wrap_Struct( klass, p_net_training_gc_mark, p_net_training_destroy, net_training );
+inline VALUE training_data_as_ruby_class( TrainingData *training_data , VALUE klass ) {
+  return Data_Wrap_Struct( klass, p_training_data_gc_mark, p_training_data_destroy, training_data );
 }
 
-VALUE net_training_alloc(VALUE klass) {
-  return net_training_as_ruby_class( p_net_training_create(), klass );
+VALUE training_data_alloc(VALUE klass) {
+  return training_data_as_ruby_class( p_training_data_create(), klass );
 }
 
-inline NetTraining *get_net_training_struct( VALUE obj ) {
-  NetTraining *net_training;
-  Data_Get_Struct( obj, NetTraining, net_training );
-  return net_training;
+inline TrainingData *get_training_data_struct( VALUE obj ) {
+  TrainingData *training_data;
+  Data_Get_Struct( obj, TrainingData, training_data );
+  return training_data;
 }
 
-void assert_value_wraps_net_training( VALUE obj ) {
+void assert_value_wraps_training_data( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_net_training_destroy) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_training_data_destroy) {
     rb_raise( rb_eTypeError, "Expected a Training object, but got something else" );
   }
 }
@@ -44,12 +44,12 @@ void assert_value_wraps_net_training( VALUE obj ) {
  * @param [NArray] targets sizes of output arrays for each hidden layer
  * @return [CoNeNe::Net::Training] new network consisting of new layers, with random weights
  */
-VALUE net_training_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
+VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
   volatile VALUE val_inputs;
   volatile VALUE val_targets;
   struct NARRAY *na_inputs;
   struct NARRAY *na_targets;
-  NetTraining *net_training = get_net_training_struct( self );
+  TrainingData *training_data = get_training_data_struct( self );
 
   val_inputs = na_cast_object( inputs, NA_SFLOAT );
   GetNArray( val_inputs, na_inputs );
@@ -70,14 +70,14 @@ VALUE net_training_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
         na_inputs->shape[ na_inputs->rank - 1 ], na_targets->shape[ na_targets->rank - 1 ] );
   }
 
-  p_net_training_init_from_narray( net_training, val_inputs, val_targets );
+  p_training_data_init_from_narray( training_data, val_inputs, val_targets );
 
   return self;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_net_training_class( ) {
+void init_training_data_class( ) {
   volatile VALUE net_module;
   volatile VALUE training_class;
   volatile VALUE conene_root = rb_define_module( "CoNeNe" );
@@ -87,6 +87,6 @@ void init_net_training_class( ) {
   training_class = rb_define_class_under( net_module, "Training", rb_cObject );
 
   // Network instantiation and class methods
-  rb_define_alloc_func( training_class, net_training_alloc );
-  rb_define_method( training_class, "initialize", net_training_class_initialize, 2 );
+  rb_define_alloc_func( training_class, training_data_alloc );
+  rb_define_method( training_class, "initialize", training_data_class_initialize, 2 );
 }

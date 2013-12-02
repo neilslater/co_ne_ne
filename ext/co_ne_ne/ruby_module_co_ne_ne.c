@@ -131,6 +131,6 @@ void init_module_co_ne_ne() {
   init_transfer_module();
   init_mlp_layer_class();
   init_mlp_network_class();
-  init_net_training_class();
+  init_training_data_class();
   init_srand_by_time();
 }
