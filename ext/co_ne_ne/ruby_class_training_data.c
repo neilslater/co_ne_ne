@@ -4,8 +4,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Ruby bindings for multi-layer perceptron code - the deeper implementation is in
-//  struct_mlp_layer.c and struct_training_data.c
+//  Ruby bindings for training data arrays - the deeper implementation is in
+//  struct_training_data.c
 //
 
 inline VALUE training_data_as_ruby_class( TrainingData *training_data , VALUE klass ) {
@@ -29,7 +29,7 @@ void assert_value_wraps_training_data( VALUE obj ) {
   }
 }
 
-/* Document-class:  CoNeNe::Net::Training
+/* Document-class:  CoNeNe::TrainingData
  *
  */
 
@@ -42,7 +42,7 @@ void assert_value_wraps_training_data( VALUE obj ) {
  * Creates a new network and initializes the weights in all layers.
  * @param [NArray] inputs size of input array for first layer
  * @param [NArray] targets sizes of output arrays for each hidden layer
- * @return [CoNeNe::Net::Training] new network consisting of new layers, with random weights
+ * @return [CoNeNe::TrainingData] new network consisting of new layers, with random weights
  */
 VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
   volatile VALUE val_inputs;
@@ -78,13 +78,10 @@ VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_training_data_class( ) {
-  volatile VALUE net_module;
   volatile VALUE training_class;
   volatile VALUE conene_root = rb_define_module( "CoNeNe" );
 
-  // These temporary pointers are necessary for YARD to find the right names
-  net_module = rb_define_module_under( conene_root, "Net" );
-  training_class = rb_define_class_under( net_module, "Training", rb_cObject );
+  training_class = rb_define_class_under( conene_root, "TrainingData", rb_cObject );
 
   // Network instantiation and class methods
   rb_define_alloc_func( training_class, training_data_alloc );
