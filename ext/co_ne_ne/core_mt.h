@@ -54,6 +54,7 @@
 #include <ruby.h>
 
 void init_genrand(unsigned long s);
+void init_by_array(unsigned long init_key[], int key_length);
 double genrand_res53(void);
 float genrand_real1(void);
 long genrand_int31(void);

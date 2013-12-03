@@ -1,8 +1,8 @@
 CoNeNe TODOs:
 
-    Fisher-Yates shuffle
-
     srand accept arrays
+
+    training data auto-shuffle
 
     Bulk training
 
@@ -38,3 +38,5 @@ CoNeNe DONE:
     Don't return ms_error on normal training
 
     Add training data class
+
+    Fisher-Yates shuffle

@@ -157,9 +157,12 @@ double genrand_res53(void)
 }
 
 void init_srand_by_time() {
-  long seed;
+  unsigned long seed[2];
   struct timeval tv;
   gettimeofday(&tv, 0);
-  seed = ( tv.tv_sec << 24 ) + tv.tv_usec;
-  init_genrand( seed );
+  seed[0] = tv.tv_sec;
+  seed[1] = tv.tv_usec;
+  // Anything else easy to raid for entropy?
+  init_by_array( seed , 2 );
+  return;
 }

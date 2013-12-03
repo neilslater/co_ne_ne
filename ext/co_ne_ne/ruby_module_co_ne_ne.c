@@ -105,11 +105,33 @@ static VALUE narray_max_pool( VALUE self, VALUE a, VALUE tile_size, VALUE pool_s
 
 /* @overload srand( seed )
  * Seed the random number generator used for weights.
- * @param [Integer] seed 64-bit seed number
+ * @param [Integer] seed 32-bit seed number
  * @return [nil]
  */
 static VALUE mt_srand( VALUE self, VALUE seed ) {
   init_genrand( NUM2ULONG( seed ) );
+  return Qnil;
+}
+
+static unsigned long conene_srand_seed[640];
+
+/* @overload srand_array( seed )
+ * Seed the random number generator used for weights.
+ * @param [Array<Integer>] seed an array of up to 640 times 32 bit seed numbers
+ * @return [nil]
+ */
+static VALUE mt_srand_array( VALUE self, VALUE seed_array ) {
+  int i, n;
+  Check_Type( seed_array, T_ARRAY );
+  n = FIX2INT( rb_funcall( seed_array, rb_intern("count"), 0 ) );
+  if ( n < 1 ) {
+    rb_raise( rb_eArgError, "empty array cannot be used to seed RNG" );
+  }
+  if ( n > 640 ) { n = 640; }
+  for ( i = 0; i < n; i++ ) {
+    conene_srand_seed[i] = NUM2ULONG( rb_ary_entry( seed_array, i ) );
+  }
+  init_by_array( conene_srand_seed, n );
   return Qnil;
 }
 
@@ -149,12 +171,12 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
   return arr;
 }
 
-
 void init_module_co_ne_ne() {
   CoNeNe = rb_define_module( "CoNeNe" );
   rb_define_singleton_method( CoNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
   rb_define_singleton_method( CoNeNe, "srand", mt_srand, 1 );
+  rb_define_singleton_method( CoNeNe, "srand_array", mt_srand_array, 1 );
   rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
   rb_define_singleton_method( CoNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
   init_transfer_module();

@@ -26,6 +26,23 @@ describe CoNeNe do
       end
     end
 
+    it "can accept seeds which are arrays of integers" do
+      inputs = [
+        [ [0,1], [0.612994, 0.851311, 0.917829, 0.434721, 0.516676, 0.522821, 0.111721, 0.376093, 0.305647] ],
+        [ [1,0], [0.634364, 0.069204, 0.347434, 0.302265, 0.263775, 0.563107, 0.755069, 0.617918, 0.995435] ],
+        [ [7685,7231,2321,2322,75], [0.024745, 0.744554, 0.867087, 0.027255, 0.500870, 0.080460, 0.808293, 0.595685, 0.960167] ],
+        [ [2013], [0.925177, 0.328296, 0.551907, 0.356516, 0.901791, 0.304950, 0.400617, 0.839359, 0.255680] ],
+      ]
+
+      inputs.each do |seed, expected_results|
+        CoNeNe.srand_array( seed )
+        got_results = expected_results.map { |e| CoNeNe.rand }
+        got_results.zip( expected_results ).each do |got_val, expected_val|
+          got_val.should be_within(1e-6).of expected_val
+        end
+      end
+    end
+
     it "shuffles integers consistently when seeded" do
       inputs = [
         [     0, [5, 7, 0, 6, 8, 3, 1, 9, 4, 2] ],
