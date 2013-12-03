@@ -137,6 +137,7 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
   }
 
   ids = ALLOC_N( int, n );
+  for ( i = 0; i < n; i++ ) { ids[i] = i; }
   shuffle_ints( n, ids );
 
   arr = rb_ary_new2( n );

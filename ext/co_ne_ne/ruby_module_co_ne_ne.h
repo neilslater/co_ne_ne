@@ -18,7 +18,7 @@
 #include "ruby_class_mlp_network.h"
 #include "ruby_class_training_data.h"
 #include "core_mt.h"
-#include "core_qsort.h"
+#include "core_shuffle.h"
 
 void init_module_co_ne_ne();
 

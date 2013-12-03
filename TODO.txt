@@ -1,6 +1,8 @@
 CoNeNe TODOs:
 
-    Randomize training sequence
+    Fisher-Yates shuffle
+
+    srand accept arrays
 
     Bulk training
 
