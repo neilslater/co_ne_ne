@@ -1,12 +1,14 @@
 CoNeNe TODOs:
 
-    srand accept arrays
-
     training data auto-shuffle
 
     Bulk training
 
     Bulk error calculations
+
+    Test that learning rate and momentum have an effect on training
+
+    ---- Start from here in 2014 ??? ---
 
     Use SIMD for weight updates
 
@@ -40,3 +42,5 @@ CoNeNe DONE:
     Add training data class
 
     Fisher-Yates shuffle
+
+    srand accept arrays
