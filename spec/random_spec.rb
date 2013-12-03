@@ -26,5 +26,20 @@ describe CoNeNe do
       end
     end
 
+    it "shuffles integers consistently when seeded" do
+      inputs = [
+        [     0, [6, 0, 1, 4, 9, 2, 3, 7, 5, 8] ],
+        [   830, [3, 1, 4, 7, 2, 6, 8, 9, 5, 0] ],
+        [  7685, [3, 6, 4, 1, 5, 7, 0, 2, 8, 9] ],
+        [  7684, [1, 9, 3, 4, 7, 2, 6, 0, 5, 8] ],
+      ]
+
+      inputs.each do |seed, expected_results|
+        CoNeNe.srand( seed )
+        got_results = CoNeNe.shuffled_integers( expected_results.count )
+        got_results.should == expected_results
+      end
+    end
+
   end
 end

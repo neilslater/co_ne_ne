@@ -132,6 +132,10 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
   int n, *ids, i;
   volatile VALUE arr;
   n = NUM2INT( val_n );
+  if ( n < 1 ) {
+    rb_raise( rb_eArgError, "number of integers to shuffle must be 1 or more, got %d", n );
+  }
+
   ids = ALLOC_N( int, n );
   shuffle_ints( n, ids );
 

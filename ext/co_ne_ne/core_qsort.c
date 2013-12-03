@@ -15,7 +15,7 @@ void shuffle_ints( int n, int *array ) {
 }
 
 // Sorts sortable array in situ using sort_by array, assuming sortable is list of ids 0...n
-void quicksort_ints_by_floats( int *sortable, double *sort_by, int lowest, int highest ) {
+void quicksort_ints_by_floats( int *sortable, float *sort_by, int lowest, int highest ) {
   int pivot, j, i;
   int temp_id;
 

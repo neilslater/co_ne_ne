@@ -12,6 +12,6 @@
 
 void shuffle_ints( int n, int *array );
 
-void quicksort_ints_by_floats( int *sortable, double *sort_by, int lowest, int highest );
+void quicksort_ints_by_floats( int *sortable, float *sort_by, int lowest, int highest );
 
 #endif
