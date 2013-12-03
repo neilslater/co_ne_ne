@@ -1,14 +1,14 @@
 CoNeNe TODOs:
 
-    Add training data class
+    Randomize training sequence
 
     Bulk training
 
     Bulk error calculations
 
-    Holdout sets for generalisation
-
     Use SIMD for weight updates
+
+    Holdout sets for generalisation
 
     Layer.clear_input (?)
 
@@ -34,3 +34,5 @@ CoNeNe DONE:
     YARD docs
 
     Don't return ms_error on normal training
+
+    Add training data class

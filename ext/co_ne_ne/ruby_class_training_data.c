@@ -75,6 +75,34 @@ VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) 
   return self;
 }
 
+/* @!attribute [r] inputs
+ * The inputs array.
+ * @return [NArray<sfloat>]
+ */
+VALUE training_data_object_inputs( VALUE self ) {
+  TrainingData *training_data = get_training_data_struct( self );
+  return training_data->narr_inputs;
+}
+
+/* @!attribute [r] outputs
+ * The outputs array.
+ * @return [NArray<sfloat>]
+ */
+VALUE training_data_object_outputs( VALUE self ) {
+  TrainingData *training_data = get_training_data_struct( self );
+  return training_data->narr_outputs;
+}
+
+/* @!attribute [r] num_items
+ * The number of training items.
+ * @return [Integer]
+ */
+VALUE training_data_object_num_items( VALUE self ) {
+  TrainingData *training_data = get_training_data_struct( self );
+  return INT2NUM( training_data->num_items );
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_training_data_class( ) {
@@ -83,7 +111,12 @@ void init_training_data_class( ) {
 
   training_class = rb_define_class_under( conene_root, "TrainingData", rb_cObject );
 
-  // Network instantiation and class methods
+  // TrainingData instantiation and class methods
   rb_define_alloc_func( training_class, training_data_alloc );
   rb_define_method( training_class, "initialize", training_data_class_initialize, 2 );
+
+  // TrainingData attributes
+  rb_define_method( training_class, "inputs", training_data_object_inputs, 0 );
+  rb_define_method( training_class, "outputs", training_data_object_outputs, 0 );
+  rb_define_method( training_class, "num_items", training_data_object_num_items, 0 );
 }

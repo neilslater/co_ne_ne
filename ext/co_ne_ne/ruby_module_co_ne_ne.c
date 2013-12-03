@@ -122,12 +122,36 @@ static VALUE mt_rand_float( VALUE self ) {
   return FLT2NUM( genrand_real1() );
 }
 
+/* @overload shuffled_integers( n )
+ * @!visibility private
+ * Uses internal sort and RNG to
+ * @param [Integer] n size of array to shuffle
+ * @return [Array] numbers 0...n in random order
+ */
+static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
+  int n, *ids, i;
+  volatile VALUE arr;
+  n = NUM2INT( val_n );
+  ids = ALLOC_N( int, n );
+  shuffle_ints( n, ids );
+
+  arr = rb_ary_new2( n );
+  for ( i = 0; i < n; i++ ) {
+    rb_ary_store( arr, i, INT2NUM(ids[i]) );
+  }
+
+  xfree( ids );
+  return arr;
+}
+
+
 void init_module_co_ne_ne() {
   CoNeNe = rb_define_module( "CoNeNe" );
   rb_define_singleton_method( CoNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
   rb_define_singleton_method( CoNeNe, "srand", mt_srand, 1 );
   rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
+  rb_define_singleton_method( CoNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
   init_transfer_module();
   init_mlp_layer_class();
   init_mlp_network_class();
