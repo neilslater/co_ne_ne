@@ -2,6 +2,8 @@ CoNeNe TODOs:
 
     training data auto-shuffle
 
+    Training data Marshal
+
     Bulk training
 
     Bulk error calculations
