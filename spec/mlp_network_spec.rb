@@ -235,9 +235,9 @@ describe CoNeNe::MLP::Network do
 
     describe "#learning_rate" do
       it "has a default value of 1.0" do
-        expect( nn.learning_rate ).to be 1.0
-        expect( nn2.learning_rate ).to be 1.0
-        expect( nn3.learning_rate ).to be 1.0
+        expect( nn.learning_rate ).to eql 1.0
+        expect( nn2.learning_rate ).to eql 1.0
+        expect( nn3.learning_rate ).to eql 1.0
       end
     end
 
@@ -249,17 +249,17 @@ describe CoNeNe::MLP::Network do
 
       it "does not set values below 1.0e-6 or greater than 1000.0" do
         expect { nn.learning_rate = 9.0e-7 }.to raise_error
-        expect( nn.learning_rate ).to be 1.0
+        expect( nn.learning_rate ).to eql 1.0
         expect { nn.learning_rate = 1001 }.to raise_error
-        expect( nn.learning_rate ).to be 1.0
+        expect( nn.learning_rate ).to eql 1.0
       end
     end
 
     describe "#momentum" do
       it "has a default value of 0.5" do
-        expect( nn.momentum ).to be 0.5
-        expect( nn2.momentum ).to be 0.5
-        expect( nn3.momentum ).to be 0.5
+        expect( nn.momentum ).to eql 0.5
+        expect( nn2.momentum ).to eql 0.5
+        expect( nn3.momentum ).to eql 0.5
       end
     end
 
@@ -277,9 +277,9 @@ describe CoNeNe::MLP::Network do
 
       it "does not set values below 0.0 or greater than 0.9" do
         expect { nn.momentum = -0.01 }.to raise_error
-        expect( nn.momentum ).to be 0.5
+        expect( nn.momentum ).to eql 0.5
         expect { nn.momentum = 0.91 }.to raise_error
-        expect( nn.momentum ).to be 0.5
+        expect( nn.momentum ).to eql 0.5
       end
     end
 
