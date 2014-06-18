@@ -7,14 +7,14 @@ describe CoNeNe::TrainingData do
   describe "class methods" do
     describe "#new" do
       it "creates a new object" do
-        CoNeNe::TrainingData.new( xor_inputs, xor_targets ).should be_a CoNeNe::TrainingData
+        expect( CoNeNe::TrainingData.new( xor_inputs, xor_targets ) ).to be_a CoNeNe::TrainingData
       end
 
       it "should create training data with properties derived from supplied arrays" do
         training = CoNeNe::TrainingData.new( xor_inputs, xor_targets )
-        training.inputs.should be xor_inputs
-        training.outputs.should be xor_targets
-        training.num_items.should == 4
+        expect( training.inputs ).to be xor_inputs
+        expect( training.outputs ).to be xor_targets
+        expect( training.num_items ).to be 4
       end
 
       it "should create training data when input has 3 or more ranks" do
@@ -22,9 +22,9 @@ describe CoNeNe::TrainingData do
             [ [-1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, -1.0], [1.0, -1.0] ],
             [ [ 1.0, -1.0], [1.0, -1.0] ] ], 'sfloat' )
         training = CoNeNe::TrainingData.new( quad_xor_inputs, xor_targets )
-        training.inputs.should be quad_xor_inputs
-        training.outputs.should be xor_targets
-        training.num_items.should == 4
+        expect( training.inputs ).to be quad_xor_inputs
+        expect( training.outputs ).to be xor_targets
+        expect( training.num_items ).to be 4
       end
 
       it "refuses to create new object when inputs or targets rank is too low" do

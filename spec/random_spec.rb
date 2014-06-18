@@ -6,7 +6,7 @@ describe CoNeNe do
       # Run in a separate process in order to get library loaded with initial state
       script_output = `ruby -Ilib -e "require 'co_ne_ne'; puts CoNeNe.rand"`
       got_num = script_output.chomp.to_f
-      got_num.should_not be_within(1e-8).of 0.3147237002849579
+      expect( got_num ).to_not be_within(1e-8).of 0.3147237002849579
     end
 
     it "generates numbers consistently when seeded" do
@@ -21,7 +21,7 @@ describe CoNeNe do
         CoNeNe.srand( seed )
         got_results = expected_results.map { |e| CoNeNe.rand }
         got_results.zip( expected_results ).each do |got_val, expected_val|
-          got_val.should be_within(1e-6).of expected_val
+          expect( got_val ).to be_within(1e-6).of expected_val
         end
       end
     end
@@ -38,7 +38,7 @@ describe CoNeNe do
         CoNeNe.srand_array( seed )
         got_results = expected_results.map { |e| CoNeNe.rand }
         got_results.zip( expected_results ).each do |got_val, expected_val|
-          got_val.should be_within(1e-6).of expected_val
+          expect( got_val ).to be_within(1e-6).of expected_val
         end
       end
     end
@@ -54,7 +54,7 @@ describe CoNeNe do
       inputs.each do |seed, expected_results|
         CoNeNe.srand( seed )
         got_results = CoNeNe.shuffled_integers( expected_results.count )
-        got_results.should == expected_results
+        expect( got_results ).to eql expected_results
       end
     end
 

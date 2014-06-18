@@ -10,8 +10,8 @@ describe transfer do
     it "outputs a smallish float value for a smallish input value" do
       x_vals.each do |x|
         y = transfer.function(x)
-        y.should be_a Float
-        y.should be_within(20.0).of x
+        expect( y ).to be_a Float
+        expect( y ).to be_within(20.0).of x
       end
     end
 
@@ -19,7 +19,7 @@ describe transfer do
       max_so_far = -100.0
       x_vals.each do |x|
         y = transfer.function(x)
-        y.should be >= max_so_far
+        expect( y ).to be >= max_so_far
         max_so_far = y
       end
     end
@@ -27,12 +27,12 @@ describe transfer do
 
   describe "#bulk_apply_function" do
     it "alters the whole input narray" do
-      big_array.should be_narray_like original_array
+      expect( big_array ).to be_narray_like original_array
       transfer.bulk_apply_function( big_array )
-      big_array.should_not be_narray_like original_array
+      expect( big_array ).to_not be_narray_like original_array
       20.times do |i|
         20.times do |j|
-          big_array[i,j].should be_within(1e-6).of transfer.function( original_array[i,j] )
+          expect( big_array[i,j] ).to be_within(1e-6).of transfer.function( original_array[i,j] )
         end
       end
     end
@@ -64,8 +64,8 @@ describe transfer do
     it "should return function slope for given x value" do
       x_vals.each do |x|
         dy_dx = transfer.derivative(x)
-        dy_dx.should be_a Float
-        dy_dx.should be_within(1e-4).of approx_dy_dx( transfer, x )
+        expect( dy_dx ).to be_a Float
+        expect( dy_dx ).to be_within(1e-4).of approx_dy_dx( transfer, x )
       end
     end
   end
@@ -75,8 +75,8 @@ describe transfer do
       x_vals.each do |x|
         y = transfer.function(x)
         dy_dx = transfer.derivative_at(y)
-        dy_dx.should be_a Float
-        dy_dx.should be_within(1e-4).of approx_dy_dx( transfer, x )
+        expect( dy_dx ).to be_a Float
+        expect( dy_dx ).to be_within(1e-4).of approx_dy_dx( transfer, x )
       end
     end
   end
@@ -90,7 +90,7 @@ describe "Output value tests for" do
   describe CoNeNe::Transfer::Sigmoid do
     it "should match normal definition of sigmoid function" do
       CoNeNe::Transfer::Sigmoid.bulk_apply_function( test_array )
-      test_array.should be_narray_like NArray.cast( [ 0.377541, 0.401312, 0.425557, 0.450166,
+      expect( test_array ).to be_narray_like NArray.cast( [ 0.377541, 0.401312, 0.425557, 0.450166,
           0.475021, 0.5, 0.524979, 0.549834, 0.574443, 0.598688, 0.622459], 'sfloat' )
     end
   end
@@ -98,7 +98,7 @@ describe "Output value tests for" do
   describe CoNeNe::Transfer::TanH do
     it "should match normal definition of tanh function" do
       CoNeNe::Transfer::TanH.bulk_apply_function( test_array )
-      test_array.should be_narray_like NArray.cast( [ -0.462117, -0.379949, -0.291313, -0.197375,
+      expect( test_array ).to be_narray_like NArray.cast( [ -0.462117, -0.379949, -0.291313, -0.197375,
           -0.099668, 0.0, 0.099668, 0.197375, 0.291313, 0.379949, 0.462117 ], 'sfloat' )
     end
   end
@@ -106,7 +106,7 @@ describe "Output value tests for" do
   describe CoNeNe::Transfer::ReLU do
     it "should match normal definition of 'rectified linear' function" do
       CoNeNe::Transfer::ReLU.bulk_apply_function( test_array )
-      test_array.should be_narray_like NArray.cast( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      expect( test_array ).to be_narray_like NArray.cast( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
           0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
     end
   end

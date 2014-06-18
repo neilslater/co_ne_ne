@@ -446,7 +446,7 @@ describe CoNeNe::MLP::Layer do
         original_weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
         expect( layer.weights ).to_not be_narray_like original_weights
         diff = original_weights - layer.weights
-        (diff * diff).sum.should be > 0.001
+        expect( (diff * diff).sum ).to be > 0.001
       end
 
       it "reduces the mean square error" do
@@ -458,7 +458,7 @@ describe CoNeNe::MLP::Layer do
           layer.update_weights( 1.0 )
         end
         new_err = layer.ms_error( target )
-        (original_err - new_err).should be > 0.05
+        expect( (original_err - new_err) ).to be > 0.05
       end
     end
   end
