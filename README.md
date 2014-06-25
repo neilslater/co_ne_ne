@@ -2,10 +2,12 @@
 
 [![Gem Version](https://badge.fury.io/rb/co_ne_ne.png)](http://badge.fury.io/rb/co_ne_ne)
 [![Build Status](https://travis-ci.org/neilslater/co_ne_ne.png?branch=master)](http://travis-ci.org/neilslater/co_ne_ne)
+[![Coverage Status](https://coveralls.io/repos/neilslater/co_ne_ne/badge.png?branch=master)](https://coveralls.io/r/neilslater/co_ne_ne?branch=master)
 [![Inline docs](http://inch-ci.org/github/neilslater/co_ne_ne.png?branch=master)](http://inch-ci.org/github/neilslater/co_ne_ne)
+[![Code Climate](https://codeclimate.com/github/neilslater/co_ne_ne.png)](https://codeclimate.com/github/neilslater/co_ne_ne)
 [![Dependency Status](https://gemnasium.com/neilslater/co_ne_ne.png)](https://gemnasium.com/neilslater/co_ne_ne)
 
-**Co**nvolutional **Ne**ural **Ne**tworks.
+*Co*nvolutional *Ne*ural *Ne*tworks.
 
 ## Features
 
