@@ -430,8 +430,8 @@ VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate 
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
   new_eta = NUM2FLT( new_learning_rate );
-  if ( new_eta < 1.0e-6 || new_eta > 1000.0 ) {
-    rb_raise( rb_eArgError, "Learning rate %0.f out of bounds (0.000001 to 1000.0)", new_eta );
+  if ( new_eta < 1.0e-9 || new_eta > 1000.0 ) {
+    rb_raise( rb_eArgError, "Learning rate %0.f out of bounds (0.000000001 to 1000.0)", new_eta );
   }
 
   mlp_network->eta = new_eta;
@@ -441,7 +441,7 @@ VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate 
 
 /* @overload momentum
  * @!attribute momentum
- * Multiplies weight adjustments due to previous adjustment during training. Range from 0.0 to 0.9
+ * Multiplies weight adjustments due to previous adjustment during training. Range from 0.0 to 0.99
  * @return [Float]
  */
 VALUE mlp_network_object_momentum( VALUE self ) {
@@ -452,7 +452,7 @@ VALUE mlp_network_object_momentum( VALUE self ) {
 /* @overload momentum=( new_momentum )
  * @!attribute momentum
  * Sets momentum.
- * @param [Float] new_momentum Range from 0.0 to 0.9
+ * @param [Float] new_momentum Range from 0.0 to 0.99
  * @return [Float]
  */
 VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
@@ -460,8 +460,8 @@ VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
   MLP_Network *mlp_network = get_mlp_network_struct( self );
 
   new_momentum = NUM2FLT( val_momentum );
-  if ( new_momentum < 0.0 || new_momentum > 0.9 ) {
-    rb_raise( rb_eArgError, "Momentum %0.f out of bounds (0.0 to 0.9)", new_momentum );
+  if ( new_momentum < 0.0 || new_momentum > 0.999 ) {
+    rb_raise( rb_eArgError, "Momentum %0.6f out of bounds (0.0 to 0.99)", new_momentum );
   }
 
   mlp_network->momentum = new_momentum;

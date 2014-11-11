@@ -247,8 +247,8 @@ describe CoNeNe::MLP::Network do
         expect( nn.learning_rate ).to be_within(1.0e-7).of 0.1
       end
 
-      it "does not set values below 1.0e-6 or greater than 1000.0" do
-        expect { nn.learning_rate = 9.0e-7 }.to raise_error
+      it "does not set values below 1.0e-9 or greater than 1000.0" do
+        expect { nn.learning_rate = 9.0e-10 }.to raise_error
         expect( nn.learning_rate ).to eql 1.0
         expect { nn.learning_rate = 1001 }.to raise_error
         expect( nn.learning_rate ).to eql 1.0
@@ -271,14 +271,23 @@ describe CoNeNe::MLP::Network do
         nn.momentum = 0.0
         expect( nn.momentum ).to be_within(1.0e-7).of 0.0
 
+        nn.momentum = 0.5
+        expect( nn.momentum ).to be_within(1.0e-7).of 0.5
+
         nn.momentum = 0.9
         expect( nn.momentum ).to be_within(1.0e-7).of 0.9
+
+        nn.momentum = 0.95
+        expect( nn.momentum ).to be_within(1.0e-7).of 0.95
+
+        nn.momentum = 0.99
+        expect( nn.momentum ).to be_within(1.0e-7).of 0.99
       end
 
-      it "does not set values below 0.0 or greater than 0.9" do
-        expect { nn.momentum = -0.01 }.to raise_error
+      it "does not set values below 0.0 or greater than 0.99" do
+        expect { nn.momentum = -0.01 }.to raise_error ArgumentError
         expect( nn.momentum ).to eql 0.5
-        expect { nn.momentum = 0.91 }.to raise_error
+        expect { nn.momentum = 0.9999 }.to raise_error ArgumentError
         expect( nn.momentum ).to eql 0.5
       end
     end
