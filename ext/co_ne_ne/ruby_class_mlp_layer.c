@@ -95,6 +95,8 @@ transfer_type transfer_fn_from_symbol( VALUE tfn_type ) {
     return TANH;
   } else if ( rb_intern("relu") == tfn_id ) {
     return RELU;
+  } else if ( rb_intern("linear") == tfn_id ) {
+    return LINEAR;
   } else {
     rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
   }
@@ -295,6 +297,9 @@ VALUE mlp_layer_object_transfer( VALUE self ) {
       break;
     case RELU:
       t = ReLU;
+      break;
+    case LINEAR:
+      t = Linear;
       break;
   }
   return t;

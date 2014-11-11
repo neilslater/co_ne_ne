@@ -1,5 +1,37 @@
 CoNeNe TODOs:
 
+    Linear neurons
+
+    Softmax layer
+
+    Log loss cost
+
+    improved vectorisation
+
+    Tests using MNIST digits
+
+    Split training more robustly into   network, training data and a "trainer" class
+
+    Bulk predictions
+
+    Training set normalisation
+
+    mini-batch training
+
+    dropout
+
+    max norm regularisation
+
+    l2 regularisation?
+
+    rmsprop
+
+    dynamic learning rate?
+
+    auto-categorisation and category expansion
+
+
+
     training data auto-shuffle
 
     Training data Marshal
@@ -10,6 +42,8 @@ CoNeNe TODOs:
 
     Test that learning rate and momentum have an effect on training
 
+    Residual gradients for RELU (& others?)
+
     ---- Start from here in 2014 ??? ---
 
     Use SIMD for weight updates
@@ -17,6 +51,8 @@ CoNeNe TODOs:
     Holdout sets for generalisation
 
     Layer.clear_input (?)
+
+    auto-encoders
 
 
 CoNeNe DONE:

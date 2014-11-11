@@ -22,5 +22,6 @@ extern VALUE Transfer;
 extern VALUE Sigmoid;
 extern VALUE TanH;
 extern VALUE ReLU;
+extern VALUE Linear;
 
 #endif

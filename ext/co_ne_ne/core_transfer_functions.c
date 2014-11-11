@@ -91,6 +91,31 @@ void raw_relu_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) {
   }
 }
 
+///////////////////////////////////////////
+
+float raw_linear_function( float x ) {
+  return x;
+}
+
+void raw_linear_bulk_apply_function( int n, float *ptr ) {
+  return;
+}
+
+float raw_linear_derivative( float x ) {
+  return 1.0;
+}
+
+float raw_linear_derivative_at( float y ) {
+  return 1.0;
+}
+
+void raw_linear_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) {
+  int i;
+  for( i = 0; i < n; i++ ) {
+    deriv_ptr[i] = 1.0;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  These intended to be called from neural-net routines in C
@@ -104,6 +129,8 @@ float transfer_function( transfer_type t, float x ) {
       return raw_tanh_function( x );
     case RELU:
       return raw_relu_function( x );
+    case LINEAR:
+      return x;
   }
 }
 
@@ -115,6 +142,8 @@ void transfer_bulk_apply_function( transfer_type t, int n, float *ptr ) {
       return raw_tanh_bulk_apply_function( n, ptr );
     case RELU:
       return raw_relu_bulk_apply_function( n, ptr );
+    case LINEAR:
+      return;
   }
 }
 
@@ -126,6 +155,8 @@ float transfer_derivative( transfer_type t, float x ) {
       return raw_tanh_derivative( x );
     case RELU:
       return raw_relu_derivative( x );
+    case LINEAR:
+      return 1.0;
   }
 }
 
@@ -137,6 +168,8 @@ float transfer_derivative_at( transfer_type t, float y ) {
       return raw_tanh_derivative_at( y );
     case RELU:
       return raw_relu_derivative_at( y );
+    case LINEAR:
+      return 1.0;
   }
 }
 
@@ -148,5 +181,7 @@ void transfer_bulk_derivative_at( transfer_type t, int n, float *func_ptr, float
       return raw_tanh_bulk_derivative_at( n, func_ptr, deriv_ptr );
     case RELU:
       return raw_relu_bulk_derivative_at( n, func_ptr, deriv_ptr );
+    case LINEAR:
+      return raw_linear_bulk_derivative_at( n, func_ptr, deriv_ptr );
   }
 }

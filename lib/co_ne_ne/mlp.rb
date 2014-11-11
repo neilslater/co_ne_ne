@@ -73,6 +73,15 @@ module CoNeNe::Transfer::ReLU
   end
 end
 
+
+module CoNeNe::Transfer::Linear
+  # Short name for Linear transfer function, used as a parameter to some methods.
+  # @return [Symbol] :linear
+  def self.label
+    :linear
+  end
+end
+
 class CoNeNe::MLP::Layer
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods

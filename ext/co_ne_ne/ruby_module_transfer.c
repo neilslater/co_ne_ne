@@ -11,6 +11,7 @@ VALUE Transfer = Qnil;
 VALUE Sigmoid = Qnil;
 VALUE TanH = Qnil;
 VALUE ReLU = Qnil;
+VALUE Linear = Qnil;
 
 /* Document-module:  CoNeNe::Transfer::Sigmoid
  *
@@ -181,6 +182,64 @@ static VALUE relu_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_relu_derivative_at( y ) );
 }
 
+
+/* Document-module:  CoNeNe::Transfer::Linear
+ *
+ * Linear units are useful as output for regression problems. They are coded as a transfer
+ * type for convenience (it is easier to have a defined type than detecting nil type and handling
+ * differently)
+ */
+
+/* @overload function( x )
+ * Calculates value of
+ *     y =  x
+ * @param [Float] x
+ * @return [Float] y
+ */
+static VALUE linear_function( VALUE self, VALUE r_x ) {
+  float x = NUM2FLT( r_x );
+  return FLT2NUM( raw_linear_function( x ) );
+}
+
+/* @overload bulk_apply_function( narray )
+ * Maps an array of values. The implementation is short-circuited and does not proces the target
+ * array.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values, will be same object as narray if single-precision.
+ */
+static VALUE linear_bulk_apply_function( VALUE self, VALUE r_narr ) {
+  struct NARRAY *na_a;
+  volatile VALUE val_a;
+
+  val_a = na_cast_object(r_narr, NA_SFLOAT);
+  GetNArray( val_a, na_a );
+
+  raw_linear_bulk_apply_function( na_a->total, (float*) na_a->ptr );
+
+  return val_a;
+}
+
+/* @overload derivative( x )
+ * Calculates value of dy/dx of linear function, given x.
+ * @param [Float] x
+ * @return [Float] dy/dx, which should always be 1.0
+ */
+static VALUE linear_derivative( VALUE self, VALUE r_x ) {
+  float x = NUM2FLT( r_x );
+  return FLT2NUM( raw_linear_derivative( x ) );
+}
+
+/* @overload derivative_at( y )
+ * Calculates value of dy/dx of linear function, given y.
+ * @param [Float] y
+ * @return [Float] dy/dx, which should always be 1.0
+ */
+static VALUE linear_derivative_at( VALUE self, VALUE r_y ) {
+  float y = NUM2FLT( r_y );
+  return FLT2NUM( raw_linear_derivative_at( y ) );
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( ) {
@@ -205,4 +264,10 @@ void init_transfer_module( ) {
   rb_define_singleton_method( ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );
   rb_define_singleton_method( ReLU, "derivative", relu_derivative, 1 );
   rb_define_singleton_method( ReLU, "derivative_at", relu_derivative_at, 1 );
+
+  Linear = rb_define_module_under( Transfer, "Linear" );
+  rb_define_singleton_method( Linear, "function", linear_function, 1 );
+  rb_define_singleton_method( Linear, "bulk_apply_function", linear_bulk_apply_function, 1 );
+  rb_define_singleton_method( Linear, "derivative", linear_derivative, 1 );
+  rb_define_singleton_method( Linear, "derivative_at", linear_derivative_at, 1 );
 }

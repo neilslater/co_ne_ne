@@ -47,6 +47,9 @@ describe CoNeNe::MLP::Layer do
 
         layer = CoNeNe::MLP::Layer.new( 7, 2, :relu )
         expect( layer.transfer ).to be CoNeNe::Transfer::ReLU
+
+        layer = CoNeNe::MLP::Layer.new( 17, 1, :linear )
+        expect( layer.transfer ).to be CoNeNe::Transfer::Linear
       end
     end
 

@@ -10,7 +10,7 @@
 
 #include <math.h>
 
-typedef enum {SIGMOID, TANH, RELU} transfer_type;
+typedef enum {SIGMOID, TANH, RELU, LINEAR} transfer_type;
 
 float transfer_function( transfer_type t, float x );
 void transfer_bulk_apply_function( transfer_type t, int n, float *ptr );
@@ -35,5 +35,11 @@ void raw_relu_bulk_apply_function( int n, float *ptr );
 float raw_relu_derivative( float x );
 float raw_relu_derivative_at( float y );
 void raw_relu_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr );
+
+float raw_linear_function( float x );
+void raw_linear_bulk_apply_function( int n, float *ptr );
+float raw_linear_derivative( float x );
+float raw_linear_derivative_at( float y );
+void raw_linear_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr );
 
 #endif
