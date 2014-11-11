@@ -30,9 +30,11 @@ describe transfer do
     it "alters the whole input narray" do
       expect( big_array ).to be_narray_like original_array
       transfer.bulk_apply_function( big_array )
+
       unless transfer == CoNeNe::Transfer::Linear
         expect( big_array ).to_not be_narray_like original_array
       end
+
       20.times do |i|
         20.times do |j|
           expect( big_array[i,j] ).to be_within(1e-6).of transfer.function( original_array[i,j] )
@@ -112,6 +114,14 @@ describe "Output value tests for" do
     it "should match normal definition of 'rectified linear' function" do
       CoNeNe::Transfer::ReLU.bulk_apply_function( test_array )
       expect( test_array ).to be_narray_like NArray.cast( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
+    end
+  end
+
+  describe CoNeNe::Transfer::Linear do
+    it "should not change values" do
+      CoNeNe::Transfer::Linear.bulk_apply_function( test_array )
+      expect( test_array ).to be_narray_like NArray.cast( [ -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
           0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
     end
   end
