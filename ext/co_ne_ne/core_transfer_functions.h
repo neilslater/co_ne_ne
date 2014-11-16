@@ -42,4 +42,7 @@ float raw_linear_derivative( float x );
 float raw_linear_derivative_at( float y );
 void raw_linear_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr );
 
+void raw_softmax_bulk_apply_function( int n, float *ptr );
+void raw_softmax_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr );
+
 #endif

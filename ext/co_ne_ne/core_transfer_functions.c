@@ -116,6 +116,30 @@ void raw_linear_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr  ) 
   }
 }
 
+///////////////////////////////////////////
+
+void raw_softmax_bulk_apply_function( int n, float *ptr ) {
+  int i;
+  float denom = 0.0;
+  for( i = 0; i < n; i++ ) {
+    ptr[i] = exp( ptr[i] );
+    denom += ptr[i];
+  }
+  denom = 1.0/denom;
+  for( i = 0; i < n; i++ ) {
+    ptr[i] *= denom;
+  }
+  return;
+}
+
+void raw_softmax_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr ) {
+  int i;
+  for( i = 0; i < n; i++ ) {
+    // Softmax derivative is same as sigmoid
+    deriv_ptr[i] = func_ptr[i] * ( 1.0 - func_ptr[i] );
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  These intended to be called from neural-net routines in C

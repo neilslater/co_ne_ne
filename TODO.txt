@@ -1,8 +1,10 @@
 CoNeNe TODOs:
 
-    Linear neurons
-
     Softmax layer
+
+    Fix training data
+
+    Layer init weights
 
     Log loss cost
 
@@ -56,6 +58,8 @@ CoNeNe TODOs:
 
 
 CoNeNe DONE:
+
+    Linear neurons
 
     Lock first layer in network, to prevent adding earlier layers
 
