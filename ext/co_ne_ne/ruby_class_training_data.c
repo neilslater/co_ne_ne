@@ -8,6 +8,8 @@
 //  struct_training_data.c
 //
 
+VALUE CoNeNe_TrainingData = Qnil;
+
 inline VALUE training_data_as_ruby_class( TrainingData *training_data , VALUE klass ) {
   return Data_Wrap_Struct( klass, p_training_data_gc_mark, p_training_data_destroy, training_data );
 }
@@ -25,7 +27,7 @@ inline TrainingData *get_training_data_struct( VALUE obj ) {
 void assert_value_wraps_training_data( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
       RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_training_data_destroy) {
-    rb_raise( rb_eTypeError, "Expected a Training object, but got something else" );
+    rb_raise( rb_eTypeError, "Expected a TrainingData object, but got something else" );
   }
 }
 
@@ -75,6 +77,25 @@ VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) 
   return self;
 }
 
+/* @overload clone
+ * When cloned, the returned TrainingData has deep copies of inputs and outputs,
+ * @return [CoNeNe::TrainingData] new training data with identical items to caller.
+ */
+VALUE training_data_class_initialize_copy( VALUE copy, VALUE orig ) {
+  TrainingData *training_data_copy;
+  TrainingData *training_data_orig;
+
+  if (copy == orig) return copy;
+  training_data_orig = get_training_data_struct( orig );
+  training_data_copy = get_training_data_struct( copy );
+
+  training_data_copy->num_items = training_data_orig->num_items;
+  training_data_copy->narr_outputs = na_clone( training_data_orig->narr_outputs );
+  training_data_copy->narr_inputs = na_clone( training_data_orig->narr_inputs );
+
+  return copy;
+}
+
 /* @!attribute [r] inputs
  * The inputs array.
  * @return [NArray<sfloat>]
@@ -106,17 +127,16 @@ VALUE training_data_object_num_items( VALUE self ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_training_data_class( ) {
-  volatile VALUE training_class;
   volatile VALUE conene_root = rb_define_module( "CoNeNe" );
-
-  training_class = rb_define_class_under( conene_root, "TrainingData", rb_cObject );
+  CoNeNe_TrainingData = rb_define_class_under( conene_root, "TrainingData", rb_cObject );
 
   // TrainingData instantiation and class methods
-  rb_define_alloc_func( training_class, training_data_alloc );
-  rb_define_method( training_class, "initialize", training_data_class_initialize, 2 );
+  rb_define_alloc_func( CoNeNe_TrainingData, training_data_alloc );
+  rb_define_method( CoNeNe_TrainingData, "initialize", training_data_class_initialize, 2 );
+  rb_define_method( CoNeNe_TrainingData, "initialize_copy", training_data_class_initialize_copy, 1 );
 
   // TrainingData attributes
-  rb_define_method( training_class, "inputs", training_data_object_inputs, 0 );
-  rb_define_method( training_class, "outputs", training_data_object_outputs, 0 );
-  rb_define_method( training_class, "num_items", training_data_object_num_items, 0 );
+  rb_define_method( CoNeNe_TrainingData, "inputs", training_data_object_inputs, 0 );
+  rb_define_method( CoNeNe_TrainingData, "outputs", training_data_object_outputs, 0 );
+  rb_define_method( CoNeNe_TrainingData, "num_items", training_data_object_num_items, 0 );
 }

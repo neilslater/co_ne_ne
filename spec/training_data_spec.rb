@@ -63,4 +63,23 @@ describe CoNeNe::TrainingData do
       end
     end
   end
+
+  describe "instance methods" do
+    describe "#clone" do
+      it "makes deep copy of training data" do
+        @orig_data = CoNeNe::TrainingData.new( xor_inputs, xor_targets )
+        @copy_data =  @orig_data.clone
+        expect( @copy_data ).to_not be @orig_data
+        expect( @copy_data.num_items ).to be 4
+        orig_inputs = @orig_data.inputs
+        copy_inputs = @copy_data.inputs
+        expect( copy_inputs ).to_not be orig_inputs
+        expect( copy_inputs ).to be_narray_like orig_inputs
+        orig_outputs = @orig_data.outputs
+        copy_outputs = @copy_data.outputs
+        expect( copy_outputs ).to_not be orig_outputs
+        expect( copy_outputs ).to be_narray_like orig_outputs
+      end
+    end
+  end
 end
