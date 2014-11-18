@@ -69,7 +69,7 @@ float *p_training_data_current_input( TrainingData *training_data ) {
   struct NARRAY *narr;
   GetNArray( training_data->narr_inputs, narr );
   i = training_data->pos_idx[ training_data->current_pos ];
-  return (float*) narr->ptr[ training_data->input_item_size * i ];
+  return (float*) ( narr->ptr + training_data->input_item_size * i );
 }
 
 float *p_training_data_current_output( TrainingData *training_data ) {
@@ -77,7 +77,7 @@ float *p_training_data_current_output( TrainingData *training_data ) {
   struct NARRAY *narr;
   GetNArray( training_data->narr_outputs, narr );
   i = training_data->pos_idx[ training_data->current_pos ];
-  return (float*) narr->ptr[ training_data->output_item_size * i ];
+  return (float*) ( narr->ptr + training_data->output_item_size * i );
 }
 
 void p_training_data_next( TrainingData *training_data ) {

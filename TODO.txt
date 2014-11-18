@@ -4,6 +4,13 @@ CoNeNe TODOs:
 
     Fix training data
 
+    Clean up, rename . . .
+        NNKit::Layer, NNKit::Network, NNKit::TrainingData, NNKit::Activation::Sigmoid... ???
+        NeNe::Layer, NeNe::Network, NeNe::TrainingData, NeNe::Activation::Sigmoid... ???
+        NN::Layer, NN::Network, NN::TrainingData, NN::Activation::Sigmoid... ???
+
+    Split training process between  network, training data and a "trainer" class
+
     Layer init weights
 
     Log loss cost
@@ -11,8 +18,6 @@ CoNeNe TODOs:
     improved vectorisation
 
     Tests using MNIST digits
-
-    Split training more robustly into   network, training data and a "trainer" class
 
     Bulk predictions
 
