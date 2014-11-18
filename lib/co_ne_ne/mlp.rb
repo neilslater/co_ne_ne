@@ -82,6 +82,14 @@ module CoNeNe::Transfer::Linear
   end
 end
 
+module CoNeNe::Transfer::Softmax
+  # Short name for Softmax transfer function, used as a parameter to some methods.
+  # @return [Symbol] :softmax
+  def self.label
+    :softmax
+  end
+end
+
 class CoNeNe::MLP::Layer
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
@@ -134,6 +142,36 @@ class CoNeNe::MLP::Network
     network.learning_rate = h[:lr]
     network.momentum = h[:momentum]
     network
+  end
+
+  # @!visibility private
+  def _dump *ignored
+    Marshal.dump to_h
+  end
+
+  # @!visibility private
+  def self._load buf
+    h = Marshal.load buf
+    from_h h
+  end
+end
+
+class CoNeNe::TrainingData
+  # @!visibility private
+  # Adds support for Marshal, via to_h and from_h methods
+  def to_h
+    Hash[
+      :inputs => self.inputs,
+      :outputs => self.outputs,
+    ]
+  end
+
+  # @!visibility private
+  # Constructs a TrainingData from hash description. Used internally to support Marshal.
+  # @param [Hash] h Keys are :weights and :transfer
+  # @return [CoNeNe::MLP::Layer] new object
+  def self.from_h h
+    CoNeNe::TrainingData.new( h[:inputs], h[:outputs] )
   end
 
   # @!visibility private
