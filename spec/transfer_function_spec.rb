@@ -1,7 +1,7 @@
 require 'helpers'
 
-[ CoNeNe::Transfer::Sigmoid, CoNeNe::Transfer::TanH,
-  CoNeNe::Transfer::ReLU, CoNeNe::Transfer::Linear ].each do |transfer|
+[ RuNeNe::Transfer::Sigmoid, RuNeNe::Transfer::TanH,
+  RuNeNe::Transfer::ReLU, RuNeNe::Transfer::Linear ].each do |transfer|
 describe transfer do
   let( :x_vals ) { (-100..100).to_a.map { |x| x.to_f/10 } }
   let( :big_array ) { NArray.sfloat(20,20).random(2.0) - 1.0 }
@@ -31,7 +31,7 @@ describe transfer do
       expect( big_array ).to be_narray_like original_array
       transfer.bulk_apply_function( big_array )
 
-      unless transfer == CoNeNe::Transfer::Linear
+      unless transfer == RuNeNe::Transfer::Linear
         expect( big_array ).to_not be_narray_like original_array
       end
 
@@ -50,19 +50,19 @@ describe transfer do
     x2 = x - d
 
     case t.name
-    when 'CoNeNe::Transfer::Sigmoid'
+    when 'RuNeNe::Transfer::Sigmoid'
 
       100000.0 * ( 1.0 / ( 1.0 + Math.exp( -x1 ) ) - 1.0 / ( 1.0 + Math.exp( -x2 ) ) )
-    when 'CoNeNe::Transfer::TanH'
+    when 'RuNeNe::Transfer::TanH'
       100000.0 * ( 2.0 / (1.0 + Math.exp(-2*x1) ) -  2.0 / (1.0 + Math.exp(-2*x2) ) );
-    when 'CoNeNe::Transfer::ReLU'
+    when 'RuNeNe::Transfer::ReLU'
       # For ReLU, dy_dx not well-defined at origin, but we have chosen 0.0
       if x == 0
         0.0
       else
         100000.0 * ( ( x1 > 0.0 ? x1 : 0.0 ) - ( x2 > 0.0 ? x2 : 0.0 ) );
       end
-    when 'CoNeNe::Transfer::Linear'
+    when 'RuNeNe::Transfer::Linear'
       1.0
     end
   end
@@ -94,33 +94,33 @@ describe "Output value tests for" do
   let( :test_array ) { NArray.cast( [-0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
       0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' ) }
 
-  describe CoNeNe::Transfer::Sigmoid do
+  describe RuNeNe::Transfer::Sigmoid do
     it "should match normal definition of sigmoid function" do
-      CoNeNe::Transfer::Sigmoid.bulk_apply_function( test_array )
+      RuNeNe::Transfer::Sigmoid.bulk_apply_function( test_array )
       expect( test_array ).to be_narray_like NArray.cast( [ 0.377541, 0.401312, 0.425557, 0.450166,
           0.475021, 0.5, 0.524979, 0.549834, 0.574443, 0.598688, 0.622459], 'sfloat' )
     end
   end
 
-  describe CoNeNe::Transfer::TanH do
+  describe RuNeNe::Transfer::TanH do
     it "should match normal definition of tanh function" do
-      CoNeNe::Transfer::TanH.bulk_apply_function( test_array )
+      RuNeNe::Transfer::TanH.bulk_apply_function( test_array )
       expect( test_array ).to be_narray_like NArray.cast( [ -0.462117, -0.379949, -0.291313, -0.197375,
           -0.099668, 0.0, 0.099668, 0.197375, 0.291313, 0.379949, 0.462117 ], 'sfloat' )
     end
   end
 
-  describe CoNeNe::Transfer::ReLU do
+  describe RuNeNe::Transfer::ReLU do
     it "should match normal definition of 'rectified linear' function" do
-      CoNeNe::Transfer::ReLU.bulk_apply_function( test_array )
+      RuNeNe::Transfer::ReLU.bulk_apply_function( test_array )
       expect( test_array ).to be_narray_like NArray.cast( [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
           0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
     end
   end
 
-  describe CoNeNe::Transfer::Linear do
+  describe RuNeNe::Transfer::Linear do
     it "should not change values" do
-      CoNeNe::Transfer::Linear.bulk_apply_function( test_array )
+      RuNeNe::Transfer::Linear.bulk_apply_function( test_array )
       expect( test_array ).to be_narray_like NArray.cast( [ -0.5, -0.4, -0.3, -0.2, -0.1, 0.0,
           0.1, 0.2, 0.3, 0.4, 0.5], 'sfloat' )
     end
