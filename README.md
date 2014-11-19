@@ -1,4 +1,4 @@
-# CoNeNe
+# RuNeNe
 
 [![Gem Version](https://badge.fury.io/rb/ru_ne_ne.png)](http://badge.fury.io/rb/ru_ne_ne)
 [![Build Status](https://travis-ci.org/neilslater/ru_ne_ne.png?branch=master)](http://travis-ci.org/neilslater/ru_ne_ne)
