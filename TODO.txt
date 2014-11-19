@@ -1,9 +1,9 @@
 CoNeNe TODOs:
 
-    Softmax layer
-
     Clean up, rename CoNeNe . . . **RuNeNe**
         RuNeNe::Layer, RuNeNe::Network, RuNeNe::TrainingData, RuNeNe::Activation::Sigmoid... ???
+
+    Softmax layer
 
     Fix training data ( call it LabeledData ?)
         Support normalisation
