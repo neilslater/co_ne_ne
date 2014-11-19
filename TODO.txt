@@ -2,12 +2,12 @@ CoNeNe TODOs:
 
     Softmax layer
 
-    Fix training data
+    Clean up, rename CoNeNe . . . **RuNeNe**
+        RuNeNe::Layer, RuNeNe::Network, RuNeNe::TrainingData, RuNeNe::Activation::Sigmoid... ???
 
-    Clean up, rename . . .
-        NNKit::Layer, NNKit::Network, NNKit::TrainingData, NNKit::Activation::Sigmoid... ???
-        NeNe::Layer, NeNe::Network, NeNe::TrainingData, NeNe::Activation::Sigmoid... ???
-        NN::Layer, NN::Network, NN::TrainingData, NN::Activation::Sigmoid... ???
+    Fix training data ( call it LabeledData ?)
+        Support normalisation
+        Support caterical data (getting expanded on-demand)
 
     Split training process between  network, training data and a "trainer" class
 
