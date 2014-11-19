@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // To hold the module object
-VALUE CoNeNe = Qnil;
+VALUE RuNeNe = Qnil;
 
 /* @overload convolve( signal, kernel )
  * Calculates convolution of an array of floats representing a signal, with a second array representing
@@ -172,13 +172,13 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
 }
 
 void init_module_co_ne_ne() {
-  CoNeNe = rb_define_module( "CoNeNe" );
-  rb_define_singleton_method( CoNeNe, "convolve", narray_convolve, 2 );
-  rb_define_singleton_method( CoNeNe, "max_pool", narray_max_pool, 3 );
-  rb_define_singleton_method( CoNeNe, "srand", mt_srand, 1 );
-  rb_define_singleton_method( CoNeNe, "srand_array", mt_srand_array, 1 );
-  rb_define_singleton_method( CoNeNe, "rand", mt_rand_float, 0 );
-  rb_define_singleton_method( CoNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
+  RuNeNe = rb_define_module( "RuNeNe" );
+  rb_define_singleton_method( RuNeNe, "convolve", narray_convolve, 2 );
+  rb_define_singleton_method( RuNeNe, "max_pool", narray_max_pool, 3 );
+  rb_define_singleton_method( RuNeNe, "srand", mt_srand, 1 );
+  rb_define_singleton_method( RuNeNe, "srand_array", mt_srand_array, 1 );
+  rb_define_singleton_method( RuNeNe, "rand", mt_rand_float, 0 );
+  rb_define_singleton_method( RuNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
   init_transfer_module();
   init_mlp_layer_class();
   init_mlp_network_class();

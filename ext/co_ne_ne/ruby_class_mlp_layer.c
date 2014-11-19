@@ -144,7 +144,7 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
 }
 
 
-/* Document-class:  CoNeNe::MLP::Layer
+/* Document-class:  RuNeNe::MLP::Layer
  *
  * An object of this class represents a layer in a fully connected feed-forward network,
  * with inputs, weights and outputs. The inputs and outputs may be shared with other
@@ -169,7 +169,7 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
  * @param [Integer] num_inputs size of input array
  * @param [Integer] num_outputs size of output array
  * @param [Symbol] transfer_label type of transfer function to use.
- * @return [CoNeNe::MLP::Layer] new layer with random weights.
+ * @return [RuNeNe::MLP::Layer] new layer with random weights.
  */
 VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
   VALUE n_ins, n_outs, tfn_type;
@@ -200,7 +200,7 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
 /* @overload clone
  * When cloned, the returned Layer has deep copies of weights and outputs,
  * and is *not* connected to the inputs and outputs that the original was.
- * @return [CoNeNe::MLP::Layer] new layer same weights and transfer function.
+ * @return [RuNeNe::MLP::Layer] new layer same weights and transfer function.
  */
 VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Layer *mlp_layer_copy;
@@ -234,7 +234,7 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
  * 3 outputs.
  * @param [NArray] weights
  * @param [Symbol] transfer_label type of transfer function to use.
- * @return [CoNeNe::MLP::Layer] new layer using supplied weights.
+ * @return [RuNeNe::MLP::Layer] new layer using supplied weights.
  */
 VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE weights_in, tfn_type;
@@ -282,7 +282,7 @@ VALUE mlp_layer_object_num_outputs( VALUE self ) {
 }
 
 /* @!attribute [r] transfer
- * The CoNeNe::Transfer *Module* that is used for transfer methods when the layer is #run.
+ * The RuNeNe::Transfer *Module* that is used for transfer methods when the layer is #run.
  * @return [Module]
  */
 VALUE mlp_layer_object_transfer( VALUE self ) {
@@ -337,7 +337,7 @@ VALUE mlp_layer_object_weights( VALUE self ) {
 
 /* @!attribute [r] input_layer
  * The current input layer.
- * @return [CoNeNe::MLP::Layer,nil] a nil value means this is the first layer in a connected set.
+ * @return [RuNeNe::MLP::Layer,nil] a nil value means this is the first layer in a connected set.
  */
 VALUE mlp_layer_object_input_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -346,7 +346,7 @@ VALUE mlp_layer_object_input_layer( VALUE self ) {
 
 /* @!attribute [r] output_layer
  * The current output layer.
- * @return [CoNeNe::MLP::Layer,nil] a nil value means this is the last layer in a connected set.
+ * @return [RuNeNe::MLP::Layer,nil] a nil value means this is the last layer in a connected set.
  */
 VALUE mlp_layer_object_output_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -431,8 +431,8 @@ VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
 /* @overload attach_input_layer( input_layer )
  * Sets the input layer to this layer. Any existing inputs or input layers are disconnected.
  * The input layer also has this layer set as its output_layer.
- * @param [CoNeNe::MLP::Layer] input_layer must have #num_outputs equal to #num_inputs of this layer
- * @return [CoNeNe::MLP::Layer] the new input layer (always the same as parameter)
+ * @param [RuNeNe::MLP::Layer] input_layer must have #num_outputs equal to #num_inputs of this layer
+ * @return [RuNeNe::MLP::Layer] the new input layer (always the same as parameter)
  */
 VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   MLP_Layer *mlp_new_input_layer;
@@ -475,8 +475,8 @@ VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
 /* @overload attach_input_layer( output_layer )
  * Sets the output layer to this layer. Any existing output layer is disconnected.
  * The output layer also has this layer set as its input_layer.
- * @param [CoNeNe::MLP::Layer] output_layer must have #num_inputs equal to #num_outputs of this layer
- * @return [CoNeNe::MLP::Layer] the new output layer (always the same as parameter)
+ * @param [RuNeNe::MLP::Layer] output_layer must have #num_inputs equal to #num_outputs of this layer
+ * @return [RuNeNe::MLP::Layer] the new output layer (always the same as parameter)
  */
 VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
   MLP_Layer *mlp_new_output_layer;
@@ -644,7 +644,7 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_layer_class( ) {
-  volatile VALUE conene_root = rb_define_module( "CoNeNe" );
+  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
 
   // Define modules and classes
   MLP = rb_define_module_under( conene_root, "MLP" );

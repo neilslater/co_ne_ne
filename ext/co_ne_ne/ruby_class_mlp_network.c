@@ -46,7 +46,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
 }
 
 
-/* Document-class:  CoNeNe::MLP::Network
+/* Document-class:  RuNeNe::MLP::Network
  *
  * An object of this class represents a feed-forward network consisting of one or more layers. It
  * can be trained by repeatedly showing it example inputs with target outputs. The training
@@ -57,7 +57,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  * network are generally allowed. This includes attaching new or alternative layers. Properties
  * of the network as a whole are calculated dynamically from the attached layers.
  *
- * CoNeNe::MLP::Network supports persisting objects via Marshal.
+ * RuNeNe::MLP::Network supports persisting objects via Marshal.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  * @param [Integer] num_inputs size of input array for first layer
  * @param [Array<Integer>] hidden_layers sizes of output arrays for each hidden layer
  * @param [Integer] num_outputs size of output array for last layer
- * @return [CoNeNe::MLP::Network] new network consisting of new layers, with random weights
+ * @return [RuNeNe::MLP::Network] new network consisting of new layers, with random weights
  */
 VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
@@ -112,7 +112,7 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
 /* @overload clone
  * When cloned, the new Network has deep copies of all layers (which in
  * turn have deep copies of all weights etc)
- * @return [CoNeNe::MLP::Network] new network with same weights.
+ * @return [RuNeNe::MLP::Network] new network with same weights.
  */
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Network *mlp_network_copy;
@@ -158,9 +158,9 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
 
 /* @overload from_layer( layer )
  * Creates a new network with supplied layer as the first layer. The layer can already
- * be connected, or you can add new layers later using CoNeNe::MLP::Layer#attach_output_layer
- * @param [CoNeNe::MLP::Layer] layer first layer of new network
- * @return [CoNeNe::MLP::Network] new network
+ * be connected, or you can add new layers later using RuNeNe::MLP::Layer#attach_output_layer
+ * @param [RuNeNe::MLP::Layer] layer first layer of new network
+ * @return [RuNeNe::MLP::Network] new network
  */
 VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
   MLP_Layer *mlp_layer;
@@ -185,7 +185,7 @@ VALUE mlp_network_object_num_layers( VALUE self ) {
 /* @overload layers
  * @!attribute [r] layers
  * Array of layer objects within the network, in order input to output.
- * @return [Array<CoNeNe::MLP::Layer]
+ * @return [Array<RuNeNe::MLP::Layer]
  */
 VALUE mlp_network_object_layers( VALUE self ) {
   int num_layers, count;
@@ -473,7 +473,7 @@ VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
 void init_mlp_network_class( ) {
   volatile VALUE mlp_module;
   volatile VALUE network_class;
-  volatile VALUE conene_root = rb_define_module( "CoNeNe" );
+  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
 
   // These temporary pointers are necessary for YARD to find the right names
   mlp_module = rb_define_module_under( conene_root, "MLP" );

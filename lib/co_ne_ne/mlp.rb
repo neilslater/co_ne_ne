@@ -1,13 +1,13 @@
-class CoNeNe::MLP::Network
+class RuNeNe::MLP::Network
 
   # Creates new network from an array of layers. The layers are connected together to form the
   # new network - this requires that they have matching input and output sizes on each
   # connection, and they will be reconnected if neccessary to form the new network.
-  # @param [Array<CoNeNe::MLP::Layer>] layers an array of layers
-  # @return [CoNeNe::MLP::Network] the new network
+  # @param [Array<RuNeNe::MLP::Layer>] layers an array of layers
+  # @return [RuNeNe::MLP::Network] the new network
   def self.from_layers layers
-    unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( CoNeNe::MLP::Layer ) }
-      raise TypeError, "Expecting an Array with one or more CoNeNe::MLP::Layer objects"
+    unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( RuNeNe::MLP::Layer ) }
+      raise TypeError, "Expecting an Array with one or more RuNeNe::MLP::Layer objects"
     end
 
     # Pre-check for size mismatches
@@ -31,7 +31,7 @@ class CoNeNe::MLP::Network
 
 end
 
-# CoNeNe adds support for Marshal to NArray. Code originally from http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/194510
+# RuNeNe adds support for Marshal to NArray. Code originally from http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/194510
 class NArray
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
@@ -49,7 +49,7 @@ class NArray
   end
 end
 
-module CoNeNe::Transfer::Sigmoid
+module RuNeNe::Transfer::Sigmoid
   # Short name for Sigmoid transfer function, used as a parameter to some methods.
   # @return [Symbol] :sigmoid
   def self.label
@@ -57,7 +57,7 @@ module CoNeNe::Transfer::Sigmoid
   end
 end
 
-module CoNeNe::Transfer::TanH
+module RuNeNe::Transfer::TanH
   # Short name for TanH transfer function, used as a parameter to some methods.
   # @return [Symbol] :tanh
   def self.label
@@ -65,7 +65,7 @@ module CoNeNe::Transfer::TanH
   end
 end
 
-module CoNeNe::Transfer::ReLU
+module RuNeNe::Transfer::ReLU
   # Short name for ReLU transfer function, used as a parameter to some methods.
   # @return [Symbol] :relu
   def self.label
@@ -74,7 +74,7 @@ module CoNeNe::Transfer::ReLU
 end
 
 
-module CoNeNe::Transfer::Linear
+module RuNeNe::Transfer::Linear
   # Short name for Linear transfer function, used as a parameter to some methods.
   # @return [Symbol] :linear
   def self.label
@@ -82,7 +82,7 @@ module CoNeNe::Transfer::Linear
   end
 end
 
-module CoNeNe::Transfer::Softmax
+module RuNeNe::Transfer::Softmax
   # Short name for Softmax transfer function, used as a parameter to some methods.
   # @return [Symbol] :softmax
   def self.label
@@ -90,7 +90,7 @@ module CoNeNe::Transfer::Softmax
   end
 end
 
-class CoNeNe::MLP::Layer
+class RuNeNe::MLP::Layer
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -103,9 +103,9 @@ class CoNeNe::MLP::Layer
   # @!visibility private
   # Constructs a Layer from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
-  # @return [CoNeNe::MLP::Layer] new object
+  # @return [RuNeNe::MLP::Layer] new object
   def self.from_h h
-    CoNeNe::MLP::Layer.from_weights( h[:weights], h[:transfer] )
+    RuNeNe::MLP::Layer.from_weights( h[:weights], h[:transfer] )
   end
 
   # @!visibility private
@@ -120,7 +120,7 @@ class CoNeNe::MLP::Layer
   end
 end
 
-class CoNeNe::MLP::Network
+class RuNeNe::MLP::Network
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -134,11 +134,11 @@ class CoNeNe::MLP::Network
   # @!visibility private
   # Constructs a Layer from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :layers, :lr and :momentum
-  # @return [CoNeNe::MLP::Network] new object
+  # @return [RuNeNe::MLP::Network] new object
   def self.from_h h
     hashed_layers = h[:layers]
-    restored_layers = hashed_layers.map { |lhash| CoNeNe::MLP::Layer.from_h( lhash ) }
-    network = CoNeNe::MLP::Network.from_layers( restored_layers )
+    restored_layers = hashed_layers.map { |lhash| RuNeNe::MLP::Layer.from_h( lhash ) }
+    network = RuNeNe::MLP::Network.from_layers( restored_layers )
     network.learning_rate = h[:lr]
     network.momentum = h[:momentum]
     network
@@ -156,7 +156,7 @@ class CoNeNe::MLP::Network
   end
 end
 
-class CoNeNe::TrainingData
+class RuNeNe::TrainingData
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -169,9 +169,9 @@ class CoNeNe::TrainingData
   # @!visibility private
   # Constructs a TrainingData from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
-  # @return [CoNeNe::MLP::Layer] new object
+  # @return [RuNeNe::MLP::Layer] new object
   def self.from_h h
-    CoNeNe::TrainingData.new( h[:inputs], h[:outputs] )
+    RuNeNe::TrainingData.new( h[:inputs], h[:outputs] )
   end
 
   # @!visibility private

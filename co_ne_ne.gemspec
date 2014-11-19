@@ -5,11 +5,11 @@ require 'co_ne_ne/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "co_ne_ne"
-  spec.version       = CoNeNe::VERSION
+  spec.version       = RuNeNe::VERSION
   spec.authors       = ["Neil Slater"]
   spec.email         = ["slobo777@gmail.com"]
-  spec.description   = %q{Co(nvolutional) Ne(ural) Ne(tworks) for Ruby}
-  spec.summary       = %q{Co(nvolutional) Ne(ural) Ne(tworks) for Ruby}
+  spec.description   = %q{Ru(by) Ne(ural) Ne(tworks)}
+  spec.summary       = %q{Ru(by) Ne(ural) Ne(tworks)}
   spec.homepage      = "https://github.com/neilslater/co_ne_ne"
   spec.license       = "MIT"
 

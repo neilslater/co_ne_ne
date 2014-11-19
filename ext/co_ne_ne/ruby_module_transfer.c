@@ -13,10 +13,10 @@ VALUE TanH = Qnil;
 VALUE ReLU = Qnil;
 VALUE Linear = Qnil;
 
-/* Document-module:  CoNeNe::Transfer::Sigmoid
+/* Document-module:  RuNeNe::Transfer::Sigmoid
  *
  * This is a tried-and-tested transfer function which has desirable properties
- * for backpropagation training. It is used by default in CoNeNe for the last (output)
+ * for backpropagation training. It is used by default in RuNeNe for the last (output)
  * layer. It returns from y =~ 0.0 for large negative x, y = 0.5 when x = 0.0, and  y=~ 1.0
  * for large positive x.
  */
@@ -70,10 +70,10 @@ static VALUE sigmoid_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_sigmoid_derivative_at( y ) );
 }
 
-/* Document-module:  CoNeNe::Transfer::TanH
+/* Document-module:  RuNeNe::Transfer::TanH
  *
  * This is a tried-and-tested transfer function which has desirable properties
- * for backpropagation training, and is used by default in CoNeNe for all hidden
+ * for backpropagation training, and is used by default in RuNeNe for all hidden
  * layers. It returns y =~ -1.0 for large negative x, y = 0.0 when x= 0.0 and
  * y =~ 1.0 for large positive x.
  */
@@ -126,12 +126,12 @@ static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_tanh_derivative_at( y ) );
 }
 
-/* Document-module:  CoNeNe::Transfer::ReLU
+/* Document-module:  RuNeNe::Transfer::ReLU
  *
  * ReLU stands for "Rectifiled Linear Unit". It returns 0.0 for negative input
  * and y = x for positive values. It is fast to calculate, and for some scenarios is
- * quicker to train. It is not used by default inside CoNeNe, but
- * individual CoNeNe::MLP::Layer objects can be constructed to use it.
+ * quicker to train. It is not used by default inside RuNeNe, but
+ * individual RuNeNe::MLP::Layer objects can be constructed to use it.
  */
 
 /* @overload function( x )
@@ -183,7 +183,7 @@ static VALUE relu_derivative_at( VALUE self, VALUE r_y ) {
 }
 
 
-/* Document-module:  CoNeNe::Transfer::Linear
+/* Document-module:  RuNeNe::Transfer::Linear
  *
  * Linear units are useful as output for regression problems. They are coded as a transfer
  * type for convenience (it is easier to have a defined type than detecting nil type and handling
@@ -243,7 +243,7 @@ static VALUE linear_derivative_at( VALUE self, VALUE r_y ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( ) {
-  volatile VALUE conene_root = rb_define_module( "CoNeNe" );
+  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
 
   Transfer = rb_define_module_under( conene_root, "Transfer" );
 

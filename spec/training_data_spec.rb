@@ -1,17 +1,17 @@
 require 'helpers'
 
-describe CoNeNe::TrainingData do
+describe RuNeNe::TrainingData do
   let(:xor_inputs) { NArray.cast( [ [-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0] ], 'sfloat' ) }
   let(:xor_targets) { NArray.cast( [ [0.0], [1.0], [1.0], [0.0] ], 'sfloat' ) }
 
   describe "class methods" do
     describe "#new" do
       it "creates a new object" do
-        expect( CoNeNe::TrainingData.new( xor_inputs, xor_targets ) ).to be_a CoNeNe::TrainingData
+        expect( RuNeNe::TrainingData.new( xor_inputs, xor_targets ) ).to be_a RuNeNe::TrainingData
       end
 
       it "should create training data with properties derived from supplied arrays" do
-        training = CoNeNe::TrainingData.new( xor_inputs, xor_targets )
+        training = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
         expect( training.inputs ).to be xor_inputs
         expect( training.outputs ).to be xor_targets
         expect( training.num_items ).to be 4
@@ -21,7 +21,7 @@ describe CoNeNe::TrainingData do
         quad_xor_inputs = NArray.cast( [ [ [-1.0, -1.0], [1.0, -1.0] ],
             [ [-1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, -1.0], [1.0, -1.0] ],
             [ [ 1.0, -1.0], [1.0, -1.0] ] ], 'sfloat' )
-        training = CoNeNe::TrainingData.new( quad_xor_inputs, xor_targets )
+        training = RuNeNe::TrainingData.new( quad_xor_inputs, xor_targets )
         expect( training.inputs ).to be quad_xor_inputs
         expect( training.outputs ).to be xor_targets
         expect( training.num_items ).to be 4
@@ -30,21 +30,21 @@ describe CoNeNe::TrainingData do
       it "refuses to create new object when inputs or targets rank is too low" do
         bad_inputs = NArray.cast( [ -1.0, 0.0, 0.5, 1.0 ], 'sfloat' )
         bad_targets = NArray.cast( [ 0.0, 1.0, 1.0, 0.0 ], 'sfloat' )
-        expect { CoNeNe::TrainingData.new( bad_inputs, xor_targets ) }.to raise_error ArgumentError
-        expect { CoNeNe::TrainingData.new( xor_inputs, bad_targets ) }.to raise_error ArgumentError
+        expect { RuNeNe::TrainingData.new( bad_inputs, xor_targets ) }.to raise_error ArgumentError
+        expect { RuNeNe::TrainingData.new( xor_inputs, bad_targets ) }.to raise_error ArgumentError
       end
 
       it "refuses to create new object when inputs and targets last dimension does not match" do
         xor_target_missing = NArray.cast( [ [0.0], [1.0], [1.0] ], 'sfloat' )
         expect {
-          CoNeNe::TrainingData.new( xor_inputs, xor_target_missing )
+          RuNeNe::TrainingData.new( xor_inputs, xor_target_missing )
         }.to raise_error ArgumentError
       end
     end
 
     describe "with Marshal" do
       before do
-        @orig_data = CoNeNe::TrainingData.new( xor_inputs, xor_targets )
+        @orig_data = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
         @saved_data = Marshal.dump( @orig_data )
         @copy_data =  Marshal.load( @saved_data )
       end
@@ -67,7 +67,7 @@ describe CoNeNe::TrainingData do
   describe "instance methods" do
     describe "#clone" do
       it "makes deep copy of training data" do
-        @orig_data = CoNeNe::TrainingData.new( xor_inputs, xor_targets )
+        @orig_data = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
         @copy_data =  @orig_data.clone
         expect( @copy_data ).to_not be @orig_data
         expect( @copy_data.num_items ).to be 4
