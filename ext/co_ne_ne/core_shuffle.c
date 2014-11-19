@@ -1,4 +1,4 @@
-// ext/co_ne_ne/core_shuffle.c
+// ext/ru_ne_ne/core_shuffle.c
 
 #include "core_shuffle.h"
 

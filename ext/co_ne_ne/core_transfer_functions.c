@@ -1,4 +1,4 @@
-// ext/co_ne_ne/core_transfer_functions.c
+// ext/ru_ne_ne/core_transfer_functions.c
 
 #include "core_transfer_functions.h"
 

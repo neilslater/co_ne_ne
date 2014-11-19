@@ -1,4 +1,4 @@
-# ext/co_ne_ne/extconf.rb
+# ext/ru_ne_ne/extconf.rb
 require "mkmf"
 require "rubygems"
 
@@ -24,4 +24,4 @@ if /cygwin|mingw/ =~ RUBY_PLATFORM
 end
 
 $CFLAGS << ' -O3 -funroll-loops'
-create_makefile( 'co_ne_ne/co_ne_ne' )
+create_makefile( 'ru_ne_ne/ru_ne_ne' )

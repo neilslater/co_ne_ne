@@ -1,4 +1,4 @@
-// ext/co_ne_ne/core_convolve.c
+// ext/ru_ne_ne/core_convolve.c
 
 #include "core_convolve.h"
 

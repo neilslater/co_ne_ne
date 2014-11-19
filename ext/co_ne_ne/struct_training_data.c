@@ -1,4 +1,4 @@
-// ext/co_ne_ne/struct_training_data.c
+// ext/ru_ne_ne/struct_training_data.c
 
 #include "struct_training_data.h"
 

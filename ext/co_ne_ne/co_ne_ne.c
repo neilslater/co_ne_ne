@@ -1,6 +1,6 @@
-// ext/co_ne_ne/co_ne_ne.c
+// ext/ru_ne_ne/ru_ne_ne.c
 
-#include "ruby_module_co_ne_ne.h"
+#include "ruby_module_ru_ne_ne.h"
 
 /*
  *  Naming conventions used in this C code:
@@ -18,6 +18,6 @@
  *
 */
 
-void Init_co_ne_ne() {
-  init_module_co_ne_ne();
+void Init_ru_ne_ne() {
+  init_module_ru_ne_ne();
 }

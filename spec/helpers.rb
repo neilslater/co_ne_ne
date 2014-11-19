@@ -1,10 +1,10 @@
-# co_ne_ne/spec/helpers.rb
+# ru_ne_ne/spec/helpers.rb
 require 'coveralls'
 require 'mocha/api'
 
 Coveralls.wear!
 
-require 'co_ne_ne'
+require 'ru_ne_ne'
 
 # Matcher compares NArrays numerically
 RSpec::Matchers.define :be_narray_like do |expected_narray|

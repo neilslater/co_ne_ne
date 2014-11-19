@@ -1,4 +1,4 @@
-// ext/co_ne_ne/core_narray.c
+// ext/ru_ne_ne/core_narray.c
 
 #include "core_narray.h"
 

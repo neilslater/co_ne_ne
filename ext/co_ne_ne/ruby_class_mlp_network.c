@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_class_mlp_network.c
+// ext/ru_ne_ne/ruby_class_mlp_network.c
 
 #include "ruby_class_mlp_network.h"
 

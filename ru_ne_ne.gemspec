@@ -1,10 +1,10 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'co_ne_ne/version'
+require 'ru_ne_ne/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "co_ne_ne"
+  spec.name          = "ru_ne_ne"
   spec.version       = RuNeNe::VERSION
   spec.authors       = ["Neil Slater"]
   spec.email         = ["slobo777@gmail.com"]

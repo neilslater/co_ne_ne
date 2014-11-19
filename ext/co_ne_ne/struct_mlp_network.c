@@ -1,4 +1,4 @@
-// ext/co_ne_ne/struct_mlp_network.c
+// ext/ru_ne_ne/struct_mlp_network.c
 
 #include "struct_mlp_network.h"
 

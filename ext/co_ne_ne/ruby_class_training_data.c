@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_class_training_data.c
+// ext/ru_ne_ne/ruby_class_training_data.c
 
 #include "ruby_class_training_data.h"
 

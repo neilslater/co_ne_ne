@@ -1,4 +1,4 @@
-// ext/co_ne_ne/struct_mlp_layer.c
+// ext/ru_ne_ne/struct_mlp_layer.c
 
 #include "struct_mlp_layer.h"
 

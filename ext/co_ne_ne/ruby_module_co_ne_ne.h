@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_module_co_ne_ne.h
+// ext/ru_ne_ne/ruby_module_ru_ne_ne.h
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -20,6 +20,6 @@
 #include "core_mt.h"
 #include "core_shuffle.h"
 
-void init_module_co_ne_ne();
+void init_module_ru_ne_ne();
 
 #endif

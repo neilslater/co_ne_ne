@@ -1,6 +1,6 @@
-// ext/co_ne_ne/ruby_module_co_ne_ne.c
+// ext/ru_ne_ne/ruby_module_ru_ne_ne.c
 
-#include "ruby_module_co_ne_ne.h"
+#include "ruby_module_ru_ne_ne.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -171,7 +171,7 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
   return arr;
 }
 
-void init_module_co_ne_ne() {
+void init_module_ru_ne_ne() {
   RuNeNe = rb_define_module( "RuNeNe" );
   rb_define_singleton_method( RuNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( RuNeNe, "max_pool", narray_max_pool, 3 );

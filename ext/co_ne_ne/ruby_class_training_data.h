@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_class_training_data.h
+// ext/ru_ne_ne/ruby_class_training_data.h
 
 #ifndef RUBY_CLASS_NET_TRAINING_H
 #define RUBY_CLASS_NET_TRAINING_H

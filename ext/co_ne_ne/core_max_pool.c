@@ -1,4 +1,4 @@
-// ext/co_ne_ne/core_max_pool.c
+// ext/ru_ne_ne/core_max_pool.c
 
 #include "core_max_pool.h"
 

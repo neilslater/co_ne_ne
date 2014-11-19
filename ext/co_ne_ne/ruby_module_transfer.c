@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_module_transfer.c
+// ext/ru_ne_ne/ruby_module_transfer.c
 
 #include "ruby_module_transfer.h"
 

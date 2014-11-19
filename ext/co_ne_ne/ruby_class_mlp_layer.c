@@ -1,4 +1,4 @@
-// ext/co_ne_ne/ruby_class_mlp_layer.c
+// ext/ru_ne_ne/ruby_class_mlp_layer.c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -8,7 +8,7 @@
 
 #include "ruby_class_mlp_layer.h"
 
-// These are extern in other code (TODO: Move module and class defs to co_ne_ne.c ?)
+// These are extern in other code (TODO: Move module and class defs to ru_ne_ne.c ?)
 VALUE MLP = Qnil;
 VALUE Layer = Qnil;
 VALUE Network = Qnil;
