@@ -8,12 +8,12 @@ RSpec::Core::RakeTask.new(:test) do |t|
   t.verbose = true
 end
 
-gemspec = Gem::Specification.load('co_ne_ne.gemspec')
+gemspec = Gem::Specification.load('ru_ne_ne.gemspec')
 Rake::ExtensionTask.new do |ext|
-  ext.name = 'co_ne_ne'
+  ext.name = 'ru_ne_ne'
   ext.source_pattern = "*.{c,h}"
-  ext.ext_dir = 'ext/co_ne_ne'
-  ext.lib_dir = 'lib/co_ne_ne'
+  ext.ext_dir = 'ext/ru_ne_ne'
+  ext.lib_dir = 'lib/ru_ne_ne'
   ext.gem_spec = gemspec
 end
 
