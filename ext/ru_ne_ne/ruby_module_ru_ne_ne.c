@@ -7,17 +7,17 @@
 // To hold the module object, plus child Module and Class items
 VALUE RuNeNe = Qnil;
 
-VALUE Transfer = Qnil;
-VALUE Sigmoid = Qnil;
-VALUE TanH = Qnil;
-VALUE ReLU = Qnil;
-VALUE Linear = Qnil;
-VALUE Softmax = Qnil;
+VALUE RuNeNe_Transfer = Qnil;
+VALUE RuNeNe_Transfer_Sigmoid = Qnil;
+VALUE RuNeNe_Transfer_TanH = Qnil;
+VALUE RuNeNe_Transfer_ReLU = Qnil;
+VALUE RuNeNe_Transfer_Linear = Qnil;
+VALUE RuNeNe_Transfer_Softmax = Qnil;
 
-VALUE Layer = Qnil;
-VALUE FeedForward  = Qnil;
+VALUE RuNeNe_Layer = Qnil;
+VALUE RuNeNe_Layer_FeedForward  = Qnil;
 
-VALUE Network = Qnil;
+VALUE RuNeNe_Network = Qnil;
 
 VALUE RuNeNe_TrainingData = Qnil;
 
@@ -188,17 +188,17 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
 void init_module_ru_ne_ne() {
   RuNeNe = rb_define_module( "RuNeNe" );
 
-  Transfer = rb_define_module_under( RuNeNe, "Transfer" );
-    Sigmoid = rb_define_module_under( Transfer, "Sigmoid" );
-    TanH = rb_define_module_under( Transfer, "TanH" );
-    ReLU = rb_define_module_under( Transfer, "ReLU" );
-    Linear = rb_define_module_under( Transfer, "Linear" );
-    Softmax = rb_define_module_under( Transfer, "Softmax" );
+  RuNeNe_Transfer = rb_define_module_under( RuNeNe, "Transfer" );
+  RuNeNe_Transfer_Sigmoid = rb_define_module_under( RuNeNe_Transfer, "Sigmoid" );
+  RuNeNe_Transfer_TanH = rb_define_module_under( RuNeNe_Transfer, "TanH" );
+  RuNeNe_Transfer_ReLU = rb_define_module_under( RuNeNe_Transfer, "ReLU" );
+  RuNeNe_Transfer_Linear = rb_define_module_under( RuNeNe_Transfer, "Linear" );
+  RuNeNe_Transfer_Softmax = rb_define_module_under( RuNeNe_Transfer, "Softmax" );
 
-  Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
-    FeedForward = rb_define_class_under( Layer, "FeedForward", rb_cObject );
+  RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
+  RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );
 
-  Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
+  RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
 
   RuNeNe_TrainingData = rb_define_class_under( RuNeNe, "TrainingData", rb_cObject );
 

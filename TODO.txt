@@ -1,8 +1,5 @@
 CoNeNe TODOs:
 
-    Clean up, rename CoNeNe . . . **RuNeNe**
-        RuNeNe::Layer::FeedForward, RuNeNe::Network, RuNeNe::TrainingData, RuNeNe::Activation::Sigmoid... ???
-
     Names:
         RuNeNe::MLP::Network -> RuNeNe::Network
         RuNeNe::MLP::Layer   -> RuNeNe::Layer::FeedForward

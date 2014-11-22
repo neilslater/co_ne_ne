@@ -230,23 +230,23 @@ static VALUE linear_derivative_at( VALUE self, VALUE r_y ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( ) {
-  rb_define_singleton_method( Sigmoid, "function", sigmoid_function, 1 );
-  rb_define_singleton_method( Sigmoid, "bulk_apply_function", sigmoid_bulk_apply_function, 1 );
-  rb_define_singleton_method( Sigmoid, "derivative", sigmoid_derivative, 1 );
-  rb_define_singleton_method( Sigmoid, "derivative_at", sigmoid_derivative_at, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Sigmoid, "function", sigmoid_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Sigmoid, "bulk_apply_function", sigmoid_bulk_apply_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Sigmoid, "derivative", sigmoid_derivative, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Sigmoid, "derivative_at", sigmoid_derivative_at, 1 );
 
-  rb_define_singleton_method( TanH, "function", tanh_function, 1 );
-  rb_define_singleton_method( TanH, "bulk_apply_function", tanh_bulk_apply_function, 1 );
-  rb_define_singleton_method( TanH, "derivative", tanh_derivative, 1 );
-  rb_define_singleton_method( TanH, "derivative_at", tanh_derivative_at, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_TanH, "function", tanh_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_TanH, "bulk_apply_function", tanh_bulk_apply_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_TanH, "derivative", tanh_derivative, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_TanH, "derivative_at", tanh_derivative_at, 1 );
 
-  rb_define_singleton_method( ReLU, "function", relu_function, 1 );
-  rb_define_singleton_method( ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );
-  rb_define_singleton_method( ReLU, "derivative", relu_derivative, 1 );
-  rb_define_singleton_method( ReLU, "derivative_at", relu_derivative_at, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_ReLU, "function", relu_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_ReLU, "derivative", relu_derivative, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_ReLU, "derivative_at", relu_derivative_at, 1 );
 
-  rb_define_singleton_method( Linear, "function", linear_function, 1 );
-  rb_define_singleton_method( Linear, "bulk_apply_function", linear_bulk_apply_function, 1 );
-  rb_define_singleton_method( Linear, "derivative", linear_derivative, 1 );
-  rb_define_singleton_method( Linear, "derivative_at", linear_derivative_at, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Linear, "function", linear_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Linear, "bulk_apply_function", linear_bulk_apply_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Linear, "derivative", linear_derivative, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Linear, "derivative_at", linear_derivative_at, 1 );
 }

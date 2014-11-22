@@ -26,7 +26,7 @@ inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
 
 VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn ) {
   MLP_Layer *mlp_layer;
-  VALUE mlp_layer_ruby = mlp_layer_alloc( FeedForward );
+  VALUE mlp_layer_ruby = mlp_layer_alloc( RuNeNe_Layer_FeedForward );
   mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
 
   mlp_layer->num_inputs = n_inputs;
@@ -45,7 +45,7 @@ VALUE mlp_layer_clone_ruby_object( VALUE orig ) {
   MLP_Layer *mlp_layer_orig;
   mlp_layer_orig = get_mlp_layer_struct( orig );
 
-  copy =  mlp_layer_alloc( FeedForward );
+  copy =  mlp_layer_alloc( RuNeNe_Layer_FeedForward );
   mlp_layer_copy = get_mlp_layer_struct( copy );
 
   mlp_layer_copy->num_inputs = mlp_layer_orig->num_inputs;
@@ -127,7 +127,7 @@ void assert_not_in_input_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
 VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
   MLP_Layer *mlp_layer;
   struct NARRAY *na_weights;
-  VALUE mlp_layer_ruby = mlp_layer_alloc( FeedForward );
+  VALUE mlp_layer_ruby = mlp_layer_alloc( RuNeNe_Layer_FeedForward );
   mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
 
   GetNArray( weights, na_weights );
@@ -286,19 +286,19 @@ VALUE mlp_layer_object_transfer( VALUE self ) {
   VALUE t;
   switch ( mlp_layer->transfer_fn ) {
     case SIGMOID:
-      t = Sigmoid;
+      t = RuNeNe_Transfer_Sigmoid;
       break;
     case TANH:
-      t = TanH;
+      t = RuNeNe_Transfer_TanH;
       break;
     case RELU:
-      t = ReLU;
+      t = RuNeNe_Transfer_ReLU;
       break;
     case LINEAR:
-      t = Linear;
+      t = RuNeNe_Transfer_Linear;
       break;
     case SOFTMAX:
-      t = Softmax;
+      t = RuNeNe_Transfer_Softmax;
       break;
   }
   return t;
@@ -644,31 +644,31 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 
 void init_mlp_layer_class() {
   // FeedForward instantiation and class methods
-  rb_define_alloc_func( FeedForward, mlp_layer_alloc );
-  rb_define_method( FeedForward, "initialize", mlp_layer_class_initialize, -1 );
-  rb_define_method( FeedForward, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
-  rb_define_singleton_method( FeedForward, "from_weights", mlp_layer_class_from_weights, -1 );
+  rb_define_alloc_func( RuNeNe_Layer_FeedForward, mlp_layer_alloc );
+  rb_define_method( RuNeNe_Layer_FeedForward, "initialize", mlp_layer_class_initialize, -1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
+  rb_define_singleton_method( RuNeNe_Layer_FeedForward, "from_weights", mlp_layer_class_from_weights, -1 );
 
   // FeedForward attributes
-  rb_define_method( FeedForward, "num_inputs", mlp_layer_object_num_inputs, 0 );
-  rb_define_method( FeedForward, "num_outputs", mlp_layer_object_num_outputs, 0 );
-  rb_define_method( FeedForward, "transfer", mlp_layer_object_transfer, 0 );
-  rb_define_method( FeedForward, "input", mlp_layer_object_input, 0 );
-  rb_define_method( FeedForward, "output", mlp_layer_object_output, 0 );
-  rb_define_method( FeedForward, "weights", mlp_layer_object_weights, 0 );
-  rb_define_method( FeedForward, "input_layer", mlp_layer_object_input_layer, 0 );
-  rb_define_method( FeedForward, "output_layer", mlp_layer_object_output_layer, 0 );
-  rb_define_method( FeedForward, "output_deltas", mlp_layer_object_output_deltas, 0 );
-  rb_define_method( FeedForward, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "num_inputs", mlp_layer_object_num_inputs, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "num_outputs", mlp_layer_object_num_outputs, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "transfer", mlp_layer_object_transfer, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "input", mlp_layer_object_input, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "output", mlp_layer_object_output, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "weights", mlp_layer_object_weights, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "input_layer", mlp_layer_object_input_layer, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "output_layer", mlp_layer_object_output_layer, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "output_deltas", mlp_layer_object_output_deltas, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
 
   // FeedForward methods
-  rb_define_method( FeedForward, "init_weights", mlp_layer_object_init_weights, -1 );
-  rb_define_method( FeedForward, "set_input", mlp_layer_object_set_input, 1 );
-  rb_define_method( FeedForward, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
-  rb_define_method( FeedForward, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
-  rb_define_method( FeedForward, "run", mlp_layer_object_run, 0 );
-  rb_define_method( FeedForward, "ms_error", mlp_layer_object_ms_error, 1 );
-  rb_define_method( FeedForward, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
-  rb_define_method( FeedForward, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
-  rb_define_method( FeedForward, "update_weights", mlp_layer_object_update_weights, -1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "init_weights", mlp_layer_object_init_weights, -1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "set_input", mlp_layer_object_set_input, 1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "run", mlp_layer_object_run, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "ms_error", mlp_layer_object_ms_error, 1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
+  rb_define_method( RuNeNe_Layer_FeedForward, "update_weights", mlp_layer_object_update_weights, -1 );
 }

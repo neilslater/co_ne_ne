@@ -32,7 +32,7 @@ void assert_value_wraps_mlp_network( VALUE obj ) {
 VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum ) {
   MLP_Network *mlp_network;
   MLP_Layer *mlp_layer;
-  volatile VALUE mlp_network_ruby = mlp_network_alloc( Network );
+  volatile VALUE mlp_network_ruby = mlp_network_alloc( RuNeNe_Network );
   mlp_network = get_mlp_network_struct( mlp_network_ruby );
   Data_Get_Struct( layer, MLP_Layer, mlp_layer );
 
@@ -472,26 +472,26 @@ VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
 
 void init_mlp_network_class( ) {
   // Network instantiation and class methods
-  rb_define_alloc_func( Network, mlp_network_alloc );
-  rb_define_method( Network, "initialize", mlp_network_class_initialize, 3 );
-  rb_define_method( Network, "initialize_copy", mlp_network_class_initialize_copy, 1 );
+  rb_define_alloc_func( RuNeNe_Network, mlp_network_alloc );
+  rb_define_method( RuNeNe_Network, "initialize", mlp_network_class_initialize, 3 );
+  rb_define_method( RuNeNe_Network, "initialize_copy", mlp_network_class_initialize_copy, 1 );
 
   // Network attributes
-  rb_define_method( Network, "num_layers", mlp_network_object_num_layers, 0 );
-  rb_define_method( Network, "num_inputs", mlp_network_object_num_inputs, 0 );
-  rb_define_method( Network, "num_outputs", mlp_network_object_num_outputs, 0 );
-  rb_define_method( Network, "input", mlp_network_object_input, 0 );
-  rb_define_method( Network, "output", mlp_network_object_output, 0 );
-  rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
-  rb_define_method( Network, "learning_rate", mlp_network_object_learning_rate, 0 );
-  rb_define_method( Network, "momentum", mlp_network_object_momentum, 0 );
-  rb_define_method( Network, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
-  rb_define_method( Network, "momentum=", mlp_network_object_set_momentum, 1 );
+  rb_define_method( RuNeNe_Network, "num_layers", mlp_network_object_num_layers, 0 );
+  rb_define_method( RuNeNe_Network, "num_inputs", mlp_network_object_num_inputs, 0 );
+  rb_define_method( RuNeNe_Network, "num_outputs", mlp_network_object_num_outputs, 0 );
+  rb_define_method( RuNeNe_Network, "input", mlp_network_object_input, 0 );
+  rb_define_method( RuNeNe_Network, "output", mlp_network_object_output, 0 );
+  rb_define_method( RuNeNe_Network, "layers", mlp_network_object_layers, 0 );
+  rb_define_method( RuNeNe_Network, "learning_rate", mlp_network_object_learning_rate, 0 );
+  rb_define_method( RuNeNe_Network, "momentum", mlp_network_object_momentum, 0 );
+  rb_define_method( RuNeNe_Network, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
+  rb_define_method( RuNeNe_Network, "momentum=", mlp_network_object_set_momentum, 1 );
 
   // Network methods
-  rb_define_method( Network, "init_weights", mlp_network_object_init_weights, -1 );
-  rb_define_method( Network, "run", mlp_network_object_run, 1 );
-  rb_define_method( Network, "ms_error", mlp_network_object_ms_error, 1 );
-  rb_define_method( Network, "train_once", mlp_network_object_train_once, 2 );
-  rb_define_singleton_method( Network, "from_layer", mlp_network_class_from_layer, 1 );
+  rb_define_method( RuNeNe_Network, "init_weights", mlp_network_object_init_weights, -1 );
+  rb_define_method( RuNeNe_Network, "run", mlp_network_object_run, 1 );
+  rb_define_method( RuNeNe_Network, "ms_error", mlp_network_object_ms_error, 1 );
+  rb_define_method( RuNeNe_Network, "train_once", mlp_network_object_train_once, 2 );
+  rb_define_singleton_method( RuNeNe_Network, "from_layer", mlp_network_class_from_layer, 1 );
 }
