@@ -211,7 +211,7 @@ void init_module_ru_ne_ne() {
 
   init_transfer_module();
   init_layer_ff_class();
-  init_mlp_network_class();
+  init_network_class();
   init_training_data_class();
   init_srand_by_time();
 }

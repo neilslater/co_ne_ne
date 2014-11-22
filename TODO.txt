@@ -1,7 +1,6 @@
 CoNeNe TODOs:
 
     Names:
-        MLP_Layer *mlp_layer -> Layer_FF *layer_ff  (layer_ff?) ... s_Layer_FF ??  rv_layer_ff
         ruby_class_mlp_layer.c  ->  ruby_class_layer_feed_forward.c
         ruby_class_mlp_layer.h  ->
         VALUE mlp_layer_        ->  VALUE rv_layer_ff_

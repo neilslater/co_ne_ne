@@ -1,4 +1,4 @@
-// ext/ru_ne_ne/ruby_class_mlp_network.h
+// ext/ru_ne_ne/ruby_class_network.h
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -15,6 +15,6 @@
 #include "ruby_class_layer_ff.h"
 #include "shared_vars.h"
 
-void init_mlp_network_class( );
+void init_network_class( );
 
 #endif

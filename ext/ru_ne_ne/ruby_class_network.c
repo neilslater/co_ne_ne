@@ -1,6 +1,6 @@
-// ext/ru_ne_ne/ruby_class_mlp_network.c
+// ext/ru_ne_ne/ruby_class_network.c
 
-#include "ruby_class_mlp_network.h"
+#include "ruby_class_network.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -8,41 +8,41 @@
 //  struct_layer_ff.c and struct_network.c
 //
 
-inline VALUE mlp_network_as_ruby_class( MLP_Network *mlp_network , VALUE klass ) {
-  return Data_Wrap_Struct( klass, p_mlp_network_gc_mark, p_mlp_network_destroy, mlp_network );
+inline VALUE network_as_ruby_class( MLP_Network *network , VALUE klass ) {
+  return Data_Wrap_Struct( klass, p_network_gc_mark, p_network_destroy, network );
 }
 
-VALUE mlp_network_alloc(VALUE klass) {
-  return mlp_network_as_ruby_class( p_mlp_network_create(), klass );
+VALUE network_alloc(VALUE klass) {
+  return network_as_ruby_class( p_network_create(), klass );
 }
 
-inline MLP_Network *get_mlp_network_struct( VALUE obj ) {
-  MLP_Network *mlp_network;
-  Data_Get_Struct( obj, MLP_Network, mlp_network );
-  return mlp_network;
+inline MLP_Network *get_network_struct( VALUE obj ) {
+  MLP_Network *network;
+  Data_Get_Struct( obj, MLP_Network, network );
+  return network;
 }
 
-void assert_value_wraps_mlp_network( VALUE obj ) {
+void assert_value_wraps_network( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_mlp_network_destroy) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_network_destroy) {
     rb_raise( rb_eTypeError, "Expected a Network object, but got something else" );
   }
 }
 
-VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum ) {
-  MLP_Network *mlp_network;
+VALUE network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum ) {
+  MLP_Network *network;
   s_Layer_FF *layer_ff;
-  volatile VALUE mlp_network_ruby = mlp_network_alloc( RuNeNe_Network );
-  mlp_network = get_mlp_network_struct( mlp_network_ruby );
+  volatile VALUE network_ruby = network_alloc( RuNeNe_Network );
+  network = get_network_struct( network_ruby );
   Data_Get_Struct( layer, s_Layer_FF, layer_ff );
 
   p_layer_ff_clear_input( layer_ff );
   layer_ff->locked_input = 1;
-  mlp_network->first_layer = layer;
-  mlp_network->eta = eta;
-  mlp_network->momentum = momentum;
+  network->first_layer = layer;
+  network->eta = eta;
+  network->momentum = momentum;
 
-  return mlp_network_ruby;
+  return network_ruby;
 }
 
 
@@ -72,9 +72,9 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  * @param [Integer] num_outputs size of output array for last layer
  * @return [RuNeNe::Network] new network consisting of new layers, with random weights
  */
-VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
+VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
   ninputs = NUM2INT( num_inputs );
   noutputs = NUM2INT( num_outputs );
 
@@ -103,7 +103,7 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
   }
   layer_sizes[nhlayers+1] = noutputs;
 
-  p_mlp_network_init_layers( mlp_network, nhlayers + 1, layer_sizes );
+  p_network_init_layers( network, nhlayers + 1, layer_sizes );
 
   xfree( layer_sizes );
   return self;
@@ -114,9 +114,9 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
  * turn have deep copies of all weights etc)
  * @return [RuNeNe::Network] new network with same weights.
  */
-VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
-  MLP_Network *mlp_network_copy;
-  MLP_Network *mlp_network_orig;
+VALUE network_class_initialize_copy( VALUE copy, VALUE orig ) {
+  MLP_Network *network_copy;
+  MLP_Network *network_orig;
   volatile VALUE orig_layer;
   volatile VALUE copy_layer;
   volatile VALUE copy_layer_prev;
@@ -125,15 +125,15 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   s_Layer_FF *layer_ff_copy_prev;
 
   if (copy == orig) return copy;
-  mlp_network_copy = get_mlp_network_struct( copy );
-  mlp_network_orig = get_mlp_network_struct( orig );
-  mlp_network_copy->eta = mlp_network_orig->eta;
-  mlp_network_copy->momentum = mlp_network_orig->momentum;
+  network_copy = get_network_struct( copy );
+  network_orig = get_network_struct( orig );
+  network_copy->eta = network_orig->eta;
+  network_copy->momentum = network_orig->momentum;
 
   // Copy first layer
-  orig_layer = mlp_network_orig->first_layer;
+  orig_layer = network_orig->first_layer;
   copy_layer = layer_ff_clone_ruby_object( orig_layer );
-  mlp_network_copy->first_layer = copy_layer;
+  network_copy->first_layer = copy_layer;
   Data_Get_Struct( orig_layer, s_Layer_FF, layer_ff_orig );
   Data_Get_Struct( copy_layer, s_Layer_FF, layer_ff_copy_prev );
   copy_layer_prev = copy_layer;
@@ -162,14 +162,14 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
  * @param [RuNeNe::Layer::FeedForward] layer first layer of new network
  * @return [RuNeNe::Network] new network
  */
-VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
+VALUE network_class_from_layer( VALUE self, VALUE layer ) {
   s_Layer_FF *layer_ff;
   assert_value_wraps_layer_ff( layer );
   Data_Get_Struct( layer, s_Layer_FF, layer_ff );
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     rb_raise( rb_eArgError, "Cannot create network from layer with an attached input layer." );
   }
-  return mlp_network_new_ruby_object_from_layer( layer, 1.0, 0.5 );
+  return network_new_ruby_object_from_layer( layer, 1.0, 0.5 );
 }
 
 /* @overload num_layers
@@ -177,9 +177,9 @@ VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
  * Total number of layers in the network.
  * @return [Integer]
  */
-VALUE mlp_network_object_num_layers( VALUE self ) {
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
-  return INT2NUM( p_mlp_network_count_layers( mlp_network ) );
+VALUE network_object_num_layers( VALUE self ) {
+  MLP_Network *network = get_network_struct( self );
+  return INT2NUM( p_network_count_layers( network ) );
 }
 
 /* @overload layers
@@ -187,17 +187,17 @@ VALUE mlp_network_object_num_layers( VALUE self ) {
  * Array of layer objects within the network, in order input to output.
  * @return [Array<RuNeNe::Layer::FeedForward]
  */
-VALUE mlp_network_object_layers( VALUE self ) {
+VALUE network_object_layers( VALUE self ) {
   int num_layers, count;
   VALUE layer_object, all_layers;
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
-  num_layers = p_mlp_network_count_layers( mlp_network );
+  num_layers = p_network_count_layers( network );
 
   all_layers = rb_ary_new2( num_layers );
   count = 0;
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     rb_ary_store( all_layers, count, layer_object );
     count++;
@@ -215,10 +215,10 @@ VALUE mlp_network_object_layers( VALUE self ) {
  * @param [Float] limits supply 0, 1 or 2 Float values
  * @return [nil]
  */
-VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
+VALUE network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
   float min_weight, max_weight;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
   rb_scan_args( argc, argv, "02", &minw, &maxw );
 
@@ -235,7 +235,7 @@ VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
     max_weight = 0.8;
   }
 
-  p_mlp_network_init_layer_weights( mlp_network, min_weight, max_weight );
+  p_network_init_layer_weights( network, min_weight, max_weight );
 
   return Qnil;
 }
@@ -246,9 +246,9 @@ VALUE mlp_network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
  * used for training targets.
  * @return [Integer]
  */
-VALUE mlp_network_object_num_outputs( VALUE self ) {
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
-  return INT2NUM( p_mlp_network_num_outputs( mlp_network ) );
+VALUE network_object_num_outputs( VALUE self ) {
+  MLP_Network *network = get_network_struct( self );
+  return INT2NUM( p_network_num_outputs( network ) );
 }
 
 /* @overload num_inputs
@@ -257,9 +257,9 @@ VALUE mlp_network_object_num_outputs( VALUE self ) {
  * used for all inputs to the network, and cannot be altered after the network is created.
  * @return [Integer]
  */
-VALUE mlp_network_object_num_inputs( VALUE self ) {
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
-  return INT2NUM( p_mlp_network_num_inputs( mlp_network ) );
+VALUE network_object_num_inputs( VALUE self ) {
+  MLP_Network *network = get_network_struct( self );
+  return INT2NUM( p_network_num_inputs( network ) );
 }
 
 /* @overload output
@@ -267,11 +267,11 @@ VALUE mlp_network_object_num_inputs( VALUE self ) {
  * Current output from the network.
  * @return [NArray<sfloat>] one-dimensional array of single-precision floats
  */
-VALUE mlp_network_object_output( VALUE self ) {
+VALUE network_object_output( VALUE self ) {
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
-  layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  layer_ff = p_network_last_layer_ff( network );
   return layer_ff->narr_output;
 }
 
@@ -280,11 +280,11 @@ VALUE mlp_network_object_output( VALUE self ) {
  * Current input to the network.
  * @return [NArray<sfloat>,nil] one-dimensional array of single-precision floats
  */
-VALUE mlp_network_object_input( VALUE self ) {
+VALUE network_object_input( VALUE self ) {
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
-  Data_Get_Struct( mlp_network->first_layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( network->first_layer, s_Layer_FF, layer_ff );
   return layer_ff->narr_input;
 }
 
@@ -294,14 +294,14 @@ VALUE mlp_network_object_input( VALUE self ) {
  * @param [NArray] new_input one-dimensional array of #num_inputs single-precision floats
  * @return [NArray<sfloat>] the #output array
  */
-VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
+VALUE network_object_run( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   volatile VALUE layer_object;
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
@@ -316,8 +316,8 @@ VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
   }
 
   p_layer_ff_set_input( layer_ff, val_input );
-  p_mlp_network_run( mlp_network );
-  layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  p_network_run( network );
+  layer_ff = p_network_last_layer_ff( network );
   return layer_ff->narr_output;
 }
 
@@ -326,12 +326,12 @@ VALUE mlp_network_object_run( VALUE self, VALUE new_input ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [Float]
  */
-VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
+VALUE network_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
   val_target = na_cast_object(target, NA_SFLOAT);
   GetNArray( val_target, na_target );
@@ -340,7 +340,7 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  layer_ff = p_network_last_layer_ff( network );
 
   if ( na_target->total != layer_ff->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, layer_ff->num_outputs );
@@ -358,7 +358,7 @@ VALUE mlp_network_object_ms_error( VALUE self, VALUE target ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [nil]
  */
-VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
+VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   struct NARRAY *na_target;
@@ -367,11 +367,11 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
   volatile VALUE layer_object;
 
   s_Layer_FF *layer_ff;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Check input is valid
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
@@ -394,7 +394,7 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  layer_ff = p_network_last_layer_ff( network );
 
   if ( na_target->total != layer_ff->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, layer_ff->num_outputs );
@@ -402,7 +402,7 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Run the training
-  p_mlp_network_train_once( mlp_network, val_input, val_target );
+  p_network_train_once( network, val_input, val_target );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Return nil
@@ -414,9 +414,9 @@ VALUE mlp_network_object_train_once( VALUE self, VALUE new_input, VALUE target )
  * Multiplies weight adjustments due to error deltas during training. Range from 1e-6 to 1000.0
  * @return [Float]
  */
-VALUE mlp_network_object_learning_rate( VALUE self ) {
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
-  return FLT2NUM( mlp_network->eta );
+VALUE network_object_learning_rate( VALUE self ) {
+  MLP_Network *network = get_network_struct( self );
+  return FLT2NUM( network->eta );
 }
 
 /* @overload learning_rate=( new_learning_rate )
@@ -425,18 +425,18 @@ VALUE mlp_network_object_learning_rate( VALUE self ) {
  * @param [Float] new_learning_rate Range from 1e-6 to 1000.0.
  * @return [Float]
  */
-VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
+VALUE network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
   float new_eta;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
   new_eta = NUM2FLT( new_learning_rate );
   if ( new_eta < 1.0e-9 || new_eta > 1000.0 ) {
     rb_raise( rb_eArgError, "Learning rate %0.f out of bounds (0.000000001 to 1000.0)", new_eta );
   }
 
-  mlp_network->eta = new_eta;
+  network->eta = new_eta;
 
-  return FLT2NUM( mlp_network->eta );
+  return FLT2NUM( network->eta );
 }
 
 /* @overload momentum
@@ -444,9 +444,9 @@ VALUE mlp_network_object_set_learning_rate( VALUE self, VALUE new_learning_rate 
  * Multiplies weight adjustments due to previous adjustment during training. Range from 0.0 to 0.99
  * @return [Float]
  */
-VALUE mlp_network_object_momentum( VALUE self ) {
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
-  return FLT2NUM( mlp_network->momentum );
+VALUE network_object_momentum( VALUE self ) {
+  MLP_Network *network = get_network_struct( self );
+  return FLT2NUM( network->momentum );
 }
 
 /* @overload momentum=( new_momentum )
@@ -455,43 +455,43 @@ VALUE mlp_network_object_momentum( VALUE self ) {
  * @param [Float] new_momentum Range from 0.0 to 0.99
  * @return [Float]
  */
-VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
+VALUE network_object_set_momentum( VALUE self, VALUE val_momentum ) {
   float new_momentum;
-  MLP_Network *mlp_network = get_mlp_network_struct( self );
+  MLP_Network *network = get_network_struct( self );
 
   new_momentum = NUM2FLT( val_momentum );
   if ( new_momentum < 0.0 || new_momentum > 0.999 ) {
     rb_raise( rb_eArgError, "Momentum %0.6f out of bounds (0.0 to 0.99)", new_momentum );
   }
 
-  mlp_network->momentum = new_momentum;
-  return FLT2NUM( mlp_network->momentum );
+  network->momentum = new_momentum;
+  return FLT2NUM( network->momentum );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_mlp_network_class( ) {
+void init_network_class( ) {
   // Network instantiation and class methods
-  rb_define_alloc_func( RuNeNe_Network, mlp_network_alloc );
-  rb_define_method( RuNeNe_Network, "initialize", mlp_network_class_initialize, 3 );
-  rb_define_method( RuNeNe_Network, "initialize_copy", mlp_network_class_initialize_copy, 1 );
+  rb_define_alloc_func( RuNeNe_Network, network_alloc );
+  rb_define_method( RuNeNe_Network, "initialize", network_class_initialize, 3 );
+  rb_define_method( RuNeNe_Network, "initialize_copy", network_class_initialize_copy, 1 );
 
   // Network attributes
-  rb_define_method( RuNeNe_Network, "num_layers", mlp_network_object_num_layers, 0 );
-  rb_define_method( RuNeNe_Network, "num_inputs", mlp_network_object_num_inputs, 0 );
-  rb_define_method( RuNeNe_Network, "num_outputs", mlp_network_object_num_outputs, 0 );
-  rb_define_method( RuNeNe_Network, "input", mlp_network_object_input, 0 );
-  rb_define_method( RuNeNe_Network, "output", mlp_network_object_output, 0 );
-  rb_define_method( RuNeNe_Network, "layers", mlp_network_object_layers, 0 );
-  rb_define_method( RuNeNe_Network, "learning_rate", mlp_network_object_learning_rate, 0 );
-  rb_define_method( RuNeNe_Network, "momentum", mlp_network_object_momentum, 0 );
-  rb_define_method( RuNeNe_Network, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
-  rb_define_method( RuNeNe_Network, "momentum=", mlp_network_object_set_momentum, 1 );
+  rb_define_method( RuNeNe_Network, "num_layers", network_object_num_layers, 0 );
+  rb_define_method( RuNeNe_Network, "num_inputs", network_object_num_inputs, 0 );
+  rb_define_method( RuNeNe_Network, "num_outputs", network_object_num_outputs, 0 );
+  rb_define_method( RuNeNe_Network, "input", network_object_input, 0 );
+  rb_define_method( RuNeNe_Network, "output", network_object_output, 0 );
+  rb_define_method( RuNeNe_Network, "layers", network_object_layers, 0 );
+  rb_define_method( RuNeNe_Network, "learning_rate", network_object_learning_rate, 0 );
+  rb_define_method( RuNeNe_Network, "momentum", network_object_momentum, 0 );
+  rb_define_method( RuNeNe_Network, "learning_rate=", network_object_set_learning_rate, 1 );
+  rb_define_method( RuNeNe_Network, "momentum=", network_object_set_momentum, 1 );
 
   // Network methods
-  rb_define_method( RuNeNe_Network, "init_weights", mlp_network_object_init_weights, -1 );
-  rb_define_method( RuNeNe_Network, "run", mlp_network_object_run, 1 );
-  rb_define_method( RuNeNe_Network, "ms_error", mlp_network_object_ms_error, 1 );
-  rb_define_method( RuNeNe_Network, "train_once", mlp_network_object_train_once, 2 );
-  rb_define_singleton_method( RuNeNe_Network, "from_layer", mlp_network_class_from_layer, 1 );
+  rb_define_method( RuNeNe_Network, "init_weights", network_object_init_weights, -1 );
+  rb_define_method( RuNeNe_Network, "run", network_object_run, 1 );
+  rb_define_method( RuNeNe_Network, "ms_error", network_object_ms_error, 1 );
+  rb_define_method( RuNeNe_Network, "train_once", network_object_train_once, 2 );
+  rb_define_singleton_method( RuNeNe_Network, "from_layer", network_class_from_layer, 1 );
 }

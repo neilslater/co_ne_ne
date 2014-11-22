@@ -7,31 +7,31 @@
 //  Definitions of OO-style functions for manipulating MLP_Network structs
 //
 
-MLP_Network *p_mlp_network_create() {
-  MLP_Network *mlp_network;
-  mlp_network = xmalloc( sizeof(MLP_Network) );
+MLP_Network *p_network_create() {
+  MLP_Network *network;
+  network = xmalloc( sizeof(MLP_Network) );
 
-  mlp_network->first_layer = Qnil;
-  mlp_network->eta = 1.0;
-  mlp_network->momentum = 0.5;
+  network->first_layer = Qnil;
+  network->eta = 1.0;
+  network->momentum = 0.5;
 
-  return mlp_network;
+  return network;
 }
 
-void p_mlp_network_destroy( MLP_Network *mlp_network ) {
-  xfree( mlp_network );
+void p_network_destroy( MLP_Network *network ) {
+  xfree( network );
   // VALUEs are not cleared here, they need to be left for GC to handle
   return;
 }
 
 // Called by Ruby's GC, we have to mark all child objects that could be in Ruby
 // space, so that they don't get deleted.
-void p_mlp_network_gc_mark( MLP_Network *mlp_network ) {
-  rb_gc_mark( mlp_network->first_layer );
+void p_network_gc_mark( MLP_Network *network ) {
+  rb_gc_mark( network->first_layer );
   return;
 }
 
-void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *layer_sizes ) {
+void p_network_init_layers( MLP_Network *network, int nlayers, int *layer_sizes ) {
   s_Layer_FF *layer_ff, *layer_ff_prev;
   volatile VALUE layer_object;
   volatile VALUE prev_layer_object;
@@ -52,16 +52,16 @@ void p_mlp_network_init_layers( MLP_Network *mlp_network, int nlayers, int *laye
   Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
   layer_ff->locked_input = 1;
 
-  mlp_network->first_layer = layer_object;
+  network->first_layer = layer_object;
   return;
 }
 
-int p_mlp_network_count_layers( MLP_Network *mlp_network ) {
+int p_network_count_layers( MLP_Network *network ) {
   int count = 0;
   VALUE layer_object;
   s_Layer_FF *layer_ff;
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     count++;
     Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
@@ -71,11 +71,11 @@ int p_mlp_network_count_layers( MLP_Network *mlp_network ) {
   return count;
 }
 
-void p_mlp_network_init_layer_weights( MLP_Network *mlp_network, float min_weight, float max_weight ) {
+void p_network_init_layer_weights( MLP_Network *network, float min_weight, float max_weight ) {
   VALUE layer_object;
   s_Layer_FF *layer_ff;
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
     p_layer_ff_init_weights( layer_ff, min_weight, max_weight );
@@ -85,12 +85,12 @@ void p_mlp_network_init_layer_weights( MLP_Network *mlp_network, float min_weigh
   return;
 }
 
-int p_mlp_network_num_outputs( MLP_Network *mlp_network ) {
+int p_network_num_outputs( MLP_Network *network ) {
   int count_outputs = 0;
   VALUE layer_object;
   s_Layer_FF *layer_ff;
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
     count_outputs = layer_ff->num_outputs;
@@ -100,18 +100,18 @@ int p_mlp_network_num_outputs( MLP_Network *mlp_network ) {
   return count_outputs;
 }
 
-int p_mlp_network_num_inputs( MLP_Network *mlp_network ) {
+int p_network_num_inputs( MLP_Network *network ) {
   s_Layer_FF *layer_ff;
-  Data_Get_Struct( mlp_network->first_layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( network->first_layer, s_Layer_FF, layer_ff );
   return layer_ff->num_inputs;
 }
 
 // This assumes input has been assigned already to first layer
-void p_mlp_network_run( MLP_Network *mlp_network ) {
+void p_network_run( MLP_Network *network ) {
   volatile VALUE layer_object;
   s_Layer_FF *layer_ff;
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
     p_layer_ff_run( layer_ff );
@@ -121,11 +121,11 @@ void p_mlp_network_run( MLP_Network *mlp_network ) {
   return;
 }
 
-s_Layer_FF *p_mlp_network_last_layer_ff( MLP_Network *mlp_network ) {
+s_Layer_FF *p_network_last_layer_ff( MLP_Network *network ) {
   VALUE layer_object;
   s_Layer_FF *layer_ff;
 
-  layer_object = mlp_network->first_layer;
+  layer_object = network->first_layer;
   while ( ! NIL_P(layer_object) ) {
     Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
     layer_object = layer_ff->output_layer;
@@ -134,12 +134,12 @@ s_Layer_FF *p_mlp_network_last_layer_ff( MLP_Network *mlp_network ) {
   return layer_ff;
 }
 
-void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_target ) {
+void p_network_calc_output_deltas( MLP_Network *network, VALUE val_target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   struct NARRAY *na_output_slope;
   struct NARRAY *na_output_deltas;
-  s_Layer_FF *layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  s_Layer_FF *layer_ff = p_network_last_layer_ff( network );
 
   GetNArray( val_target, na_target );
   GetNArray( layer_ff->narr_output, na_output );
@@ -154,9 +154,9 @@ void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_targe
   return;
 }
 
-void p_mlp_network_backprop_deltas( MLP_Network *mlp_network ) {
+void p_network_backprop_deltas( MLP_Network *network ) {
   s_Layer_FF *layer_ff_input;
-  s_Layer_FF *layer_ff = p_mlp_network_last_layer_ff( mlp_network );
+  s_Layer_FF *layer_ff = p_network_last_layer_ff( network );
   while ( ! NIL_P(layer_ff->input_layer) ) {
     Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, layer_ff_input );
     p_layer_ff_backprop_deltas( layer_ff, layer_ff_input );
@@ -165,41 +165,41 @@ void p_mlp_network_backprop_deltas( MLP_Network *mlp_network ) {
   return;
 }
 
-void p_mlp_network_update_weights( MLP_Network *mlp_network ) {
+void p_network_update_weights( MLP_Network *network ) {
   s_Layer_FF *layer_ff;
-  Data_Get_Struct( mlp_network->first_layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( network->first_layer, s_Layer_FF, layer_ff );
 
   while ( ! NIL_P(layer_ff->output_layer) ) {
     p_layer_ff_update_weights( layer_ff, 1.0, 0.5 );
     Data_Get_Struct( layer_ff->output_layer, s_Layer_FF, layer_ff );
   }
-  p_layer_ff_update_weights( layer_ff, mlp_network->eta, mlp_network->momentum );
+  p_layer_ff_update_weights( layer_ff, network->eta, network->momentum );
   return;
 }
 
-void p_mlp_network_train_once( MLP_Network *mlp_network, VALUE val_input, VALUE val_target ) {
+void p_network_train_once( MLP_Network *network, VALUE val_input, VALUE val_target ) {
   s_Layer_FF *layer_ff;
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Attach input
-  Data_Get_Struct( mlp_network->first_layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( network->first_layer, s_Layer_FF, layer_ff );
   p_layer_ff_set_input( layer_ff, val_input );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Run the network forward
-  p_mlp_network_run( mlp_network );
+  p_network_run( network );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Calculate delta on output
-  p_mlp_network_calc_output_deltas( mlp_network, val_target );
+  p_network_calc_output_deltas( network, val_target );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Back-propagate delta
-  p_mlp_network_backprop_deltas( mlp_network );
+  p_network_backprop_deltas( network );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Adjust weights
-  p_mlp_network_update_weights( mlp_network );
+  p_network_update_weights( network );
 
   return;
 }

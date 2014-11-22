@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for multi-layer perceptron code - the deeper implementation is in
-//  layer_ff_raw.c and mlp_network_raw.c
+//  layer_ff_raw.c and network_raw.c
 //
 
 #include "ruby_class_layer_ff.h"
