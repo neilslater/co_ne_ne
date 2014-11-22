@@ -1,11 +1,6 @@
 CoNeNe TODOs:
 
     Names:
-        RuNeNe::MLP::Network -> RuNeNe::Network
-        RuNeNe::MLP::Layer   -> RuNeNe::Layer::FeedForward
-        mlp_network_spec.rb  -> network_spec.rb
-        struct_mlp_layer.c   -> struct_layer_ff.c
-        struct_mlp_layer.h   -> struct_layer_ff.h
         struct_mlp_network.c   -> struct_network.c
         struct_mlp_network.h   -> struct_network.h
         MLP_Layer *mlp_layer -> Layer_FF *layer_ff  (layer_ff?) ... s_Layer_FF ??  rv_layer_ff

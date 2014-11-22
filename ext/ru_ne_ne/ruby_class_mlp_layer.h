@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "struct_mlp_layer.h"
+#include "struct_layer_ff.h"
 #include "ruby_module_transfer.h"
 #include "shared_vars.h"
 
