@@ -191,12 +191,12 @@ void p_layer_ff_calc_output_deltas( s_Layer_FF *layer_ff, VALUE target ) {
 }
 
 void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input ) {
-  s_Layer_FF *mlp_old_input_layer;
+  s_Layer_FF *s_old_input_layer_ff;
 
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, mlp_old_input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
+    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, s_old_input_layer_ff );
+    s_old_input_layer_ff->output_layer = Qnil;
   }
 
   layer_ff->narr_input = val_input;
@@ -206,12 +206,12 @@ void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input ) {
 }
 
 void p_layer_ff_clear_input( s_Layer_FF *layer_ff ) {
-  s_Layer_FF *mlp_old_input_layer;
+  s_Layer_FF *s_old_input_layer_ff;
 
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, mlp_old_input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
+    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, s_old_input_layer_ff );
+    s_old_input_layer_ff->output_layer = Qnil;
   }
 
   layer_ff->narr_input = Qnil;

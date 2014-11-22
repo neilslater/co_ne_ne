@@ -103,23 +103,23 @@ void set_transfer_fn_from_symbol( s_Layer_FF *layer_ff , VALUE tfn_type ) {
 }
 
 void assert_not_in_output_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
-  s_Layer_FF *mlp_next_layer = layer_ff;
-  while ( ! NIL_P( mlp_next_layer->output_layer ) ) {
-    if ( mlp_next_layer->output_layer == unexpected_layer ) {
+  s_Layer_FF *next_layer_ff = layer_ff;
+  while ( ! NIL_P( next_layer_ff->output_layer ) ) {
+    if ( next_layer_ff->output_layer == unexpected_layer ) {
       rb_raise( rb_eArgError, "Attempt to create a circular network." );
     }
-    mlp_next_layer = get_layer_ff_struct( mlp_next_layer->output_layer );
+    next_layer_ff = get_layer_ff_struct( next_layer_ff->output_layer );
   }
   return;
 }
 
 void assert_not_in_input_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
-  s_Layer_FF *mlp_next_layer = layer_ff;
-  while ( ! NIL_P( mlp_next_layer->input_layer ) ) {
-    if ( mlp_next_layer->input_layer == unexpected_layer ) {
+  s_Layer_FF *next_layer_ff = layer_ff;
+  while ( ! NIL_P( next_layer_ff->input_layer ) ) {
+    if ( next_layer_ff->input_layer == unexpected_layer ) {
       rb_raise( rb_eArgError, "Attempt to create a circular network." );
     }
-    mlp_next_layer = get_layer_ff_struct( mlp_next_layer->input_layer );
+    next_layer_ff = get_layer_ff_struct( next_layer_ff->input_layer );
   }
   return;
 }
@@ -434,8 +434,8 @@ VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
  * @return [RuNeNe::Layer::FeedForward] the new input layer (always the same as parameter)
  */
 VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
-  s_Layer_FF *mlp_new_input_layer;
-  s_Layer_FF *mlp_old_output_layer, *mlp_old_input_layer;
+  s_Layer_FF *s_new_input_layer_ff;
+  s_Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
   s_Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   if ( layer_ff->locked_input > 0 ) {
@@ -443,30 +443,30 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   }
 
   assert_value_wraps_layer_ff( new_input_layer );
-  mlp_new_input_layer = get_layer_ff_struct( new_input_layer );
+  s_new_input_layer_ff = get_layer_ff_struct( new_input_layer );
 
-  if ( mlp_new_input_layer->num_outputs != layer_ff->num_inputs ) {
-    rb_raise( rb_eArgError, "Input layer output size %d does not match layer input size %d", mlp_new_input_layer->num_outputs, layer_ff->num_inputs );
+  if ( s_new_input_layer_ff->num_outputs != layer_ff->num_inputs ) {
+    rb_raise( rb_eArgError, "Input layer output size %d does not match layer input size %d", s_new_input_layer_ff->num_outputs, layer_ff->num_inputs );
   }
 
-  assert_not_in_input_chain( mlp_new_input_layer, self );
+  assert_not_in_input_chain( s_new_input_layer_ff, self );
 
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     // This layer has an existing input layer, it needs to stop pointing its output here
-    mlp_old_input_layer = get_layer_ff_struct( layer_ff->input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
+    s_old_input_layer_ff = get_layer_ff_struct( layer_ff->input_layer );
+    s_old_input_layer_ff->output_layer = Qnil;
   }
 
-  layer_ff->narr_input = mlp_new_input_layer->narr_output;
+  layer_ff->narr_input = s_new_input_layer_ff->narr_output;
   layer_ff->input_layer = new_input_layer;
 
-  if ( ! NIL_P( mlp_new_input_layer->output_layer ) ) {
+  if ( ! NIL_P( s_new_input_layer_ff->output_layer ) ) {
     // The new input layer was previously attached elsewhere. This needs to be disconnected too
-    mlp_old_output_layer = get_layer_ff_struct( mlp_new_input_layer->output_layer );
-    mlp_old_output_layer->narr_input = Qnil;
-    mlp_old_output_layer->input_layer = Qnil;
+    s_old_output_layer_ff = get_layer_ff_struct( s_new_input_layer_ff->output_layer );
+    s_old_output_layer_ff->narr_input = Qnil;
+    s_old_output_layer_ff->input_layer = Qnil;
   }
-  mlp_new_input_layer->output_layer = self;
+  s_new_input_layer_ff->output_layer = self;
 
   return new_input_layer;
 }
@@ -478,39 +478,39 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
  * @return [RuNeNe::Layer::FeedForward] the new output layer (always the same as parameter)
  */
 VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
-  s_Layer_FF *mlp_new_output_layer;
-  s_Layer_FF *mlp_old_output_layer, *mlp_old_input_layer;
+  s_Layer_FF *s_new_output_layer_ff;
+  s_Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
   s_Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   assert_value_wraps_layer_ff( new_output_layer );
-  mlp_new_output_layer = get_layer_ff_struct( new_output_layer );
+  s_new_output_layer_ff = get_layer_ff_struct( new_output_layer );
 
-  if ( mlp_new_output_layer->locked_input > 0 ) {
+  if ( s_new_output_layer_ff->locked_input > 0 ) {
     rb_raise( rb_eArgError, "Target layer has been marked as 'first layer' and may not have another input layer attached." );
   }
 
-  if ( mlp_new_output_layer->num_inputs != layer_ff->num_outputs ) {
-    rb_raise( rb_eArgError, "Output layer input size %d does not match layer output size %d", mlp_new_output_layer->num_inputs, layer_ff->num_outputs );
+  if ( s_new_output_layer_ff->num_inputs != layer_ff->num_outputs ) {
+    rb_raise( rb_eArgError, "Output layer input size %d does not match layer output size %d", s_new_output_layer_ff->num_inputs, layer_ff->num_outputs );
   }
 
-  assert_not_in_output_chain( mlp_new_output_layer, self );
+  assert_not_in_output_chain( s_new_output_layer_ff, self );
 
   if ( ! NIL_P( layer_ff->output_layer ) ) {
     // This layer has an existing output layer, it needs to stop pointing its input here
-    mlp_old_output_layer = get_layer_ff_struct( layer_ff->output_layer );
-    mlp_old_output_layer->input_layer = Qnil;
-    mlp_old_output_layer->narr_input = Qnil;
+    s_old_output_layer_ff = get_layer_ff_struct( layer_ff->output_layer );
+    s_old_output_layer_ff->input_layer = Qnil;
+    s_old_output_layer_ff->narr_input = Qnil;
   }
 
   layer_ff->output_layer = new_output_layer;
 
-  if ( ! NIL_P( mlp_new_output_layer->input_layer ) ) {
+  if ( ! NIL_P( s_new_output_layer_ff->input_layer ) ) {
     // The new output layer was previously attached elsewhere. This needs to be disconnected too
-    mlp_old_input_layer = get_layer_ff_struct( mlp_new_output_layer->input_layer );
-    mlp_old_input_layer->output_layer = Qnil;
+    s_old_input_layer_ff = get_layer_ff_struct( s_new_output_layer_ff->input_layer );
+    s_old_input_layer_ff->output_layer = Qnil;
   }
-  mlp_new_output_layer->input_layer = self;
-  mlp_new_output_layer->narr_input = layer_ff->narr_output;
+  s_new_output_layer_ff->input_layer = self;
+  s_new_output_layer_ff->narr_input = layer_ff->narr_output;
 
   return new_output_layer;
 }
