@@ -34,6 +34,7 @@ VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn )
   layer_ff->transfer_fn = tfn;
 
   p_layer_ff_new_narrays( layer_ff );
+  // TODO: Needs to vary according to layer size
   p_layer_ff_init_weights( layer_ff, -0.8, 0.8 );
 
   return rv_layer_ff;

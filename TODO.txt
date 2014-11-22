@@ -1,12 +1,8 @@
 CoNeNe TODOs:
 
-    Names:
-        ruby_class_mlp_layer.c  ->  ruby_class_layer_feed_forward.c
-        ruby_class_mlp_layer.h  ->
-        VALUE mlp_layer_        ->  VALUE rv_layer_ff_
-        ruby_class_mlp_network.c  ->  ruby_class_network.c
-        ruby_class_mlp_network.h  ->  ruby_class_network.h
+    Variable names
 
+    Code directory structures
 
     Softmax layer
 
