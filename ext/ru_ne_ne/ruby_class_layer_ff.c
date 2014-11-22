@@ -26,8 +26,8 @@ inline s_Layer_FF *get_layer_ff_struct( VALUE obj ) {
 
 VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn ) {
   s_Layer_FF *layer_ff;
-  VALUE layer_ff_ruby = layer_ff_alloc( RuNeNe_Layer_FeedForward );
-  layer_ff = get_layer_ff_struct( layer_ff_ruby );
+  VALUE rv_layer_ff = layer_ff_alloc( RuNeNe_Layer_FeedForward );
+  layer_ff = get_layer_ff_struct( rv_layer_ff );
 
   layer_ff->num_inputs = n_inputs;
   layer_ff->num_outputs = n_outputs;
@@ -36,7 +36,7 @@ VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn )
   p_layer_ff_new_narrays( layer_ff );
   p_layer_ff_init_weights( layer_ff, -0.8, 0.8 );
 
-  return layer_ff_ruby;
+  return rv_layer_ff;
 }
 
 VALUE layer_ff_clone_ruby_object( VALUE orig ) {
@@ -127,8 +127,8 @@ void assert_not_in_input_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
 VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
   s_Layer_FF *layer_ff;
   struct NARRAY *na_weights;
-  VALUE layer_ff_ruby = layer_ff_alloc( RuNeNe_Layer_FeedForward );
-  layer_ff = get_layer_ff_struct( layer_ff_ruby );
+  VALUE rv_layer_ff = layer_ff_alloc( RuNeNe_Layer_FeedForward );
+  layer_ff = get_layer_ff_struct( rv_layer_ff );
 
   GetNArray( weights, na_weights );
   layer_ff->num_inputs = na_weights->shape[0] - 1;
@@ -136,7 +136,7 @@ VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) 
   layer_ff->transfer_fn = tfn;
   p_layer_ff_init_from_weights( layer_ff, weights );
 
-  return layer_ff_ruby;
+  return rv_layer_ff;
 }
 
 
