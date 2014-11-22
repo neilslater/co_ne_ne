@@ -1,8 +1,6 @@
 CoNeNe TODOs:
 
     Names:
-        struct_mlp_network.c   -> struct_network.c
-        struct_mlp_network.h   -> struct_network.h
         MLP_Layer *mlp_layer -> Layer_FF *layer_ff  (layer_ff?) ... s_Layer_FF ??  rv_layer_ff
         ruby_class_mlp_layer.c  ->  ruby_class_layer_feed_forward.c
         ruby_class_mlp_layer.h  ->

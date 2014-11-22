@@ -2,7 +2,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Declarations of OO-style functions for manipulating MLP_Layer structs
+//  Declarations of OO-style functions for manipulating s_Layer_FF structs
 //
 
 #ifndef STRUCT_MLP_LAYER_H
@@ -14,7 +14,7 @@
 #include "ruby_module_transfer.h"
 #include "core_backprop.h"
 
-typedef struct _mlp_layer_raw {
+typedef struct _layer_ff_raw {
     int num_inputs;
     int num_outputs;
     int locked_input;
@@ -27,32 +27,32 @@ typedef struct _mlp_layer_raw {
     VALUE narr_output_deltas;
     VALUE narr_weights_last_deltas;
     VALUE narr_output_slope;
-  } MLP_Layer;
+  } s_Layer_FF;
 
-MLP_Layer *p_mlp_layer_create();
+s_Layer_FF *p_layer_ff_create();
 
-void p_mlp_layer_destroy( MLP_Layer *mlp_layer );
+void p_layer_ff_destroy( s_Layer_FF *layer_ff );
 
 // Called by Ruby's GC, we have to mark all child objects that could be in Ruby
 // space, so that they don't get deleted.
-void p_mlp_layer_gc_mark( MLP_Layer *mlp_layer );
+void p_layer_ff_gc_mark( s_Layer_FF *layer_ff );
 
-void p_mlp_layer_new_narrays( MLP_Layer *mlp_layer );
+void p_layer_ff_new_narrays( s_Layer_FF *layer_ff );
 
-void p_mlp_layer_init_weights( MLP_Layer *mlp_layer, float min, float max );
+void p_layer_ff_init_weights( s_Layer_FF *layer_ff, float min, float max );
 
-void p_mlp_layer_init_from_weights( MLP_Layer *mlp_layer, VALUE weights );
+void p_layer_ff_init_from_weights( s_Layer_FF *layer_ff, VALUE weights );
 
-void p_mlp_layer_run( MLP_Layer *mlp_layer );
+void p_layer_ff_run( s_Layer_FF *layer_ff );
 
-void p_mlp_layer_backprop_deltas( MLP_Layer *mlp_layer, MLP_Layer *mlp_layer_input );
+void p_layer_ff_backprop_deltas( s_Layer_FF *layer_ff, s_Layer_FF *layer_ff_input );
 
-void p_mlp_layer_update_weights( MLP_Layer *mlp_layer, float eta, float m );
+void p_layer_ff_update_weights( s_Layer_FF *layer_ff, float eta, float m );
 
-void p_mlp_layer_calc_output_deltas( MLP_Layer *mlp_layer, VALUE target );
+void p_layer_ff_calc_output_deltas( s_Layer_FF *layer_ff, VALUE target );
 
-void p_mlp_layer_set_input( MLP_Layer *mlp_layer, VALUE val_input );
+void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input );
 
-void p_mlp_layer_clear_input( MLP_Layer *mlp_layer );
+void p_layer_ff_clear_input( s_Layer_FF *layer_ff );
 
 #endif

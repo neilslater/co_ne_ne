@@ -210,7 +210,7 @@ void init_module_ru_ne_ne() {
   rb_define_singleton_method( RuNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
 
   init_transfer_module();
-  init_mlp_layer_class();
+  init_layer_ff_class();
   init_mlp_network_class();
   init_training_data_class();
   init_srand_by_time();

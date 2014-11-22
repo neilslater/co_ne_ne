@@ -11,7 +11,7 @@
 #include <ruby.h>
 #include "narray.h"
 #include "core_mt.h"
-#include "ruby_class_mlp_layer.h"
+#include "ruby_class_layer_ff.h"
 
 typedef struct _mlp_network_raw {
     VALUE first_layer; // Arrays of layers are inferred from connectivity
@@ -39,7 +39,7 @@ int p_mlp_network_num_inputs( MLP_Network *mlp_network );
 
 void p_mlp_network_run( MLP_Network *mlp_network );
 
-MLP_Layer *p_mlp_network_last_mlp_layer( MLP_Network *mlp_network );
+s_Layer_FF *p_mlp_network_last_layer_ff( MLP_Network *mlp_network );
 
 void p_mlp_network_calc_output_deltas( MLP_Network *mlp_network, VALUE val_target );
 

@@ -13,8 +13,8 @@
  *
  *  Method names
  *    core_<description>    :  Base C code with little or no Ruby interaction, and no validations
- *    p_mlp_layer_<desc>    :  OO-style code that takes an MLP_Layer C struct as first param
- *    ruby_mlp_layer_<desc> :  Ruby-bound method for working with RuNeNe::Layer::FeedForward object
+ *    p_layer_ff_<desc>    :  OO-style code that takes an s_Layer_FF C struct as first param
+ *    ruby_layer_ff_<desc> :  Ruby-bound method for working with RuNeNe::Layer::FeedForward object
  *
 */
 
