@@ -15,13 +15,8 @@
 #include "narray.h"
 #include "core_narray.h"
 #include "core_transfer_functions.h"
+#include "shared_vars.h"
 
 void init_transfer_module();
-
-extern VALUE Transfer;
-extern VALUE Sigmoid;
-extern VALUE TanH;
-extern VALUE ReLU;
-extern VALUE Linear;
 
 #endif

@@ -1,37 +1,37 @@
 require 'helpers'
 
-describe RuNeNe::MLP::Network do
+describe RuNeNe::Network do
   describe "class methods" do
     describe "#new" do
       it "creates a new network" do
-        expect( RuNeNe::MLP::Network.new( 2, [], 1 ) ).to be_a RuNeNe::MLP::Network
-        expect( RuNeNe::MLP::Network.new( 2, [4], 1 ) ).to be_a RuNeNe::MLP::Network
-        expect( RuNeNe::MLP::Network.new( 2, [4,2], 1 ) ).to be_a RuNeNe::MLP::Network
+        expect( RuNeNe::Network.new( 2, [], 1 ) ).to be_a RuNeNe::Network
+        expect( RuNeNe::Network.new( 2, [4], 1 ) ).to be_a RuNeNe::Network
+        expect( RuNeNe::Network.new( 2, [4,2], 1 ) ).to be_a RuNeNe::Network
       end
 
       it "does not create a new network if any params are missing or bad" do
-        expect { RuNeNe::MLP::Network.new( -2, [4], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( nil, [4], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( "a fish", [4], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( [4], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, 3, 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, ["z"], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, [-3], 1 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, [3,4], -81 ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, [3] ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, [3], nil ) }.to raise_error
-        expect { RuNeNe::MLP::Network.new( 2, [3], 'a frog' ) }.to raise_error
+        expect { RuNeNe::Network.new( -2, [4], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( nil, [4], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( "a fish", [4], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( [4], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, 3, 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, ["z"], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, [-3], 1 ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, [3,4], -81 ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, [3] ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, [3], nil ) }.to raise_error
+        expect { RuNeNe::Network.new( 2, [3], 'a frog' ) }.to raise_error
       end
 
       it "creates a network with right number of Layers" do
-        network = RuNeNe::MLP::Network.new( 2, [], 1 )
+        network = RuNeNe::Network.new( 2, [], 1 )
         expect( network.num_layers ).to be 1
         expect( network.layers.count ).to be 1
         layer = network.layers.first
         expect( layer.num_inputs ).to be 2
         expect( layer.num_outputs ).to be 1
 
-        network = RuNeNe::MLP::Network.new( 2, [2], 1 )
+        network = RuNeNe::Network.new( 2, [2], 1 )
         expect( network.num_layers ).to be 2
         layer = network.layers.first
         expect( layer.num_inputs ).to be 2
@@ -40,7 +40,7 @@ describe RuNeNe::MLP::Network do
         expect( layer.num_inputs ).to be 2
         expect( layer.num_outputs ).to be 1
 
-        network = RuNeNe::MLP::Network.new( 2, [5,6,4,2], 1 )
+        network = RuNeNe::Network.new( 2, [5,6,4,2], 1 )
         expect( network.num_layers ).to be 5
         layers = network.layers
         [ [2,5], [5,6], [6,4], [4,2], [2,1] ].each do |xp_in, xp_out|
@@ -51,14 +51,14 @@ describe RuNeNe::MLP::Network do
       end
 
       it "creates a network with right number of inputs and outputs" do
-        network = RuNeNe::MLP::Network.new( 2, [], 1 )
+        network = RuNeNe::Network.new( 2, [], 1 )
         expect( network.num_inputs ).to be 2
         expect( network.input ).to be_nil
         expect( network.num_outputs ).to be 1
         expect( network.output ).to be_a NArray
         expect( network.output.shape ).to eql [1]
 
-        network = RuNeNe::MLP::Network.new( 2, [7,3,2], 2 )
+        network = RuNeNe::Network.new( 2, [7,3,2], 2 )
         expect( network.num_inputs ).to be 2
         expect( network.input ).to be_nil
         expect( network.num_outputs ).to be 2
@@ -68,49 +68,49 @@ describe RuNeNe::MLP::Network do
     end
 
     describe "#from_layer" do
-      let( :layer ) { RuNeNe::MLP::Layer.new( 5, 3, :tanh ) }
+      let( :layer ) { RuNeNe::Layer::FeedForward.new( 5, 3, :tanh ) }
 
       it "creates a new network" do
-        expect( RuNeNe::MLP::Network.from_layer( layer ) ).to be_a RuNeNe::MLP::Network
+        expect( RuNeNe::Network.from_layer( layer ) ).to be_a RuNeNe::Network
       end
 
       it "uses layer 'as-is'" do
-        network = RuNeNe::MLP::Network.from_layer( layer )
+        network = RuNeNe::Network.from_layer( layer )
         expect( network.layers[0] ).to be layer
       end
 
       it "uses a layer with an attached output layer" do
-        layer.attach_output_layer( RuNeNe::MLP::Layer.new( 3, 2, :sigmoid ) )
-        network = RuNeNe::MLP::Network.from_layer( layer )
+        layer.attach_output_layer( RuNeNe::Layer::FeedForward.new( 3, 2, :sigmoid ) )
+        network = RuNeNe::Network.from_layer( layer )
         expect( network.num_layers ).to be 2
         expect( network.num_outputs ).to be 2
       end
 
       it "refuses to use a layer with an attached input layer" do
-        layer.attach_input_layer( RuNeNe::MLP::Layer.new( 7, 5, :tanh ) )
-        expect { RuNeNe::MLP::Network.from_layer( layer ) }.to raise_error
+        layer.attach_input_layer( RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ) )
+        expect { RuNeNe::Network.from_layer( layer ) }.to raise_error
       end
 
       it "locks first layer inputs" do
-        network = RuNeNe::MLP::Network.from_layer( layer )
-        expect { layer.attach_input_layer( RuNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
-        expect { RuNeNe::MLP::Layer.new( 7, 5, :tanh ).attach_output_layer( layer ) }.to raise_error
-        layer.attach_output_layer( RuNeNe::MLP::Layer.new( 3, 2, :sigmoid ) )
+        network = RuNeNe::Network.from_layer( layer )
+        expect { layer.attach_input_layer( RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ) ) }.to raise_error
+        expect { RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ).attach_output_layer( layer ) }.to raise_error
+        layer.attach_output_layer( RuNeNe::Layer::FeedForward.new( 3, 2, :sigmoid ) )
         expect( network.num_layers ).to be 2
         expect( network.num_outputs ).to be 2
       end
     end
 
     describe "#from_layers" do
-      let( :layers ) {  [ RuNeNe::MLP::Layer.new( 5, 3, :tanh ),
-              RuNeNe::MLP::Layer.new( 3, 2, :sigmoid ) ] }
+      let( :layers ) {  [ RuNeNe::Layer::FeedForward.new( 5, 3, :tanh ),
+              RuNeNe::Layer::FeedForward.new( 3, 2, :sigmoid ) ] }
 
       it "creates a new network" do
-        expect( RuNeNe::MLP::Network.from_layers( layers ) ).to be_a RuNeNe::MLP::Network
+        expect( RuNeNe::Network.from_layers( layers ) ).to be_a RuNeNe::Network
       end
 
       it "uses layer objects directly" do
-        network = RuNeNe::MLP::Network.from_layers( layers )
+        network = RuNeNe::Network.from_layers( layers )
         expect( network.layers[0] ).to be layers[0]
         expect( network.layers[1] ).to be layers[1]
         expect( network.num_layers ).to be 2
@@ -118,8 +118,8 @@ describe RuNeNe::MLP::Network do
       end
 
       it "re-assigns input" do
-        layers[0].attach_input_layer( RuNeNe::MLP::Layer.new( 7, 5, :tanh ) )
-        network = RuNeNe::MLP::Network.from_layers( layers )
+        layers[0].attach_input_layer( RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ) )
+        network = RuNeNe::Network.from_layers( layers )
         expect( network.layers[0] ).to be layers[0]
         expect( network.layers[1] ).to be layers[1]
         expect( network.num_layers ).to be 2
@@ -127,10 +127,10 @@ describe RuNeNe::MLP::Network do
       end
 
       it "locks first layer inputs" do
-        network = RuNeNe::MLP::Network.from_layers( layers )
-        expect { layers[0].attach_input_layer( RuNeNe::MLP::Layer.new( 7, 5, :tanh ) ) }.to raise_error
-        expect { RuNeNe::MLP::Layer.new( 7, 5, :tanh ).attach_output_layer( layers[0] ) }.to raise_error
-        layers[1].attach_output_layer( RuNeNe::MLP::Layer.new( 2, 1, :sigmoid ) )
+        network = RuNeNe::Network.from_layers( layers )
+        expect { layers[0].attach_input_layer( RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ) ) }.to raise_error
+        expect { RuNeNe::Layer::FeedForward.new( 7, 5, :tanh ).attach_output_layer( layers[0] ) }.to raise_error
+        layers[1].attach_output_layer( RuNeNe::Layer::FeedForward.new( 2, 1, :sigmoid ) )
         expect( network.num_layers ).to be 3
         expect( network.num_outputs ).to be 1
       end
@@ -138,7 +138,7 @@ describe RuNeNe::MLP::Network do
 
     describe "with Marshal" do
       before do
-        @orig_network = RuNeNe::MLP::Network.new( 2, [4], 1 )
+        @orig_network = RuNeNe::Network.new( 2, [4], 1 )
         @saved_network = Marshal.dump( @orig_network )
         @copy_network =  Marshal.load( @saved_network )
       end
@@ -182,9 +182,9 @@ describe RuNeNe::MLP::Network do
   end
 
   describe "instance methods" do
-    let( :nn ) { RuNeNe::MLP::Network.new( 2, [4], 1 ) }
-    let( :nn2 ) { RuNeNe::MLP::Network.new( 2, [5,3], 1 ) }
-    let( :nn3 ) { RuNeNe::MLP::Network.new( 2, [4,3,2], 1 ) }
+    let( :nn ) { RuNeNe::Network.new( 2, [4], 1 ) }
+    let( :nn2 ) { RuNeNe::Network.new( 2, [5,3], 1 ) }
+    let( :nn3 ) { RuNeNe::Network.new( 2, [4,3,2], 1 ) }
     let( :xor_train_set ) {
       [
         [  NArray.cast( [-1.0, -1.0], 'sfloat' ), NArray.cast( [0.0], 'sfloat' ) ],
@@ -483,18 +483,18 @@ describe RuNeNe::MLP::Network do
   end
 
   describe "first layer" do
-    let( :nn ) { RuNeNe::MLP::Network.new( 2, [4], 1 ) }
+    let( :nn ) { RuNeNe::Network.new( 2, [4], 1 ) }
     let( :first_layer ) { nn.layers.first }
     let( :second_layer ) { nn.layers.last }
 
     it "does not accept a new input_layer" do
-      alt_layer = RuNeNe::MLP::Layer.new( 3, 2 )
+      alt_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
       expect { first_layer.attach_input_layer( alt_layer ) }.to raise_error
     end
 
     it "can be cloned, and the clone does accept a new input_layer" do
       clone_of_first_layer = first_layer.clone
-      alt_layer = RuNeNe::MLP::Layer.new( 3, 2 )
+      alt_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
       expect { clone_of_first_layer.attach_input_layer( alt_layer ) }.to_not raise_error
       expect { first_layer.attach_input_layer( alt_layer ) }.to raise_error
     end

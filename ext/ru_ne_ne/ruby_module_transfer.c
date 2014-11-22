@@ -2,17 +2,6 @@
 
 #include "ruby_module_transfer.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// To hold the module objects
-//
-
-VALUE Transfer = Qnil;
-VALUE Sigmoid = Qnil;
-VALUE TanH = Qnil;
-VALUE ReLU = Qnil;
-VALUE Linear = Qnil;
-
 /* Document-module:  RuNeNe::Transfer::Sigmoid
  *
  * This is a tried-and-tested transfer function which has desirable properties
@@ -31,7 +20,6 @@ static VALUE sigmoid_function( VALUE self, VALUE r_x ) {
   float x = NUM2FLT( r_x );
   return FLT2NUM( raw_sigmoid_function( x ) );
 }
-
 
 /* @overload bulk_apply_function( narray )
  * Maps an array of values. Converts arrays of single-precision floats in-place.
@@ -131,7 +119,7 @@ static VALUE tanh_derivative_at( VALUE self, VALUE r_y ) {
  * ReLU stands for "Rectifiled Linear Unit". It returns 0.0 for negative input
  * and y = x for positive values. It is fast to calculate, and for some scenarios is
  * quicker to train. It is not used by default inside RuNeNe, but
- * individual RuNeNe::MLP::Layer objects can be constructed to use it.
+ * individual RuNeNe::Layer::FeedForward objects can be constructed to use it.
  */
 
 /* @overload function( x )
@@ -239,33 +227,24 @@ static VALUE linear_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_linear_derivative_at( y ) );
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( ) {
-  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
-
-  Transfer = rb_define_module_under( conene_root, "Transfer" );
-
-  Sigmoid = rb_define_module_under( Transfer, "Sigmoid" );
   rb_define_singleton_method( Sigmoid, "function", sigmoid_function, 1 );
   rb_define_singleton_method( Sigmoid, "bulk_apply_function", sigmoid_bulk_apply_function, 1 );
   rb_define_singleton_method( Sigmoid, "derivative", sigmoid_derivative, 1 );
   rb_define_singleton_method( Sigmoid, "derivative_at", sigmoid_derivative_at, 1 );
 
-  TanH = rb_define_module_under( Transfer, "TanH" );
   rb_define_singleton_method( TanH, "function", tanh_function, 1 );
   rb_define_singleton_method( TanH, "bulk_apply_function", tanh_bulk_apply_function, 1 );
   rb_define_singleton_method( TanH, "derivative", tanh_derivative, 1 );
   rb_define_singleton_method( TanH, "derivative_at", tanh_derivative_at, 1 );
 
-  ReLU = rb_define_module_under( Transfer, "ReLU" );
   rb_define_singleton_method( ReLU, "function", relu_function, 1 );
   rb_define_singleton_method( ReLU, "bulk_apply_function", relu_bulk_apply_function, 1 );
   rb_define_singleton_method( ReLU, "derivative", relu_derivative, 1 );
   rb_define_singleton_method( ReLU, "derivative_at", relu_derivative_at, 1 );
 
-  Linear = rb_define_module_under( Transfer, "Linear" );
   rb_define_singleton_method( Linear, "function", linear_function, 1 );
   rb_define_singleton_method( Linear, "bulk_apply_function", linear_bulk_apply_function, 1 );
   rb_define_singleton_method( Linear, "derivative", linear_derivative, 1 );

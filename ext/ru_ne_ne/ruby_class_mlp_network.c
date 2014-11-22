@@ -46,7 +46,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
 }
 
 
-/* Document-class:  RuNeNe::MLP::Network
+/* Document-class:  RuNeNe::Network
  *
  * An object of this class represents a feed-forward network consisting of one or more layers. It
  * can be trained by repeatedly showing it example inputs with target outputs. The training
@@ -57,7 +57,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  * network are generally allowed. This includes attaching new or alternative layers. Properties
  * of the network as a whole are calculated dynamically from the attached layers.
  *
- * RuNeNe::MLP::Network supports persisting objects via Marshal.
+ * RuNeNe::Network supports persisting objects via Marshal.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ VALUE mlp_network_new_ruby_object_from_layer( VALUE layer, float eta, float mome
  * @param [Integer] num_inputs size of input array for first layer
  * @param [Array<Integer>] hidden_layers sizes of output arrays for each hidden layer
  * @param [Integer] num_outputs size of output array for last layer
- * @return [RuNeNe::MLP::Network] new network consisting of new layers, with random weights
+ * @return [RuNeNe::Network] new network consisting of new layers, with random weights
  */
 VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
@@ -112,7 +112,7 @@ VALUE mlp_network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_l
 /* @overload clone
  * When cloned, the new Network has deep copies of all layers (which in
  * turn have deep copies of all weights etc)
- * @return [RuNeNe::MLP::Network] new network with same weights.
+ * @return [RuNeNe::Network] new network with same weights.
  */
 VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Network *mlp_network_copy;
@@ -158,9 +158,9 @@ VALUE mlp_network_class_initialize_copy( VALUE copy, VALUE orig ) {
 
 /* @overload from_layer( layer )
  * Creates a new network with supplied layer as the first layer. The layer can already
- * be connected, or you can add new layers later using RuNeNe::MLP::Layer#attach_output_layer
- * @param [RuNeNe::MLP::Layer] layer first layer of new network
- * @return [RuNeNe::MLP::Network] new network
+ * be connected, or you can add new layers later using RuNeNe::Layer::FeedForward#attach_output_layer
+ * @param [RuNeNe::Layer::FeedForward] layer first layer of new network
+ * @return [RuNeNe::Network] new network
  */
 VALUE mlp_network_class_from_layer( VALUE self, VALUE layer ) {
   MLP_Layer *mlp_layer;
@@ -185,7 +185,7 @@ VALUE mlp_network_object_num_layers( VALUE self ) {
 /* @overload layers
  * @!attribute [r] layers
  * Array of layer objects within the network, in order input to output.
- * @return [Array<RuNeNe::MLP::Layer]
+ * @return [Array<RuNeNe::Layer::FeedForward]
  */
 VALUE mlp_network_object_layers( VALUE self ) {
   int num_layers, count;
@@ -471,35 +471,27 @@ VALUE mlp_network_object_set_momentum( VALUE self, VALUE val_momentum ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mlp_network_class( ) {
-  volatile VALUE mlp_module;
-  volatile VALUE network_class;
-  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
-
-  // These temporary pointers are necessary for YARD to find the right names
-  mlp_module = rb_define_module_under( conene_root, "MLP" );
-  network_class = rb_define_class_under( mlp_module, "Network", rb_cObject );
-
   // Network instantiation and class methods
-  rb_define_alloc_func( network_class, mlp_network_alloc );
-  rb_define_method( network_class, "initialize", mlp_network_class_initialize, 3 );
-  rb_define_method( network_class, "initialize_copy", mlp_network_class_initialize_copy, 1 );
+  rb_define_alloc_func( Network, mlp_network_alloc );
+  rb_define_method( Network, "initialize", mlp_network_class_initialize, 3 );
+  rb_define_method( Network, "initialize_copy", mlp_network_class_initialize_copy, 1 );
 
   // Network attributes
-  rb_define_method( network_class, "num_layers", mlp_network_object_num_layers, 0 );
-  rb_define_method( network_class, "num_inputs", mlp_network_object_num_inputs, 0 );
-  rb_define_method( network_class, "num_outputs", mlp_network_object_num_outputs, 0 );
-  rb_define_method( network_class, "input", mlp_network_object_input, 0 );
-  rb_define_method( network_class, "output", mlp_network_object_output, 0 );
-  rb_define_method( network_class, "layers", mlp_network_object_layers, 0 );
-  rb_define_method( network_class, "learning_rate", mlp_network_object_learning_rate, 0 );
-  rb_define_method( network_class, "momentum", mlp_network_object_momentum, 0 );
-  rb_define_method( network_class, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
-  rb_define_method( network_class, "momentum=", mlp_network_object_set_momentum, 1 );
+  rb_define_method( Network, "num_layers", mlp_network_object_num_layers, 0 );
+  rb_define_method( Network, "num_inputs", mlp_network_object_num_inputs, 0 );
+  rb_define_method( Network, "num_outputs", mlp_network_object_num_outputs, 0 );
+  rb_define_method( Network, "input", mlp_network_object_input, 0 );
+  rb_define_method( Network, "output", mlp_network_object_output, 0 );
+  rb_define_method( Network, "layers", mlp_network_object_layers, 0 );
+  rb_define_method( Network, "learning_rate", mlp_network_object_learning_rate, 0 );
+  rb_define_method( Network, "momentum", mlp_network_object_momentum, 0 );
+  rb_define_method( Network, "learning_rate=", mlp_network_object_set_learning_rate, 1 );
+  rb_define_method( Network, "momentum=", mlp_network_object_set_momentum, 1 );
 
   // Network methods
-  rb_define_method( network_class, "init_weights", mlp_network_object_init_weights, -1 );
-  rb_define_method( network_class, "run", mlp_network_object_run, 1 );
-  rb_define_method( network_class, "ms_error", mlp_network_object_ms_error, 1 );
-  rb_define_method( network_class, "train_once", mlp_network_object_train_once, 2 );
-  rb_define_singleton_method( network_class, "from_layer", mlp_network_class_from_layer, 1 );
+  rb_define_method( Network, "init_weights", mlp_network_object_init_weights, -1 );
+  rb_define_method( Network, "run", mlp_network_object_run, 1 );
+  rb_define_method( Network, "ms_error", mlp_network_object_ms_error, 1 );
+  rb_define_method( Network, "train_once", mlp_network_object_train_once, 2 );
+  rb_define_singleton_method( Network, "from_layer", mlp_network_class_from_layer, 1 );
 }

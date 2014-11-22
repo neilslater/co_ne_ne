@@ -4,8 +4,22 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// To hold the module object
+// To hold the module object, plus child Module and Class items
 VALUE RuNeNe = Qnil;
+
+VALUE Transfer = Qnil;
+VALUE Sigmoid = Qnil;
+VALUE TanH = Qnil;
+VALUE ReLU = Qnil;
+VALUE Linear = Qnil;
+VALUE Softmax = Qnil;
+
+VALUE Layer = Qnil;
+VALUE FeedForward  = Qnil;
+
+VALUE Network = Qnil;
+
+VALUE RuNeNe_TrainingData = Qnil;
 
 /* @overload convolve( signal, kernel )
  * Calculates convolution of an array of floats representing a signal, with a second array representing
@@ -173,12 +187,28 @@ static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
 
 void init_module_ru_ne_ne() {
   RuNeNe = rb_define_module( "RuNeNe" );
+
+  Transfer = rb_define_module_under( RuNeNe, "Transfer" );
+    Sigmoid = rb_define_module_under( Transfer, "Sigmoid" );
+    TanH = rb_define_module_under( Transfer, "TanH" );
+    ReLU = rb_define_module_under( Transfer, "ReLU" );
+    Linear = rb_define_module_under( Transfer, "Linear" );
+    Softmax = rb_define_module_under( Transfer, "Softmax" );
+
+  Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
+    FeedForward = rb_define_class_under( Layer, "FeedForward", rb_cObject );
+
+  Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
+
+  RuNeNe_TrainingData = rb_define_class_under( RuNeNe, "TrainingData", rb_cObject );
+
   rb_define_singleton_method( RuNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( RuNeNe, "max_pool", narray_max_pool, 3 );
   rb_define_singleton_method( RuNeNe, "srand", mt_srand, 1 );
   rb_define_singleton_method( RuNeNe, "srand_array", mt_srand_array, 1 );
   rb_define_singleton_method( RuNeNe, "rand", mt_rand_float, 0 );
   rb_define_singleton_method( RuNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
+
   init_transfer_module();
   init_mlp_layer_class();
   init_mlp_network_class();

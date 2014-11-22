@@ -1,13 +1,13 @@
-class RuNeNe::MLP::Network
+class RuNeNe::Network
 
   # Creates new network from an array of layers. The layers are connected together to form the
   # new network - this requires that they have matching input and output sizes on each
   # connection, and they will be reconnected if neccessary to form the new network.
-  # @param [Array<RuNeNe::MLP::Layer>] layers an array of layers
-  # @return [RuNeNe::MLP::Network] the new network
+  # @param [Array<RuNeNe::Layer::FeedForward>] layers an array of layers
+  # @return [RuNeNe::Network] the new network
   def self.from_layers layers
-    unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( RuNeNe::MLP::Layer ) }
-      raise TypeError, "Expecting an Array with one or more RuNeNe::MLP::Layer objects"
+    unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( RuNeNe::Layer::FeedForward ) }
+      raise TypeError, "Expecting an Array with one or more RuNeNe::Layer::FeedForward objects"
     end
 
     # Pre-check for size mismatches
@@ -90,7 +90,7 @@ module RuNeNe::Transfer::Softmax
   end
 end
 
-class RuNeNe::MLP::Layer
+class RuNeNe::Layer::FeedForward
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -103,9 +103,9 @@ class RuNeNe::MLP::Layer
   # @!visibility private
   # Constructs a Layer from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
-  # @return [RuNeNe::MLP::Layer] new object
+  # @return [RuNeNe::Layer::FeedForward] new object
   def self.from_h h
-    RuNeNe::MLP::Layer.from_weights( h[:weights], h[:transfer] )
+    RuNeNe::Layer::FeedForward.from_weights( h[:weights], h[:transfer] )
   end
 
   # @!visibility private
@@ -120,7 +120,7 @@ class RuNeNe::MLP::Layer
   end
 end
 
-class RuNeNe::MLP::Network
+class RuNeNe::Network
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -134,11 +134,11 @@ class RuNeNe::MLP::Network
   # @!visibility private
   # Constructs a Layer from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :layers, :lr and :momentum
-  # @return [RuNeNe::MLP::Network] new object
+  # @return [RuNeNe::Network] new object
   def self.from_h h
     hashed_layers = h[:layers]
-    restored_layers = hashed_layers.map { |lhash| RuNeNe::MLP::Layer.from_h( lhash ) }
-    network = RuNeNe::MLP::Network.from_layers( restored_layers )
+    restored_layers = hashed_layers.map { |lhash| RuNeNe::Layer::FeedForward.from_h( lhash ) }
+    network = RuNeNe::Network.from_layers( restored_layers )
     network.learning_rate = h[:lr]
     network.momentum = h[:momentum]
     network
@@ -169,7 +169,7 @@ class RuNeNe::TrainingData
   # @!visibility private
   # Constructs a TrainingData from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
-  # @return [RuNeNe::MLP::Layer] new object
+  # @return [RuNeNe::Layer::FeedForward] new object
   def self.from_h h
     RuNeNe::TrainingData.new( h[:inputs], h[:outputs] )
   end

@@ -8,11 +8,6 @@
 
 #include "ruby_class_mlp_layer.h"
 
-// These are extern in other code (TODO: Move module and class defs to ru_ne_ne.c ?)
-VALUE MLP = Qnil;
-VALUE Layer = Qnil;
-VALUE Network = Qnil;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline VALUE mlp_layer_as_ruby_class( MLP_Layer *mlp_layer, VALUE klass ) {
@@ -23,7 +18,6 @@ VALUE mlp_layer_alloc(VALUE klass) {
   return mlp_layer_as_ruby_class( p_mlp_layer_create(), klass );
 }
 
-
 inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
   MLP_Layer *mlp_layer;
   Data_Get_Struct( obj, MLP_Layer, mlp_layer );
@@ -32,7 +26,7 @@ inline MLP_Layer *get_mlp_layer_struct( VALUE obj ) {
 
 VALUE mlp_layer_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn ) {
   MLP_Layer *mlp_layer;
-  VALUE mlp_layer_ruby = mlp_layer_alloc( Layer );
+  VALUE mlp_layer_ruby = mlp_layer_alloc( FeedForward );
   mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
 
   mlp_layer->num_inputs = n_inputs;
@@ -51,7 +45,7 @@ VALUE mlp_layer_clone_ruby_object( VALUE orig ) {
   MLP_Layer *mlp_layer_orig;
   mlp_layer_orig = get_mlp_layer_struct( orig );
 
-  copy =  mlp_layer_alloc( Layer );
+  copy =  mlp_layer_alloc( FeedForward );
   mlp_layer_copy = get_mlp_layer_struct( copy );
 
   mlp_layer_copy->num_inputs = mlp_layer_orig->num_inputs;
@@ -97,6 +91,8 @@ transfer_type transfer_fn_from_symbol( VALUE tfn_type ) {
     return RELU;
   } else if ( rb_intern("linear") == tfn_id ) {
     return LINEAR;
+  } else if ( rb_intern("softmax") == tfn_id ) {
+    return SOFTMAX;
   } else {
     rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
   }
@@ -131,7 +127,7 @@ void assert_not_in_input_chain( MLP_Layer *mlp_layer, VALUE unexpected_layer ) {
 VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
   MLP_Layer *mlp_layer;
   struct NARRAY *na_weights;
-  VALUE mlp_layer_ruby = mlp_layer_alloc( Layer );
+  VALUE mlp_layer_ruby = mlp_layer_alloc( FeedForward );
   mlp_layer = get_mlp_layer_struct( mlp_layer_ruby );
 
   GetNArray( weights, na_weights );
@@ -144,7 +140,7 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
 }
 
 
-/* Document-class:  RuNeNe::MLP::Layer
+/* Document-class:  RuNeNe::Layer::FeedForward
  *
  * An object of this class represents a layer in a fully connected feed-forward network,
  * with inputs, weights and outputs. The inputs and outputs may be shared with other
@@ -169,7 +165,7 @@ VALUE mlp_layer_new_ruby_object_from_weights( VALUE weights, transfer_type tfn )
  * @param [Integer] num_inputs size of input array
  * @param [Integer] num_outputs size of output array
  * @param [Symbol] transfer_label type of transfer function to use.
- * @return [RuNeNe::MLP::Layer] new layer with random weights.
+ * @return [RuNeNe::Layer::FeedForward] new layer with random weights.
  */
 VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
   VALUE n_ins, n_outs, tfn_type;
@@ -200,7 +196,7 @@ VALUE mlp_layer_class_initialize( int argc, VALUE* argv, VALUE self ) {
 /* @overload clone
  * When cloned, the returned Layer has deep copies of weights and outputs,
  * and is *not* connected to the inputs and outputs that the original was.
- * @return [RuNeNe::MLP::Layer] new layer same weights and transfer function.
+ * @return [RuNeNe::Layer::FeedForward] new layer same weights and transfer function.
  */
 VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
   MLP_Layer *mlp_layer_copy;
@@ -234,7 +230,7 @@ VALUE mlp_layer_class_initialize_copy( VALUE copy, VALUE orig ) {
  * 3 outputs.
  * @param [NArray] weights
  * @param [Symbol] transfer_label type of transfer function to use.
- * @return [RuNeNe::MLP::Layer] new layer using supplied weights.
+ * @return [RuNeNe::Layer::FeedForward] new layer using supplied weights.
  */
 VALUE mlp_layer_class_from_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE weights_in, tfn_type;
@@ -301,6 +297,9 @@ VALUE mlp_layer_object_transfer( VALUE self ) {
     case LINEAR:
       t = Linear;
       break;
+    case SOFTMAX:
+      t = Softmax;
+      break;
   }
   return t;
 }
@@ -337,7 +336,7 @@ VALUE mlp_layer_object_weights( VALUE self ) {
 
 /* @!attribute [r] input_layer
  * The current input layer.
- * @return [RuNeNe::MLP::Layer,nil] a nil value means this is the first layer in a connected set.
+ * @return [RuNeNe::Layer::FeedForward,nil] a nil value means this is the first layer in a connected set.
  */
 VALUE mlp_layer_object_input_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -346,7 +345,7 @@ VALUE mlp_layer_object_input_layer( VALUE self ) {
 
 /* @!attribute [r] output_layer
  * The current output layer.
- * @return [RuNeNe::MLP::Layer,nil] a nil value means this is the last layer in a connected set.
+ * @return [RuNeNe::Layer::FeedForward,nil] a nil value means this is the last layer in a connected set.
  */
 VALUE mlp_layer_object_output_layer( VALUE self ) {
   MLP_Layer *mlp_layer = get_mlp_layer_struct( self );
@@ -431,8 +430,8 @@ VALUE mlp_layer_object_set_input( VALUE self, VALUE new_input ) {
 /* @overload attach_input_layer( input_layer )
  * Sets the input layer to this layer. Any existing inputs or input layers are disconnected.
  * The input layer also has this layer set as its output_layer.
- * @param [RuNeNe::MLP::Layer] input_layer must have #num_outputs equal to #num_inputs of this layer
- * @return [RuNeNe::MLP::Layer] the new input layer (always the same as parameter)
+ * @param [RuNeNe::Layer::FeedForward] input_layer must have #num_outputs equal to #num_inputs of this layer
+ * @return [RuNeNe::Layer::FeedForward] the new input layer (always the same as parameter)
  */
 VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   MLP_Layer *mlp_new_input_layer;
@@ -475,8 +474,8 @@ VALUE mlp_layer_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
 /* @overload attach_input_layer( output_layer )
  * Sets the output layer to this layer. Any existing output layer is disconnected.
  * The output layer also has this layer set as its input_layer.
- * @param [RuNeNe::MLP::Layer] output_layer must have #num_inputs equal to #num_outputs of this layer
- * @return [RuNeNe::MLP::Layer] the new output layer (always the same as parameter)
+ * @param [RuNeNe::Layer::FeedForward] output_layer must have #num_inputs equal to #num_outputs of this layer
+ * @return [RuNeNe::Layer::FeedForward] the new output layer (always the same as parameter)
  */
 VALUE mlp_layer_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
   MLP_Layer *mlp_new_output_layer;
@@ -643,40 +642,33 @@ VALUE mlp_layer_object_update_weights( int argc, VALUE* argv, VALUE self ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void init_mlp_layer_class( ) {
-  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
+void init_mlp_layer_class() {
+  // FeedForward instantiation and class methods
+  rb_define_alloc_func( FeedForward, mlp_layer_alloc );
+  rb_define_method( FeedForward, "initialize", mlp_layer_class_initialize, -1 );
+  rb_define_method( FeedForward, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
+  rb_define_singleton_method( FeedForward, "from_weights", mlp_layer_class_from_weights, -1 );
 
-  // Define modules and classes
-  MLP = rb_define_module_under( conene_root, "MLP" );
-  Layer = rb_define_class_under( MLP, "Layer", rb_cObject );
-  Network = rb_define_class_under( MLP, "Network", rb_cObject );
+  // FeedForward attributes
+  rb_define_method( FeedForward, "num_inputs", mlp_layer_object_num_inputs, 0 );
+  rb_define_method( FeedForward, "num_outputs", mlp_layer_object_num_outputs, 0 );
+  rb_define_method( FeedForward, "transfer", mlp_layer_object_transfer, 0 );
+  rb_define_method( FeedForward, "input", mlp_layer_object_input, 0 );
+  rb_define_method( FeedForward, "output", mlp_layer_object_output, 0 );
+  rb_define_method( FeedForward, "weights", mlp_layer_object_weights, 0 );
+  rb_define_method( FeedForward, "input_layer", mlp_layer_object_input_layer, 0 );
+  rb_define_method( FeedForward, "output_layer", mlp_layer_object_output_layer, 0 );
+  rb_define_method( FeedForward, "output_deltas", mlp_layer_object_output_deltas, 0 );
+  rb_define_method( FeedForward, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
 
-  // Layer instantiation and class methods
-  rb_define_alloc_func( Layer, mlp_layer_alloc );
-  rb_define_method( Layer, "initialize", mlp_layer_class_initialize, -1 );
-  rb_define_method( Layer, "initialize_copy", mlp_layer_class_initialize_copy, 1 );
-  rb_define_singleton_method( Layer, "from_weights", mlp_layer_class_from_weights, -1 );
-
-  // Layer attributes
-  rb_define_method( Layer, "num_inputs", mlp_layer_object_num_inputs, 0 );
-  rb_define_method( Layer, "num_outputs", mlp_layer_object_num_outputs, 0 );
-  rb_define_method( Layer, "transfer", mlp_layer_object_transfer, 0 );
-  rb_define_method( Layer, "input", mlp_layer_object_input, 0 );
-  rb_define_method( Layer, "output", mlp_layer_object_output, 0 );
-  rb_define_method( Layer, "weights", mlp_layer_object_weights, 0 );
-  rb_define_method( Layer, "input_layer", mlp_layer_object_input_layer, 0 );
-  rb_define_method( Layer, "output_layer", mlp_layer_object_output_layer, 0 );
-  rb_define_method( Layer, "output_deltas", mlp_layer_object_output_deltas, 0 );
-  rb_define_method( Layer, "weights_last_deltas", mlp_layer_object_weights_last_deltas, 0 );
-
-  // Layer methods
-  rb_define_method( Layer, "init_weights", mlp_layer_object_init_weights, -1 );
-  rb_define_method( Layer, "set_input", mlp_layer_object_set_input, 1 );
-  rb_define_method( Layer, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
-  rb_define_method( Layer, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
-  rb_define_method( Layer, "run", mlp_layer_object_run, 0 );
-  rb_define_method( Layer, "ms_error", mlp_layer_object_ms_error, 1 );
-  rb_define_method( Layer, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
-  rb_define_method( Layer, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
-  rb_define_method( Layer, "update_weights", mlp_layer_object_update_weights, -1 );
+  // FeedForward methods
+  rb_define_method( FeedForward, "init_weights", mlp_layer_object_init_weights, -1 );
+  rb_define_method( FeedForward, "set_input", mlp_layer_object_set_input, 1 );
+  rb_define_method( FeedForward, "attach_input_layer", mlp_layer_object_attach_input_layer, 1 );
+  rb_define_method( FeedForward, "attach_output_layer", mlp_layer_object_attach_output_layer, 1 );
+  rb_define_method( FeedForward, "run", mlp_layer_object_run, 0 );
+  rb_define_method( FeedForward, "ms_error", mlp_layer_object_ms_error, 1 );
+  rb_define_method( FeedForward, "calc_output_deltas", mlp_layer_object_calc_output_deltas, 1 );
+  rb_define_method( FeedForward, "backprop_deltas", mlp_layer_object_backprop_deltas, 0 );
+  rb_define_method( FeedForward, "update_weights", mlp_layer_object_update_weights, -1 );
 }

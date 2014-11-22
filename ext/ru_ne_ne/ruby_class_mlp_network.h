@@ -13,6 +13,7 @@
 #include "struct_mlp_network.h"
 #include "ruby_module_transfer.h"
 #include "ruby_class_mlp_layer.h"
+#include "shared_vars.h"
 
 void init_mlp_network_class( );
 

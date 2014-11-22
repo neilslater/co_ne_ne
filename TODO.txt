@@ -1,7 +1,23 @@
 CoNeNe TODOs:
 
     Clean up, rename CoNeNe . . . **RuNeNe**
-        RuNeNe::Layer, RuNeNe::Network, RuNeNe::TrainingData, RuNeNe::Activation::Sigmoid... ???
+        RuNeNe::Layer::FeedForward, RuNeNe::Network, RuNeNe::TrainingData, RuNeNe::Activation::Sigmoid... ???
+
+    Names:
+        RuNeNe::MLP::Network -> RuNeNe::Network
+        RuNeNe::MLP::Layer   -> RuNeNe::Layer::FeedForward
+        mlp_network_spec.rb  -> network_spec.rb
+        struct_mlp_layer.c   -> struct_layer_ff.c
+        struct_mlp_layer.h   -> struct_layer_ff.h
+        struct_mlp_network.c   -> struct_network.c
+        struct_mlp_network.h   -> struct_network.h
+        MLP_Layer *mlp_layer -> Layer_FF *layer_ff  (layer_ff?) ... s_Layer_FF ??  rv_layer_ff
+        ruby_class_mlp_layer.c  ->  ruby_class_layer_feed_forward.c
+        ruby_class_mlp_layer.h  ->
+        VALUE mlp_layer_        ->  VALUE rv_layer_ff_
+        ruby_class_mlp_network.c  ->  ruby_class_network.c
+        ruby_class_mlp_network.h  ->  ruby_class_network.h
+
 
     Softmax layer
 

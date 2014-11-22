@@ -8,8 +8,6 @@
 //  struct_training_data.c
 //
 
-VALUE RuNeNe_TrainingData = Qnil;
-
 inline VALUE training_data_as_ruby_class( TrainingData *training_data , VALUE klass ) {
   return Data_Wrap_Struct( klass, p_training_data_gc_mark, p_training_data_destroy, training_data );
 }
@@ -127,9 +125,6 @@ VALUE training_data_object_num_items( VALUE self ) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_training_data_class( ) {
-  volatile VALUE conene_root = rb_define_module( "RuNeNe" );
-  RuNeNe_TrainingData = rb_define_class_under( conene_root, "TrainingData", rb_cObject );
-
   // TrainingData instantiation and class methods
   rb_define_alloc_func( RuNeNe_TrainingData, training_data_alloc );
   rb_define_method( RuNeNe_TrainingData, "initialize", training_data_class_initialize, 2 );

@@ -19,6 +19,7 @@
 #include "ruby_class_training_data.h"
 #include "core_mt.h"
 #include "core_shuffle.h"
+#include "shared_vars.h"
 
 void init_module_ru_ne_ne();
 

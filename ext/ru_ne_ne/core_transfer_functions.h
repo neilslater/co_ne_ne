@@ -10,7 +10,7 @@
 
 #include <math.h>
 
-typedef enum {SIGMOID, TANH, RELU, LINEAR} transfer_type;
+typedef enum {SIGMOID, TANH, RELU, LINEAR, SOFTMAX} transfer_type;
 
 float transfer_function( transfer_type t, float x );
 void transfer_bulk_apply_function( transfer_type t, int n, float *ptr );

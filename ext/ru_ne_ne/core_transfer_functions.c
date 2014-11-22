@@ -155,6 +155,9 @@ float transfer_function( transfer_type t, float x ) {
       return raw_relu_function( x );
     case LINEAR:
       return x;
+    // This is not supposed to be called
+    case SOFTMAX:
+      return 1.0;
   }
 }
 
@@ -168,6 +171,8 @@ void transfer_bulk_apply_function( transfer_type t, int n, float *ptr ) {
       return raw_relu_bulk_apply_function( n, ptr );
     case LINEAR:
       return;
+    case SOFTMAX:
+      return raw_softmax_bulk_apply_function( n, ptr );
   }
 }
 
@@ -181,6 +186,9 @@ float transfer_derivative( transfer_type t, float x ) {
       return raw_relu_derivative( x );
     case LINEAR:
       return 1.0;
+    // This is not supposed to be called
+    case SOFTMAX:
+      return 0.0;
   }
 }
 
@@ -194,6 +202,9 @@ float transfer_derivative_at( transfer_type t, float y ) {
       return raw_relu_derivative_at( y );
     case LINEAR:
       return 1.0;
+    // This is not supposed to be called
+    case SOFTMAX:
+      return 0.0;
   }
 }
 
@@ -207,5 +218,7 @@ void transfer_bulk_derivative_at( transfer_type t, int n, float *func_ptr, float
       return raw_relu_bulk_derivative_at( n, func_ptr, deriv_ptr );
     case LINEAR:
       return raw_linear_bulk_derivative_at( n, func_ptr, deriv_ptr );
+    case SOFTMAX:
+      return raw_softmax_bulk_derivative_at( n, func_ptr, deriv_ptr );
   }
 }
