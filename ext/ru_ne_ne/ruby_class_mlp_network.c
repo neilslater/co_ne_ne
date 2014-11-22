@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for multi-layer perceptron code - the deeper implementation is in
-//  struct_layer_ff.c and struct_mlp_network.c
+//  struct_layer_ff.c and struct_network.c
 //
 
 inline VALUE mlp_network_as_ruby_class( MLP_Network *mlp_network , VALUE klass ) {
