@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "core_mt.h"
+#include "mt.h"
 #include "ruby_class_layer_ff.h"
 
 typedef struct _network_raw {

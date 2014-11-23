@@ -45,7 +45,7 @@
    email: m-mat @ math.sci.hiroshima-u.ac.jp (remove space)
 */
 
-#include "core_mt.h"
+#include "mt.h"
 
 static unsigned long mt[N]; /* the array for the state vector  */
 static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */

@@ -10,7 +10,7 @@
 
 #include <ruby.h>
 #include "narray.h"
-#include "core_mt.h"
+#include "mt.h"
 #include "ruby_module_transfer.h"
 #include "core_backprop.h"
 

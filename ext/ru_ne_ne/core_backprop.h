@@ -9,7 +9,7 @@
 #ifndef CORE_BACKPROP_H
 #define CORE_BACKPROP_H
 
-#include "core_mt.h"
+#include "mt.h"
 #include "core_narray.h"
 #include <xmmintrin.h>
 

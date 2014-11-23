@@ -8,7 +8,7 @@
 #ifndef CORE_SHUFFLE_H
 #define CORE_SHUFFLE_H
 
-#include "core_mt.h"
+#include "mt.h"
 
 void shuffle_ints( int n, int *array );
 
