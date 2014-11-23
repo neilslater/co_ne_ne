@@ -121,7 +121,7 @@ void p_layer_ff_run( s_Layer_FF *layer_ff ) {
   GetNArray( layer_ff->narr_weights, na_weights );
   GetNArray( layer_ff->narr_output, na_out );
 
-  core_activate_layer_output( layer_ff->num_inputs, layer_ff->num_outputs,
+  feed_forward_linear( layer_ff->num_inputs, layer_ff->num_outputs,
       (float*) na_in->ptr, (float*) na_weights->ptr, (float*) na_out->ptr );
 
   transfer_bulk_apply_function( layer_ff->transfer_fn, layer_ff->num_outputs, (float*) na_out->ptr  );

@@ -13,7 +13,7 @@
 #include "core_narray.h"
 #include <xmmintrin.h>
 
-void core_activate_layer_output( int in_size, int out_size, float *in_ptr, float *weights, float *out_ptr );
+void feed_forward_linear( int in_size, int out_size, float *in_ptr, float *weights, float *out_ptr );
 
 float core_mean_square_error( int out_size, float *out_ptr, float *target_ptr );
 

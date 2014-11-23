@@ -1,8 +1,8 @@
 CoNeNe TODOs:
 
-    Variable names
-
-    Code directory structures
+    Variable names:
+        rv_foo    for Ruby values
+        s_foo     for struct pointers
 
     Softmax layer
 

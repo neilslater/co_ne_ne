@@ -8,7 +8,7 @@
 //   from arrays of floats
 //
 
-void core_activate_layer_output( int in_size, int out_size,
+void feed_forward_linear( int in_size, int out_size,
     float *in_ptr, float *weights, float *out_ptr ) {
   int i, j, in_aligned_size, offset;
   __m128 simd_x, simd_y, simd_t;
