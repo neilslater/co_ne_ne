@@ -6,20 +6,21 @@
  *  Naming conventions used in this C code:
  *
  *  File names
- *    ruby_module_<foo>     :  Ruby bindings for module Foo
+ *    ruby_module_<foo>     :  Ruby bindings for module
  *    ruby_class_<bar>      :  Ruby bindings for class Bar
- *    struct_<baz>          :  C structs for class or module Baz, with memory-management and "methods"
- *    core_<feature>        :  Base C code that works with ints, floats and pointers
+ *    struct_<baz>          :  C structs for Baz, with memory-management and OO-style "methods"
+ *    <feature>             :  Base C code that works with ints, floats and pointers
  *
  *  Variable names
- *    s_Camel_Case          :  struct type
- *    s_thing               :  pointer to a struct type
- *    rv_thing              :  Ruby value
+ *    Module_Class_TheThing :  VALUE container for Ruby Class or Module
+ *    The_Thing             :  struct type
+ *    the_thing             :  pointer to a struct type
+ *    rv_the_thing          :  Ruby value wrapping the struct type
  *
  *  Method names
- *    core_<description>    :  Base C code with little or no Ruby interaction, and no validations
- *    layer_ff__<desc>     :  OO-style code that takes an Layer_FF C struct as first param
- *    rv_layer_ff_<desc>    :  Ruby-bound method for working with RuNeNe::Layer::FeedForward object
+ *    layer_ff__<desc>        :  OO-style code that takes a Layer_FF C struct as first param
+ *    layer_ff_object_<desc>  :  Ruby-bound method for RuNeNe::Layer::FeedForward object
+ *    layer_ff_class_<desc>   :  Ruby-bound method for RuNeNe::Layer::FeedForward class
  *
 */
 
