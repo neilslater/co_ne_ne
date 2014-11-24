@@ -8,35 +8,35 @@
 //  struct_layer_ff.c and struct_network.c
 //
 
-inline VALUE network_as_ruby_class( MLP_Network *network , VALUE klass ) {
-  return Data_Wrap_Struct( klass, p_network_gc_mark, p_network_destroy, network );
+inline VALUE network_as_ruby_class( Network *network , VALUE klass ) {
+  return Data_Wrap_Struct( klass, network__gc_mark, network__destroy, network );
 }
 
 VALUE network_alloc(VALUE klass) {
-  return network_as_ruby_class( p_network_create(), klass );
+  return network_as_ruby_class( network__create(), klass );
 }
 
-inline MLP_Network *get_network_struct( VALUE obj ) {
-  MLP_Network *network;
-  Data_Get_Struct( obj, MLP_Network, network );
+inline Network *get_network_struct( VALUE obj ) {
+  Network *network;
+  Data_Get_Struct( obj, Network, network );
   return network;
 }
 
 void assert_value_wraps_network( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_network_destroy) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)network__destroy) {
     rb_raise( rb_eTypeError, "Expected a Network object, but got something else" );
   }
 }
 
 VALUE network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum ) {
-  MLP_Network *network;
-  s_Layer_FF *layer_ff;
+  Network *network;
+  Layer_FF *layer_ff;
   volatile VALUE network_ruby = network_alloc( RuNeNe_Network );
   network = get_network_struct( network_ruby );
-  Data_Get_Struct( layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( layer, Layer_FF, layer_ff );
 
-  p_layer_ff_clear_input( layer_ff );
+  layer_ff__clear_input( layer_ff );
   layer_ff->locked_input = 1;
   network->first_layer = layer;
   network->eta = eta;
@@ -74,7 +74,7 @@ VALUE network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum
  */
 VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
   ninputs = NUM2INT( num_inputs );
   noutputs = NUM2INT( num_outputs );
 
@@ -103,7 +103,7 @@ VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layer
   }
   layer_sizes[nhlayers+1] = noutputs;
 
-  p_network_init_layers( network, nhlayers + 1, layer_sizes );
+  network__init_layers( network, nhlayers + 1, layer_sizes );
 
   xfree( layer_sizes );
   return self;
@@ -115,14 +115,14 @@ VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layer
  * @return [RuNeNe::Network] new network with same weights.
  */
 VALUE network_class_initialize_copy( VALUE copy, VALUE orig ) {
-  MLP_Network *network_copy;
-  MLP_Network *network_orig;
+  Network *network_copy;
+  Network *network_orig;
   volatile VALUE orig_layer;
   volatile VALUE copy_layer;
   volatile VALUE copy_layer_prev;
-  s_Layer_FF *layer_ff_orig;
-  s_Layer_FF *layer_ff_copy;
-  s_Layer_FF *layer_ff_copy_prev;
+  Layer_FF *layer_ff_orig;
+  Layer_FF *layer_ff_copy;
+  Layer_FF *layer_ff_copy_prev;
 
   if (copy == orig) return copy;
   network_copy = get_network_struct( copy );
@@ -134,16 +134,16 @@ VALUE network_class_initialize_copy( VALUE copy, VALUE orig ) {
   orig_layer = network_orig->first_layer;
   copy_layer = layer_ff_clone_ruby_object( orig_layer );
   network_copy->first_layer = copy_layer;
-  Data_Get_Struct( orig_layer, s_Layer_FF, layer_ff_orig );
-  Data_Get_Struct( copy_layer, s_Layer_FF, layer_ff_copy_prev );
+  Data_Get_Struct( orig_layer, Layer_FF, layer_ff_orig );
+  Data_Get_Struct( copy_layer, Layer_FF, layer_ff_copy_prev );
   copy_layer_prev = copy_layer;
 
   // Copy and attach each layer in turn
   while ( ! NIL_P(layer_ff_orig->output_layer) ) {
     orig_layer = layer_ff_orig->output_layer;
     copy_layer = layer_ff_clone_ruby_object( orig_layer );
-    Data_Get_Struct( orig_layer, s_Layer_FF, layer_ff_orig );
-    Data_Get_Struct( copy_layer, s_Layer_FF, layer_ff_copy );
+    Data_Get_Struct( orig_layer, Layer_FF, layer_ff_orig );
+    Data_Get_Struct( copy_layer, Layer_FF, layer_ff_copy );
 
     layer_ff_copy_prev->output_layer = copy_layer;
     layer_ff_copy->input_layer = copy_layer_prev;
@@ -163,9 +163,9 @@ VALUE network_class_initialize_copy( VALUE copy, VALUE orig ) {
  * @return [RuNeNe::Network] new network
  */
 VALUE network_class_from_layer( VALUE self, VALUE layer ) {
-  s_Layer_FF *layer_ff;
+  Layer_FF *layer_ff;
   assert_value_wraps_layer_ff( layer );
-  Data_Get_Struct( layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( layer, Layer_FF, layer_ff );
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     rb_raise( rb_eArgError, "Cannot create network from layer with an attached input layer." );
   }
@@ -178,8 +178,8 @@ VALUE network_class_from_layer( VALUE self, VALUE layer ) {
  * @return [Integer]
  */
 VALUE network_object_num_layers( VALUE self ) {
-  MLP_Network *network = get_network_struct( self );
-  return INT2NUM( p_network_count_layers( network ) );
+  Network *network = get_network_struct( self );
+  return INT2NUM( network__count_layers( network ) );
 }
 
 /* @overload layers
@@ -190,10 +190,10 @@ VALUE network_object_num_layers( VALUE self ) {
 VALUE network_object_layers( VALUE self ) {
   int num_layers, count;
   VALUE layer_object, all_layers;
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
-  num_layers = p_network_count_layers( network );
+  num_layers = network__count_layers( network );
 
   all_layers = rb_ary_new2( num_layers );
   count = 0;
@@ -201,7 +201,7 @@ VALUE network_object_layers( VALUE self ) {
   while ( ! NIL_P(layer_object) ) {
     rb_ary_store( all_layers, count, layer_object );
     count++;
-    Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
+    Data_Get_Struct( layer_object, Layer_FF, layer_ff );
     layer_object = layer_ff->output_layer;
   }
 
@@ -218,7 +218,7 @@ VALUE network_object_layers( VALUE self ) {
 VALUE network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
   float min_weight, max_weight;
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
 
   rb_scan_args( argc, argv, "02", &minw, &maxw );
 
@@ -235,7 +235,7 @@ VALUE network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
     max_weight = 0.8;
   }
 
-  p_network_init_layer_weights( network, min_weight, max_weight );
+  network__init_layer_weights( network, min_weight, max_weight );
 
   return Qnil;
 }
@@ -247,8 +247,8 @@ VALUE network_object_init_weights( int argc, VALUE* argv, VALUE self ) {
  * @return [Integer]
  */
 VALUE network_object_num_outputs( VALUE self ) {
-  MLP_Network *network = get_network_struct( self );
-  return INT2NUM( p_network_num_outputs( network ) );
+  Network *network = get_network_struct( self );
+  return INT2NUM( network__num_outputs( network ) );
 }
 
 /* @overload num_inputs
@@ -258,8 +258,8 @@ VALUE network_object_num_outputs( VALUE self ) {
  * @return [Integer]
  */
 VALUE network_object_num_inputs( VALUE self ) {
-  MLP_Network *network = get_network_struct( self );
-  return INT2NUM( p_network_num_inputs( network ) );
+  Network *network = get_network_struct( self );
+  return INT2NUM( network__num_inputs( network ) );
 }
 
 /* @overload output
@@ -268,10 +268,10 @@ VALUE network_object_num_inputs( VALUE self ) {
  * @return [NArray<sfloat>] one-dimensional array of single-precision floats
  */
 VALUE network_object_output( VALUE self ) {
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
-  layer_ff = p_network_last_layer_ff( network );
+  layer_ff = network__last_layer_ff( network );
   return layer_ff->narr_output;
 }
 
@@ -281,10 +281,10 @@ VALUE network_object_output( VALUE self ) {
  * @return [NArray<sfloat>,nil] one-dimensional array of single-precision floats
  */
 VALUE network_object_input( VALUE self ) {
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
-  Data_Get_Struct( network->first_layer, s_Layer_FF, layer_ff );
+  Data_Get_Struct( network->first_layer, Layer_FF, layer_ff );
   return layer_ff->narr_input;
 }
 
@@ -298,11 +298,11 @@ VALUE network_object_run( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   volatile VALUE layer_object;
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
   layer_object = network->first_layer;
-  Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
+  Data_Get_Struct( layer_object, Layer_FF, layer_ff );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
@@ -315,9 +315,9 @@ VALUE network_object_run( VALUE self, VALUE new_input ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, layer_ff->num_inputs );
   }
 
-  p_layer_ff_set_input( layer_ff, val_input );
-  p_network_run( network );
-  layer_ff = p_network_last_layer_ff( network );
+  layer_ff__set_input( layer_ff, val_input );
+  network__run( network );
+  layer_ff = network__last_layer_ff( network );
   return layer_ff->narr_output;
 }
 
@@ -330,8 +330,8 @@ VALUE network_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
   val_target = na_cast_object(target, NA_SFLOAT);
   GetNArray( val_target, na_target );
@@ -340,7 +340,7 @@ VALUE network_object_ms_error( VALUE self, VALUE target ) {
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  layer_ff = p_network_last_layer_ff( network );
+  layer_ff = network__last_layer_ff( network );
 
   if ( na_target->total != layer_ff->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, layer_ff->num_outputs );
@@ -348,7 +348,7 @@ VALUE network_object_ms_error( VALUE self, VALUE target ) {
 
   GetNArray( layer_ff->narr_output, na_output );
 
-  return FLT2NUM( core_mean_square_error( layer_ff->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
+  return FLT2NUM( mean_square_error( layer_ff->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
 /* @overload train_once( new_input, target )
@@ -366,13 +366,13 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
   volatile VALUE val_target;
   volatile VALUE layer_object;
 
-  s_Layer_FF *layer_ff;
-  MLP_Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  Network *network = get_network_struct( self );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Check input is valid
   layer_object = network->first_layer;
-  Data_Get_Struct( layer_object, s_Layer_FF, layer_ff );
+  Data_Get_Struct( layer_object, Layer_FF, layer_ff );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
@@ -394,7 +394,7 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
     rb_raise( rb_eArgError, "Target rank should be 1, but got %d", na_target->rank );
   }
 
-  layer_ff = p_network_last_layer_ff( network );
+  layer_ff = network__last_layer_ff( network );
 
   if ( na_target->total != layer_ff->num_outputs ) {
     rb_raise( rb_eArgError, "Array size %d does not match network output size %d", na_target->total, layer_ff->num_outputs );
@@ -402,7 +402,7 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Run the training
-  p_network_train_once( network, val_input, val_target );
+  network__train_once( network, val_input, val_target );
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Return nil
@@ -415,7 +415,7 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
  * @return [Float]
  */
 VALUE network_object_learning_rate( VALUE self ) {
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
   return FLT2NUM( network->eta );
 }
 
@@ -427,7 +427,7 @@ VALUE network_object_learning_rate( VALUE self ) {
  */
 VALUE network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
   float new_eta;
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
 
   new_eta = NUM2FLT( new_learning_rate );
   if ( new_eta < 1.0e-9 || new_eta > 1000.0 ) {
@@ -445,7 +445,7 @@ VALUE network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
  * @return [Float]
  */
 VALUE network_object_momentum( VALUE self ) {
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
   return FLT2NUM( network->momentum );
 }
 
@@ -457,7 +457,7 @@ VALUE network_object_momentum( VALUE self ) {
  */
 VALUE network_object_set_momentum( VALUE self, VALUE val_momentum ) {
   float new_momentum;
-  MLP_Network *network = get_network_struct( self );
+  Network *network = get_network_struct( self );
 
   new_momentum = NUM2FLT( val_momentum );
   if ( new_momentum < 0.0 || new_momentum > 0.999 ) {

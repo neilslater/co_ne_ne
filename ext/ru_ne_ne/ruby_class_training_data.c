@@ -9,11 +9,11 @@
 //
 
 inline VALUE training_data_as_ruby_class( TrainingData *training_data , VALUE klass ) {
-  return Data_Wrap_Struct( klass, p_training_data_gc_mark, p_training_data_destroy, training_data );
+  return Data_Wrap_Struct( klass, training_data__gc_mark, training_data__destroy, training_data );
 }
 
 VALUE training_data_alloc(VALUE klass) {
-  return training_data_as_ruby_class( p_training_data_create(), klass );
+  return training_data_as_ruby_class( training_data__create(), klass );
 }
 
 inline TrainingData *get_training_data_struct( VALUE obj ) {
@@ -24,7 +24,7 @@ inline TrainingData *get_training_data_struct( VALUE obj ) {
 
 void assert_value_wraps_training_data( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_training_data_destroy) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)training_data__destroy) {
     rb_raise( rb_eTypeError, "Expected a TrainingData object, but got something else" );
   }
 }
@@ -70,7 +70,7 @@ VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) 
         na_inputs->shape[ na_inputs->rank - 1 ], na_targets->shape[ na_targets->rank - 1 ] );
   }
 
-  p_training_data_init_from_narray( training_data, val_inputs, val_targets );
+  training_data__init_from_narray( training_data, val_inputs, val_targets );
 
   return self;
 }

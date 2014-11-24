@@ -23,24 +23,24 @@ typedef struct _training_data_raw {
     VALUE narr_outputs;
   } TrainingData;
 
-TrainingData *p_training_data_create();
+TrainingData *training_data__create();
 
-void p_training_data_init( TrainingData *training_data, int input_rank, int *input_shape,
+void training_data__init( TrainingData *training_data, int input_rank, int *input_shape,
       int output_rank, int *output_shape, int num_items );
 
-float *p_training_data_current_input( TrainingData *training_data );
+float *training_data__current_input( TrainingData *training_data );
 
-float *p_training_data_current_output( TrainingData *training_data );
+float *training_data__current_output( TrainingData *training_data );
 
-void p_training_data_next( TrainingData *training_data );
+void training_data__next( TrainingData *training_data );
 
-void p_training_data_init_simple( TrainingData *training_data, int input_size,
+void training_data__init_simple( TrainingData *training_data, int input_size,
       int output_size, int num_items );
 
-void p_training_data_init_from_narray( TrainingData *training_data, VALUE inputs, VALUE outputs );
+void training_data__init_from_narray( TrainingData *training_data, VALUE inputs, VALUE outputs );
 
-void p_training_data_destroy( TrainingData *training_data );
+void training_data__destroy( TrainingData *training_data );
 
-void p_training_data_gc_mark( TrainingData *training_data );
+void training_data__gc_mark( TrainingData *training_data );
 
 #endif

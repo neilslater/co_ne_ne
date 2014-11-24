@@ -2,7 +2,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Declarations of OO-style functions for manipulating s_Layer_FF structs
+//  Declarations of OO-style functions for manipulating Layer_FF structs
 //
 
 #ifndef STRUCT_MLP_LAYER_H
@@ -27,32 +27,32 @@ typedef struct _layer_ff_raw {
     VALUE narr_output_deltas;
     VALUE narr_weights_last_deltas;
     VALUE narr_output_slope;
-  } s_Layer_FF;
+  } Layer_FF;
 
-s_Layer_FF *p_layer_ff_create();
+Layer_FF *layer_ff__create();
 
-void p_layer_ff_destroy( s_Layer_FF *layer_ff );
+void layer_ff__destroy( Layer_FF *layer_ff );
 
 // Called by Ruby's GC, we have to mark all child objects that could be in Ruby
 // space, so that they don't get deleted.
-void p_layer_ff_gc_mark( s_Layer_FF *layer_ff );
+void layer_ff__gc_mark( Layer_FF *layer_ff );
 
-void p_layer_ff_new_narrays( s_Layer_FF *layer_ff );
+void layer_ff__new_narrays( Layer_FF *layer_ff );
 
-void p_layer_ff_init_weights( s_Layer_FF *layer_ff, float min, float max );
+void layer_ff__init_weights( Layer_FF *layer_ff, float min, float max );
 
-void p_layer_ff_init_from_weights( s_Layer_FF *layer_ff, VALUE weights );
+void layer_ff__init_from_weights( Layer_FF *layer_ff, VALUE weights );
 
-void p_layer_ff_run( s_Layer_FF *layer_ff );
+void layer_ff__run( Layer_FF *layer_ff );
 
-void p_layer_ff_backprop_deltas( s_Layer_FF *layer_ff, s_Layer_FF *layer_ff_input );
+void layer_ff__backprop_deltas( Layer_FF *layer_ff, Layer_FF *layer_ff_input );
 
-void p_layer_ff_update_weights( s_Layer_FF *layer_ff, float eta, float m );
+void layer_ff__update_weights( Layer_FF *layer_ff, float eta, float m );
 
-void p_layer_ff_calc_output_deltas( s_Layer_FF *layer_ff, VALUE target );
+void layer_ff__calc_output_deltas( Layer_FF *layer_ff, VALUE target );
 
-void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input );
+void layer_ff__set_input( Layer_FF *layer_ff, VALUE val_input );
 
-void p_layer_ff_clear_input( s_Layer_FF *layer_ff );
+void layer_ff__clear_input( Layer_FF *layer_ff );
 
 #endif

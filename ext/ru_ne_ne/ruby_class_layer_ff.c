@@ -10,22 +10,22 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline VALUE layer_ff_as_ruby_class( s_Layer_FF *layer_ff, VALUE klass ) {
-  return Data_Wrap_Struct( klass, p_layer_ff_gc_mark, p_layer_ff_destroy, layer_ff );
+inline VALUE layer_ff_as_ruby_class( Layer_FF *layer_ff, VALUE klass ) {
+  return Data_Wrap_Struct( klass, layer_ff__gc_mark, layer_ff__destroy, layer_ff );
 }
 
 VALUE layer_ff_alloc(VALUE klass) {
-  return layer_ff_as_ruby_class( p_layer_ff_create(), klass );
+  return layer_ff_as_ruby_class( layer_ff__create(), klass );
 }
 
-inline s_Layer_FF *get_layer_ff_struct( VALUE obj ) {
-  s_Layer_FF *layer_ff;
-  Data_Get_Struct( obj, s_Layer_FF, layer_ff );
+inline Layer_FF *get_layer_ff_struct( VALUE obj ) {
+  Layer_FF *layer_ff;
+  Data_Get_Struct( obj, Layer_FF, layer_ff );
   return layer_ff;
 }
 
 VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn ) {
-  s_Layer_FF *layer_ff;
+  Layer_FF *layer_ff;
   VALUE rv_layer_ff = layer_ff_alloc( RuNeNe_Layer_FeedForward );
   layer_ff = get_layer_ff_struct( rv_layer_ff );
 
@@ -33,17 +33,17 @@ VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn )
   layer_ff->num_outputs = n_outputs;
   layer_ff->transfer_fn = tfn;
 
-  p_layer_ff_new_narrays( layer_ff );
+  layer_ff__new_narrays( layer_ff );
   // TODO: Needs to vary according to layer size
-  p_layer_ff_init_weights( layer_ff, -0.8, 0.8 );
+  layer_ff__init_weights( layer_ff, -0.8, 0.8 );
 
   return rv_layer_ff;
 }
 
 VALUE layer_ff_clone_ruby_object( VALUE orig ) {
   volatile VALUE copy;
-  s_Layer_FF *layer_ff_copy;
-  s_Layer_FF *layer_ff_orig;
+  Layer_FF *layer_ff_copy;
+  Layer_FF *layer_ff_orig;
   layer_ff_orig = get_layer_ff_struct( orig );
 
   copy =  layer_ff_alloc( RuNeNe_Layer_FeedForward );
@@ -68,7 +68,7 @@ VALUE layer_ff_clone_ruby_object( VALUE orig ) {
 
 void assert_value_wraps_layer_ff( VALUE obj ) {
   if ( TYPE(obj) != T_DATA ||
-      RDATA(obj)->dfree != (RUBY_DATA_FUNC)p_layer_ff_destroy) {
+      RDATA(obj)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
     rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
   }
 }
@@ -99,12 +99,12 @@ transfer_type transfer_fn_from_symbol( VALUE tfn_type ) {
   }
 }
 
-void set_transfer_fn_from_symbol( s_Layer_FF *layer_ff , VALUE tfn_type ) {
+void set_transfer_fn_from_symbol( Layer_FF *layer_ff , VALUE tfn_type ) {
   layer_ff->transfer_fn = transfer_fn_from_symbol( tfn_type );
 }
 
-void assert_not_in_output_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
-  s_Layer_FF *next_layer_ff = layer_ff;
+void assert_not_in_output_chain( Layer_FF *layer_ff, VALUE unexpected_layer ) {
+  Layer_FF *next_layer_ff = layer_ff;
   while ( ! NIL_P( next_layer_ff->output_layer ) ) {
     if ( next_layer_ff->output_layer == unexpected_layer ) {
       rb_raise( rb_eArgError, "Attempt to create a circular network." );
@@ -114,8 +114,8 @@ void assert_not_in_output_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) 
   return;
 }
 
-void assert_not_in_input_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
-  s_Layer_FF *next_layer_ff = layer_ff;
+void assert_not_in_input_chain( Layer_FF *layer_ff, VALUE unexpected_layer ) {
+  Layer_FF *next_layer_ff = layer_ff;
   while ( ! NIL_P( next_layer_ff->input_layer ) ) {
     if ( next_layer_ff->input_layer == unexpected_layer ) {
       rb_raise( rb_eArgError, "Attempt to create a circular network." );
@@ -126,7 +126,7 @@ void assert_not_in_input_chain( s_Layer_FF *layer_ff, VALUE unexpected_layer ) {
 }
 
 VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
-  s_Layer_FF *layer_ff;
+  Layer_FF *layer_ff;
   struct NARRAY *na_weights;
   VALUE rv_layer_ff = layer_ff_alloc( RuNeNe_Layer_FeedForward );
   layer_ff = get_layer_ff_struct( rv_layer_ff );
@@ -135,7 +135,7 @@ VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) 
   layer_ff->num_inputs = na_weights->shape[0] - 1;
   layer_ff->num_outputs = na_weights->shape[1];
   layer_ff->transfer_fn = tfn;
-  p_layer_ff_init_from_weights( layer_ff, weights );
+  layer_ff__init_from_weights( layer_ff, weights );
 
   return rv_layer_ff;
 }
@@ -170,7 +170,7 @@ VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) 
  */
 VALUE layer_ff_class_initialize( int argc, VALUE* argv, VALUE self ) {
   VALUE n_ins, n_outs, tfn_type;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   int i, o;
   rb_scan_args( argc, argv, "21", &n_ins, &n_outs, &tfn_type );
 
@@ -188,8 +188,8 @@ VALUE layer_ff_class_initialize( int argc, VALUE* argv, VALUE self ) {
 
   set_transfer_fn_from_symbol( layer_ff, tfn_type );
 
-  p_layer_ff_new_narrays( layer_ff );
-  p_layer_ff_init_weights( layer_ff, -0.8, 0.8 );
+  layer_ff__new_narrays( layer_ff );
+  layer_ff__init_weights( layer_ff, -0.8, 0.8 );
 
   return self;
 }
@@ -200,8 +200,8 @@ VALUE layer_ff_class_initialize( int argc, VALUE* argv, VALUE self ) {
  * @return [RuNeNe::Layer::FeedForward] new layer same weights and transfer function.
  */
 VALUE layer_ff_class_initialize_copy( VALUE copy, VALUE orig ) {
-  s_Layer_FF *layer_ff_copy;
-  s_Layer_FF *layer_ff_orig;
+  Layer_FF *layer_ff_copy;
+  Layer_FF *layer_ff_orig;
 
   if (copy == orig) return copy;
   layer_ff_copy = get_layer_ff_struct( copy );
@@ -265,7 +265,7 @@ VALUE layer_ff_class_from_weights( int argc, VALUE* argv, VALUE self ) {
  * @return [Integer]
  */
 VALUE layer_ff_object_num_inputs( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return INT2FIX( layer_ff->num_inputs );
 }
 
@@ -274,7 +274,7 @@ VALUE layer_ff_object_num_inputs( VALUE self ) {
  * @return [Integer]
  */
 VALUE layer_ff_object_num_outputs( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return INT2FIX( layer_ff->num_outputs );
 }
 
@@ -283,7 +283,7 @@ VALUE layer_ff_object_num_outputs( VALUE self ) {
  * @return [Module]
  */
 VALUE layer_ff_object_transfer( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   VALUE t;
   switch ( layer_ff->transfer_fn ) {
     case SIGMOID:
@@ -311,7 +311,7 @@ VALUE layer_ff_object_transfer( VALUE self ) {
  * @return [NArray<sfloat>,nil] one-dimensional array of #num_inputs single-precision floats
  */
 VALUE layer_ff_object_input( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->narr_input;
 }
 
@@ -320,7 +320,7 @@ VALUE layer_ff_object_input( VALUE self ) {
  * @return [NArray<sfloat>] one-dimensional array of #num_outputs single-precision floats
  */
 VALUE layer_ff_object_output( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->narr_output;
 }
 
@@ -331,7 +331,7 @@ VALUE layer_ff_object_output( VALUE self ) {
  * @return [NArray<sfloat>] two-dimensional array of [#num_inputs+1, #num_outputs] single-precision floats
  */
 VALUE layer_ff_object_weights( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->narr_weights;
 }
 
@@ -340,7 +340,7 @@ VALUE layer_ff_object_weights( VALUE self ) {
  * @return [RuNeNe::Layer::FeedForward,nil] a nil value means this is the first layer in a connected set.
  */
 VALUE layer_ff_object_input_layer( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->input_layer;
 }
 
@@ -349,7 +349,7 @@ VALUE layer_ff_object_input_layer( VALUE self ) {
  * @return [RuNeNe::Layer::FeedForward,nil] a nil value means this is the last layer in a connected set.
  */
 VALUE layer_ff_object_output_layer( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->output_layer;
 }
 
@@ -358,7 +358,7 @@ VALUE layer_ff_object_output_layer( VALUE self ) {
  * @return [NArray<sfloat>] one-dimensional array of #num_outputs single-precision floats
  */
 VALUE layer_ff_object_output_deltas( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->narr_output_deltas;
 }
 
@@ -367,7 +367,7 @@ VALUE layer_ff_object_output_deltas( VALUE self ) {
  * @return [NArray<sfloat>] two-dimensional array of [#num_inputs+1, #num_outputs] single-precision floats
  */
 VALUE layer_ff_object_weights_last_deltas( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   return layer_ff->narr_weights_last_deltas;
 }
 
@@ -380,7 +380,7 @@ VALUE layer_ff_object_weights_last_deltas( VALUE self ) {
  */
 VALUE layer_ff_object_init_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE minw, maxw;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   float min_weight, max_weight;
   rb_scan_args( argc, argv, "02", &minw, &maxw );
 
@@ -397,7 +397,7 @@ VALUE layer_ff_object_init_weights( int argc, VALUE* argv, VALUE self ) {
     max_weight = 0.8;
   }
 
-  p_layer_ff_init_weights( layer_ff, min_weight, max_weight );
+  layer_ff__init_weights( layer_ff, min_weight, max_weight );
 
   return Qnil;
 }
@@ -410,7 +410,7 @@ VALUE layer_ff_object_init_weights( int argc, VALUE* argv, VALUE self ) {
 VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   val_input = na_cast_object(new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
@@ -423,7 +423,7 @@ VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer input size %d", na_input->total, layer_ff->num_inputs );
   }
 
-  p_layer_ff_set_input( layer_ff, val_input );
+  layer_ff__set_input( layer_ff, val_input );
 
   return val_input;
 }
@@ -435,9 +435,9 @@ VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
  * @return [RuNeNe::Layer::FeedForward] the new input layer (always the same as parameter)
  */
 VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
-  s_Layer_FF *s_new_input_layer_ff;
-  s_Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *s_new_input_layer_ff;
+  Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   if ( layer_ff->locked_input > 0 ) {
     rb_raise( rb_eArgError, "Layer has been marked as 'first layer' and may not have another input layer attached." );
@@ -479,9 +479,9 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
  * @return [RuNeNe::Layer::FeedForward] the new output layer (always the same as parameter)
  */
 VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
-  s_Layer_FF *s_new_output_layer_ff;
-  s_Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *s_new_output_layer_ff;
+  Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   assert_value_wraps_layer_ff( new_output_layer );
   s_new_output_layer_ff = get_layer_ff_struct( new_output_layer );
@@ -522,13 +522,13 @@ VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) 
  * @return [NArray<sfloat>] same as #output
  */
 VALUE layer_ff_object_run( VALUE self ) {
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   if ( NIL_P( layer_ff->narr_input ) ) {
     rb_raise( rb_eArgError, "No input. Cannot run MLP layer." );
   }
 
-  p_layer_ff_run( layer_ff );
+  layer_ff__run( layer_ff );
 
   return layer_ff->narr_output;
 }
@@ -542,7 +542,7 @@ VALUE layer_ff_object_ms_error( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   val_target = na_cast_object(target, NA_SFLOAT);
   GetNArray( val_target, na_target );
@@ -557,7 +557,7 @@ VALUE layer_ff_object_ms_error( VALUE self, VALUE target ) {
 
   GetNArray( layer_ff->narr_output, na_output );
 
-  return FLT2NUM( core_mean_square_error( layer_ff->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
+  return FLT2NUM( mean_square_error( layer_ff->num_outputs, (float *) na_output->ptr,  (float *) na_target->ptr ) );
 }
 
 /* @overload calc_output_deltas( target )
@@ -569,7 +569,7 @@ VALUE layer_ff_object_ms_error( VALUE self, VALUE target ) {
 VALUE layer_ff_object_calc_output_deltas( VALUE self, VALUE target ) {
   struct NARRAY *na_target;
   volatile VALUE val_target;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   val_target = na_cast_object(target, NA_SFLOAT);
   GetNArray( val_target, na_target );
@@ -582,7 +582,7 @@ VALUE layer_ff_object_calc_output_deltas( VALUE self, VALUE target ) {
     rb_raise( rb_eArgError, "Array size %d does not match layer output size %d", na_target->total, layer_ff->num_outputs );
   }
 
-  p_layer_ff_calc_output_deltas( layer_ff, val_target );
+  layer_ff__calc_output_deltas( layer_ff, val_target );
 
   return layer_ff->narr_output_deltas;
 }
@@ -594,8 +594,8 @@ VALUE layer_ff_object_calc_output_deltas( VALUE self, VALUE target ) {
  * @return [NArray<sfloat>] the #output_deltas from the #input_layer
  */
 VALUE layer_ff_object_backprop_deltas( VALUE self ) {
-  s_Layer_FF *layer_ff_input;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff_input;
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
 
   if ( NIL_P( layer_ff->input_layer ) ) {
     rb_raise( rb_eArgError, "No input layer. Cannot run MLP backpropagation." );
@@ -603,7 +603,7 @@ VALUE layer_ff_object_backprop_deltas( VALUE self ) {
 
   layer_ff_input = get_layer_ff_struct( layer_ff->input_layer );
 
-  p_layer_ff_backprop_deltas( layer_ff, layer_ff_input );
+  layer_ff__backprop_deltas( layer_ff, layer_ff_input );
 
   return layer_ff_input->narr_output_deltas;
 }
@@ -617,7 +617,7 @@ VALUE layer_ff_object_backprop_deltas( VALUE self ) {
  */
 VALUE layer_ff_object_update_weights( int argc, VALUE* argv, VALUE self ) {
   VALUE learning_rate, momentum;
-  s_Layer_FF *layer_ff = get_layer_ff_struct( self );
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
   float eta, m;
   rb_scan_args( argc, argv, "11", &learning_rate, &momentum );
 
@@ -635,7 +635,7 @@ VALUE layer_ff_object_update_weights( int argc, VALUE* argv, VALUE self ) {
     }
   }
 
-  p_layer_ff_update_weights( layer_ff, eta, m );
+  layer_ff__update_weights( layer_ff, eta, m );
 
   return layer_ff->narr_weights_last_deltas;
 }

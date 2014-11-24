@@ -1,30 +1,39 @@
-CoNeNe TODOs:
+RuNeNe TODOs:
 
     Variable names:
         rv_foo    for Ruby values
-        s_foo     for struct pointers
+        foo       for struct pointers
 
-    Softmax layer
+    Finish training data class
 
-    Fix training data ( call it LabeledData ?)
-        Support normalisation
-        Support caterical data (getting expanded on-demand)
+    Finish trainer class. RuNeNe::Trainer::Backprop
 
     Split training process between  network, training data and a "trainer" class
+
+    Re-do backprop into separate dE_da, dE_dz and dE_dW stages
+
+    Gradient-checking tests
+
 
     Layer init weights
 
     Log loss cost
 
-    improved vectorisation
-
     Tests using MNIST digits
+
+    mini-batch training
+
+    Softmax layer
+
+
+----- v0.0.1 release ?
+
+
+    improved vectorisation
 
     Bulk predictions
 
     Training set normalisation
-
-    mini-batch training
 
     dropout
 
@@ -38,17 +47,7 @@ CoNeNe TODOs:
 
     auto-categorisation and category expansion
 
-
-
     training data auto-shuffle
-
-    Training data Marshal
-
-    Bulk training
-
-    Bulk error calculations
-
-    Test that learning rate and momentum have an effect on training
 
     Residual gradients for RELU (& others?)
 
@@ -63,7 +62,9 @@ CoNeNe TODOs:
     auto-encoders
 
 
-CoNeNe DONE:
+RuNeNe DONE:
+
+    Training data Marshal
 
     Linear neurons
 

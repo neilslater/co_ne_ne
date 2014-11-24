@@ -15,7 +15,7 @@
 
 void feed_forward_linear( int in_size, int out_size, float *in_ptr, float *weights, float *out_ptr );
 
-float core_mean_square_error( int out_size, float *out_ptr, float *target_ptr );
+float mean_square_error( int out_size, float *out_ptr, float *target_ptr );
 
 void core_calc_output_deltas( int out_size, float *out_ptr, float *out_slope_ptr, float *target_ptr, float *out_delta_ptr );
 

@@ -18,7 +18,7 @@
  *
  *  Method names
  *    core_<description>    :  Base C code with little or no Ruby interaction, and no validations
- *    p_layer_ff_<desc>     :  OO-style code that takes an s_Layer_FF C struct as first param
+ *    layer_ff__<desc>     :  OO-style code that takes an Layer_FF C struct as first param
  *    rv_layer_ff_<desc>    :  Ruby-bound method for working with RuNeNe::Layer::FeedForward object
  *
 */

@@ -4,12 +4,12 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Definitions of OO-style functions for manipulating s_Layer_FF structs
+//  Definitions of OO-style functions for manipulating Layer_FF structs
 //
 
-s_Layer_FF *p_layer_ff_create() {
-  s_Layer_FF *layer_ff;
-  layer_ff = xmalloc( sizeof(s_Layer_FF) );
+Layer_FF *layer_ff__create() {
+  Layer_FF *layer_ff;
+  layer_ff = xmalloc( sizeof(Layer_FF) );
   layer_ff->num_inputs = 0;
   layer_ff->num_outputs = 0;
   layer_ff->transfer_fn = SIGMOID;
@@ -27,7 +27,7 @@ s_Layer_FF *p_layer_ff_create() {
 }
 
 // Creates weights, outputs etc
-void p_layer_ff_new_narrays( s_Layer_FF *layer_ff ) {
+void layer_ff__new_narrays( Layer_FF *layer_ff ) {
   int shape[2];
   struct NARRAY *narr;
 
@@ -58,7 +58,7 @@ void p_layer_ff_new_narrays( s_Layer_FF *layer_ff ) {
 }
 
 // Creates weights, outputs etc
-void p_layer_ff_init_weights( s_Layer_FF *layer_ff, float min, float max ) {
+void layer_ff__init_weights( Layer_FF *layer_ff, float min, float max ) {
   int i, t;
   float mul, *ptr;
   struct NARRAY *narr;
@@ -75,7 +75,7 @@ void p_layer_ff_init_weights( s_Layer_FF *layer_ff, float min, float max ) {
   return;
 }
 
-void p_layer_ff_destroy( s_Layer_FF *layer_ff ) {
+void layer_ff__destroy( Layer_FF *layer_ff ) {
   xfree( layer_ff );
   // No need to free NArrays - they will be handled by Ruby's GC, and may still be reachable
   return;
@@ -83,7 +83,7 @@ void p_layer_ff_destroy( s_Layer_FF *layer_ff ) {
 
 // Called by Ruby's GC, we have to mark all child objects that could be in Ruby
 // space, so that they don't get deleted.
-void p_layer_ff_gc_mark( s_Layer_FF *layer_ff ) {
+void layer_ff__gc_mark( Layer_FF *layer_ff ) {
   rb_gc_mark( layer_ff->narr_input );
   rb_gc_mark( layer_ff->narr_output );
   rb_gc_mark( layer_ff->narr_weights );
@@ -96,7 +96,7 @@ void p_layer_ff_gc_mark( s_Layer_FF *layer_ff ) {
   return;
 }
 
-void p_layer_ff_init_from_weights( s_Layer_FF *layer_ff, VALUE weights ) {
+void layer_ff__init_from_weights( Layer_FF *layer_ff, VALUE weights ) {
   int shape[2];
 
   shape[0] = layer_ff->num_outputs;
@@ -112,7 +112,7 @@ void p_layer_ff_init_from_weights( s_Layer_FF *layer_ff, VALUE weights ) {
   return;
 }
 
-void p_layer_ff_run( s_Layer_FF *layer_ff ) {
+void layer_ff__run( Layer_FF *layer_ff ) {
   struct NARRAY *na_in;
   struct NARRAY *na_weights;
   struct NARRAY *na_out;
@@ -129,7 +129,7 @@ void p_layer_ff_run( s_Layer_FF *layer_ff ) {
   return;
 }
 
-void p_layer_ff_backprop_deltas( s_Layer_FF *layer_ff, s_Layer_FF *layer_ff_input ) {
+void layer_ff__backprop_deltas( Layer_FF *layer_ff, Layer_FF *layer_ff_input ) {
   struct NARRAY *na_inputs; // Only required to pre-calc slopes
 
   struct NARRAY *na_in_deltas;
@@ -154,7 +154,7 @@ void p_layer_ff_backprop_deltas( s_Layer_FF *layer_ff, s_Layer_FF *layer_ff_inpu
         (float *) na_weights->ptr, (float *) na_out_deltas->ptr );
 }
 
-void p_layer_ff_update_weights( s_Layer_FF *layer_ff, float eta, float m ) {
+void layer_ff__update_weights( Layer_FF *layer_ff, float eta, float m ) {
   struct NARRAY *na_input;
   struct NARRAY *na_weights;
   struct NARRAY *na_weights_last_deltas;
@@ -170,7 +170,7 @@ void p_layer_ff_update_weights( s_Layer_FF *layer_ff, float eta, float m ) {
         (float *) na_weights_last_deltas->ptr, (float *) na_output_deltas->ptr );
 }
 
-void p_layer_ff_calc_output_deltas( s_Layer_FF *layer_ff, VALUE target ) {
+void layer_ff__calc_output_deltas( Layer_FF *layer_ff, VALUE target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   struct NARRAY *na_output_slope;
@@ -190,12 +190,12 @@ void p_layer_ff_calc_output_deltas( s_Layer_FF *layer_ff, VALUE target ) {
   return;
 }
 
-void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input ) {
-  s_Layer_FF *s_old_input_layer_ff;
+void layer_ff__set_input( Layer_FF *layer_ff, VALUE val_input ) {
+  Layer_FF *s_old_input_layer_ff;
 
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, s_old_input_layer_ff );
+    Data_Get_Struct( layer_ff->input_layer, Layer_FF, s_old_input_layer_ff );
     s_old_input_layer_ff->output_layer = Qnil;
   }
 
@@ -205,12 +205,12 @@ void p_layer_ff_set_input( s_Layer_FF *layer_ff, VALUE val_input ) {
   return;
 }
 
-void p_layer_ff_clear_input( s_Layer_FF *layer_ff ) {
-  s_Layer_FF *s_old_input_layer_ff;
+void layer_ff__clear_input( Layer_FF *layer_ff ) {
+  Layer_FF *s_old_input_layer_ff;
 
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     // This layer has an existing input layer, it needs to stop pointing its output here
-    Data_Get_Struct( layer_ff->input_layer, s_Layer_FF, s_old_input_layer_ff );
+    Data_Get_Struct( layer_ff->input_layer, Layer_FF, s_old_input_layer_ff );
     s_old_input_layer_ff->output_layer = Qnil;
   }
 

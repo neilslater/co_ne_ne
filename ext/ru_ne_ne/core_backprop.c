@@ -45,7 +45,7 @@ void feed_forward_linear( int in_size, int out_size,
   return;
 }
 
-float core_mean_square_error( int out_size, float *out_ptr, float *target_ptr ) {
+float mean_square_error( int out_size, float *out_ptr, float *target_ptr ) {
   int i;
   float t = 0.0;
   float d;
@@ -58,6 +58,8 @@ float core_mean_square_error( int out_size, float *out_ptr, float *target_ptr ) 
   return t/out_size;
 }
 
+// TODO: Needs to be more clearly split into dE_da vs dE_dz, and moved to trainer instead
+//       of network
 void core_calc_output_deltas( int out_size, float *out_ptr, float *out_slope_ptr,
       float *target_ptr, float *out_delta_ptr ) {
   int i;
@@ -67,6 +69,8 @@ void core_calc_output_deltas( int out_size, float *out_ptr, float *out_slope_ptr
   return;
 }
 
+// TODO: Needs to be more clearly split into dE_da vs dE_dz, and moved to trainer instead
+//       of network
 void core_backprop_deltas( int in_size, int out_size,
       float *in_deltas, float *in_slopes,
       float *weights, float *out_deltas ) {
@@ -82,6 +86,9 @@ void core_backprop_deltas( int in_size, int out_size,
   return;
 }
 
+// TODO: Needs to be moved to trainer instead of network, also we want to numerically
+//       check all the gradients. This calculates dE_dW internally, but doesn't seem to
+//       store it
 void core_update_weights( float eta, float m, int in_size, int out_size,
         float *inputs, float *weights, float *weights_last_deltas, float *output_deltas) {
 
