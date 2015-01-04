@@ -5,8 +5,8 @@
 //  Declarations of narray helper functions
 //
 
-#ifndef RUBY_MODULE_CO_NE_NE_H
-#define RUBY_MODULE_CO_NE_NE_H
+#ifndef RUBY_MODULE_RU_NE_NE_H
+#define RUBY_MODULE_RU_NE_NE_H
 
 #include <ruby.h>
 #include "narray.h"

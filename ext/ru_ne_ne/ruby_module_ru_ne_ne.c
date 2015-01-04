@@ -127,7 +127,7 @@ static VALUE mt_srand( VALUE self, VALUE seed ) {
   return Qnil;
 }
 
-static unsigned long conene_srand_seed[640];
+static unsigned long runene_srand_seed[640];
 
 /* @overload srand_array( seed )
  * Seed the random number generator used for weights.
@@ -143,9 +143,9 @@ static VALUE mt_srand_array( VALUE self, VALUE seed_array ) {
   }
   if ( n > 640 ) { n = 640; }
   for ( i = 0; i < n; i++ ) {
-    conene_srand_seed[i] = NUM2ULONG( rb_ary_entry( seed_array, i ) );
+    runene_srand_seed[i] = NUM2ULONG( rb_ary_entry( seed_array, i ) );
   }
-  init_by_array( conene_srand_seed, n );
+  init_by_array( runene_srand_seed, n );
   return Qnil;
 }
 
@@ -164,7 +164,7 @@ static VALUE mt_rand_float( VALUE self ) {
  * @param [Integer] n size of array to shuffle
  * @return [Array] numbers 0...n in random order
  */
-static VALUE conene_shuffled_integers( VALUE self, VALUE val_n ) {
+static VALUE runene_shuffled_integers( VALUE self, VALUE val_n ) {
   int n, *ids, i;
   volatile VALUE arr;
   n = NUM2INT( val_n );
@@ -207,7 +207,7 @@ void init_module_ru_ne_ne() {
   rb_define_singleton_method( RuNeNe, "srand", mt_srand, 1 );
   rb_define_singleton_method( RuNeNe, "srand_array", mt_srand_array, 1 );
   rb_define_singleton_method( RuNeNe, "rand", mt_rand_float, 0 );
-  rb_define_singleton_method( RuNeNe, "shuffled_integers", conene_shuffled_integers, 1 );
+  rb_define_singleton_method( RuNeNe, "shuffled_integers", runene_shuffled_integers, 1 );
 
   init_transfer_module();
   init_layer_ff_class();
