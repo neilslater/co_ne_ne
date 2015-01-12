@@ -29,16 +29,16 @@ VALUE RuNeNe_TrainingData = Qnil;
  * @param [NArray] kernel must be same size or smaller than signal in each dimension
  * @return [NArray] result of convolving signal with kernel
  */
-static VALUE narray_convolve( VALUE self, VALUE a, VALUE b ) {
+static VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
   struct NARRAY *na_a, *na_b, *na_c;
   volatile VALUE val_a, val_b, val_c;
   int target_rank, i;
   int target_shape[LARGEST_RANK];
 
-  val_a = na_cast_object(a, NA_SFLOAT);
+  val_a = na_cast_object( rv_a, NA_SFLOAT );
   GetNArray( val_a, na_a );
 
-  val_b = na_cast_object(b, NA_SFLOAT);
+  val_b = na_cast_object( rv_b, NA_SFLOAT );
   GetNArray( val_b, na_b );
 
   if ( na_a->rank != na_b->rank ) {
@@ -77,23 +77,23 @@ static VALUE narray_convolve( VALUE self, VALUE a, VALUE b ) {
  * @param [Integer] pool_size consider these many positions in each dimension (allows for overlap), accepts 1 to 100
  * @return [NArray] result of applying max pooling to array
  */
-static VALUE narray_max_pool( VALUE self, VALUE a, VALUE tile_size, VALUE pool_size ) {
+static VALUE narray_max_pool( VALUE self, VALUE rv_a, VALUE rv_tile_size, VALUE rv_pool_size ) {
   struct NARRAY *na_a, *na_b;
   volatile VALUE val_a, val_b;
   int target_rank, i, tile, pool;
   int target_shape[LARGEST_RANK];
 
-  tile = NUM2INT( tile_size );
+  tile = NUM2INT( rv_tile_size );
   if ( tile < 1 || tile > 100 ) {
     rb_raise( rb_eArgError, "tile size out of bounds, expected in range 1..100, got %d", tile );
   }
 
-  pool = NUM2INT( pool_size );
+  pool = NUM2INT( rv_pool_size );
   if ( pool < 1 || pool > 100 ) {
     rb_raise( rb_eArgError, "pool size out of bounds, expected in range 1..100, got %d", pool );
   }
 
-  val_a = na_cast_object(a, NA_SFLOAT);
+  val_a = na_cast_object( rv_a, NA_SFLOAT);
   GetNArray( val_a, na_a );
 
   if ( na_a->rank > LARGEST_RANK ) {
@@ -122,8 +122,8 @@ static VALUE narray_max_pool( VALUE self, VALUE a, VALUE tile_size, VALUE pool_s
  * @param [Integer] seed 32-bit seed number
  * @return [nil]
  */
-static VALUE mt_srand( VALUE self, VALUE seed ) {
-  init_genrand( NUM2ULONG( seed ) );
+static VALUE mt_srand( VALUE self, VALUE rv_seed ) {
+  init_genrand( NUM2ULONG( rv_seed ) );
   return Qnil;
 }
 
@@ -134,16 +134,16 @@ static unsigned long runene_srand_seed[640];
  * @param [Array<Integer>] seed an array of up to 640 times 32 bit seed numbers
  * @return [nil]
  */
-static VALUE mt_srand_array( VALUE self, VALUE seed_array ) {
+static VALUE mt_srand_array( VALUE self, VALUE rv_seed_array ) {
   int i, n;
-  Check_Type( seed_array, T_ARRAY );
-  n = FIX2INT( rb_funcall( seed_array, rb_intern("count"), 0 ) );
+  Check_Type( rv_seed_array, T_ARRAY );
+  n = FIX2INT( rb_funcall( rv_seed_array, rb_intern("count"), 0 ) );
   if ( n < 1 ) {
     rb_raise( rb_eArgError, "empty array cannot be used to seed RNG" );
   }
   if ( n > 640 ) { n = 640; }
   for ( i = 0; i < n; i++ ) {
-    runene_srand_seed[i] = NUM2ULONG( rb_ary_entry( seed_array, i ) );
+    runene_srand_seed[i] = NUM2ULONG( rb_ary_entry( rv_seed_array, i ) );
   }
   init_by_array( runene_srand_seed, n );
   return Qnil;
@@ -164,10 +164,10 @@ static VALUE mt_rand_float( VALUE self ) {
  * @param [Integer] n size of array to shuffle
  * @return [Array] numbers 0...n in random order
  */
-static VALUE runene_shuffled_integers( VALUE self, VALUE val_n ) {
+static VALUE runene_shuffled_integers( VALUE self, VALUE rv_n ) {
   int n, *ids, i;
   volatile VALUE arr;
-  n = NUM2INT( val_n );
+  n = NUM2INT( rv_n );
   if ( n < 1 ) {
     rb_raise( rb_eArgError, "number of integers to shuffle must be 1 or more, got %d", n );
   }

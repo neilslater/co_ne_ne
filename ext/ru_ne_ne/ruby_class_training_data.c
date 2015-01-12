@@ -44,17 +44,17 @@ void assert_value_wraps_training_data( VALUE obj ) {
  * @param [NArray] targets sizes of output arrays for each hidden layer
  * @return [RuNeNe::TrainingData] new network consisting of new layers, with random weights
  */
-VALUE training_data_class_initialize( VALUE self, VALUE inputs, VALUE targets ) {
+VALUE training_data_class_initialize( VALUE self, VALUE rv_inputs, VALUE rv_targets ) {
   volatile VALUE val_inputs;
   volatile VALUE val_targets;
   struct NARRAY *na_inputs;
   struct NARRAY *na_targets;
   TrainingData *training_data = get_training_data_struct( self );
 
-  val_inputs = na_cast_object( inputs, NA_SFLOAT );
+  val_inputs = na_cast_object( rv_inputs, NA_SFLOAT );
   GetNArray( val_inputs, na_inputs );
 
-  val_targets = na_cast_object( targets, NA_SFLOAT );
+  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
   GetNArray( val_targets, na_targets );
 
   if ( na_inputs->rank < 2 ) {
