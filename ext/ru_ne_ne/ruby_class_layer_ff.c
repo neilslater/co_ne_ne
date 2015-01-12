@@ -407,12 +407,12 @@ VALUE layer_ff_object_init_weights( int argc, VALUE* argv, VALUE self ) {
  * @param [NArray] input_array one-dimensional array of #num_inputs numbers
  * @return [NArray<sfloat>] the new input array (may be same as parameter)
  */
-VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
+VALUE layer_ff_object_set_input( VALUE self, VALUE rv_new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   Layer_FF *layer_ff = get_layer_ff_struct( self );
 
-  val_input = na_cast_object(new_input, NA_SFLOAT);
+  val_input = na_cast_object( rv_new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
 
   if ( na_input->rank != 1 ) {
@@ -434,7 +434,7 @@ VALUE layer_ff_object_set_input( VALUE self, VALUE new_input ) {
  * @param [RuNeNe::Layer::FeedForward] input_layer must have #num_outputs equal to #num_inputs of this layer
  * @return [RuNeNe::Layer::FeedForward] the new input layer (always the same as parameter)
  */
-VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
+VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE rv_new_input_layer ) {
   Layer_FF *s_new_input_layer_ff;
   Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
   Layer_FF *layer_ff = get_layer_ff_struct( self );
@@ -443,8 +443,8 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
     rb_raise( rb_eArgError, "Layer has been marked as 'first layer' and may not have another input layer attached." );
   }
 
-  assert_value_wraps_layer_ff( new_input_layer );
-  s_new_input_layer_ff = get_layer_ff_struct( new_input_layer );
+  assert_value_wraps_layer_ff( rv_new_input_layer );
+  s_new_input_layer_ff = get_layer_ff_struct( rv_new_input_layer );
 
   if ( s_new_input_layer_ff->num_outputs != layer_ff->num_inputs ) {
     rb_raise( rb_eArgError, "Input layer output size %d does not match layer input size %d", s_new_input_layer_ff->num_outputs, layer_ff->num_inputs );
@@ -459,7 +459,7 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   }
 
   layer_ff->narr_input = s_new_input_layer_ff->narr_output;
-  layer_ff->input_layer = new_input_layer;
+  layer_ff->input_layer = rv_new_input_layer;
 
   if ( ! NIL_P( s_new_input_layer_ff->output_layer ) ) {
     // The new input layer was previously attached elsewhere. This needs to be disconnected too
@@ -469,7 +469,7 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
   }
   s_new_input_layer_ff->output_layer = self;
 
-  return new_input_layer;
+  return rv_new_input_layer;
 }
 
 /* @overload attach_input_layer( output_layer )
@@ -478,13 +478,13 @@ VALUE layer_ff_object_attach_input_layer( VALUE self, VALUE new_input_layer ) {
  * @param [RuNeNe::Layer::FeedForward] output_layer must have #num_inputs equal to #num_outputs of this layer
  * @return [RuNeNe::Layer::FeedForward] the new output layer (always the same as parameter)
  */
-VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) {
+VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE rv_new_output_layer ) {
   Layer_FF *s_new_output_layer_ff;
   Layer_FF *s_old_output_layer_ff, *s_old_input_layer_ff;
   Layer_FF *layer_ff = get_layer_ff_struct( self );
 
-  assert_value_wraps_layer_ff( new_output_layer );
-  s_new_output_layer_ff = get_layer_ff_struct( new_output_layer );
+  assert_value_wraps_layer_ff( rv_new_output_layer );
+  s_new_output_layer_ff = get_layer_ff_struct( rv_new_output_layer );
 
   if ( s_new_output_layer_ff->locked_input > 0 ) {
     rb_raise( rb_eArgError, "Target layer has been marked as 'first layer' and may not have another input layer attached." );
@@ -503,7 +503,7 @@ VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) 
     s_old_output_layer_ff->narr_input = Qnil;
   }
 
-  layer_ff->output_layer = new_output_layer;
+  layer_ff->output_layer = rv_new_output_layer;
 
   if ( ! NIL_P( s_new_output_layer_ff->input_layer ) ) {
     // The new output layer was previously attached elsewhere. This needs to be disconnected too
@@ -513,7 +513,7 @@ VALUE layer_ff_object_attach_output_layer( VALUE self, VALUE new_output_layer ) 
   s_new_output_layer_ff->input_layer = self;
   s_new_output_layer_ff->narr_input = layer_ff->narr_output;
 
-  return new_output_layer;
+  return rv_new_output_layer;
 }
 
 /* @overload run( )
@@ -538,13 +538,13 @@ VALUE layer_ff_object_run( VALUE self ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [Float]
  */
-VALUE layer_ff_object_ms_error( VALUE self, VALUE target ) {
+VALUE layer_ff_object_ms_error( VALUE self, VALUE rv_target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
   Layer_FF *layer_ff = get_layer_ff_struct( self );
 
-  val_target = na_cast_object(target, NA_SFLOAT);
+  val_target = na_cast_object( rv_target, NA_SFLOAT);
   GetNArray( val_target, na_target );
 
   if ( na_target->rank != 1 ) {
@@ -566,12 +566,12 @@ VALUE layer_ff_object_ms_error( VALUE self, VALUE target ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [NArray<sfloat>] the #output_deltas
  */
-VALUE layer_ff_object_calc_output_deltas( VALUE self, VALUE target ) {
+VALUE layer_ff_object_calc_output_deltas( VALUE self, VALUE rv_target ) {
   struct NARRAY *na_target;
   volatile VALUE val_target;
   Layer_FF *layer_ff = get_layer_ff_struct( self );
 
-  val_target = na_cast_object(target, NA_SFLOAT);
+  val_target = na_cast_object( rv_target, NA_SFLOAT);
   GetNArray( val_target, na_target );
 
   if ( na_target->rank != 1 ) {
