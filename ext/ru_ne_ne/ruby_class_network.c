@@ -72,11 +72,11 @@ VALUE network_new_ruby_object_from_layer( VALUE layer, float eta, float momentum
  * @param [Integer] num_outputs size of output array for last layer
  * @return [RuNeNe::Network] new network consisting of new layers, with random weights
  */
-VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layers, VALUE num_outputs ) {
+VALUE network_class_initialize( VALUE self, VALUE rv_num_inputs, VALUE rv_hidden_layers, VALUE rv_num_outputs ) {
   int ninputs, noutputs, i, nhlayers, hlsize, *layer_sizes;
   Network *network = get_network_struct( self );
-  ninputs = NUM2INT( num_inputs );
-  noutputs = NUM2INT( num_outputs );
+  ninputs = NUM2INT( rv_num_inputs );
+  noutputs = NUM2INT( rv_num_outputs );
 
   if (ninputs < 1) {
     rb_raise( rb_eArgError, "Input size %d not allowed.", ninputs );
@@ -87,10 +87,10 @@ VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layer
   }
 
   // Pre-check all array entries before initialising further
-  Check_Type( hidden_layers, T_ARRAY );
-  nhlayers = FIX2INT( rb_funcall( hidden_layers, rb_intern("count"), 0 ) );
+  Check_Type( rv_hidden_layers, T_ARRAY );
+  nhlayers = FIX2INT( rb_funcall( rv_hidden_layers, rb_intern("count"), 0 ) ); // Is this only way to do this?
   for ( i = 0; i < nhlayers; i++ ) {
-    hlsize = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+    hlsize = FIX2INT( rb_ary_entry( rv_hidden_layers, i ) );
     if ( hlsize < 1 ) {
       rb_raise( rb_eArgError, "Hidden layer output size %d not allowed.", hlsize );
     }
@@ -99,7 +99,7 @@ VALUE network_class_initialize( VALUE self, VALUE num_inputs, VALUE hidden_layer
   layer_sizes = ALLOC_N( int, nhlayers + 2 );
   layer_sizes[0] = ninputs;
   for ( i = 0; i < nhlayers; i++ ) {
-    layer_sizes[i+1] = FIX2INT( rb_ary_entry( hidden_layers, i ) );
+    layer_sizes[i+1] = FIX2INT( rb_ary_entry( rv_hidden_layers, i ) );
   }
   layer_sizes[nhlayers+1] = noutputs;
 
@@ -162,14 +162,14 @@ VALUE network_class_initialize_copy( VALUE copy, VALUE orig ) {
  * @param [RuNeNe::Layer::FeedForward] layer first layer of new network
  * @return [RuNeNe::Network] new network
  */
-VALUE network_class_from_layer( VALUE self, VALUE layer ) {
+VALUE network_class_from_layer( VALUE self, VALUE rv_layer ) {
   Layer_FF *layer_ff;
-  assert_value_wraps_layer_ff( layer );
-  Data_Get_Struct( layer, Layer_FF, layer_ff );
+  assert_value_wraps_layer_ff( rv_layer );
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
   if ( ! NIL_P( layer_ff->input_layer ) ) {
     rb_raise( rb_eArgError, "Cannot create network from layer with an attached input layer." );
   }
-  return network_new_ruby_object_from_layer( layer, 1.0, 0.5 );
+  return network_new_ruby_object_from_layer( rv_layer, 1.0, 0.5 );
 }
 
 /* @overload num_layers
@@ -294,7 +294,7 @@ VALUE network_object_input( VALUE self ) {
  * @param [NArray] new_input one-dimensional array of #num_inputs single-precision floats
  * @return [NArray<sfloat>] the #output array
  */
-VALUE network_object_run( VALUE self, VALUE new_input ) {
+VALUE network_object_run( VALUE self, VALUE rv_new_input ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   volatile VALUE layer_object;
@@ -304,7 +304,7 @@ VALUE network_object_run( VALUE self, VALUE new_input ) {
   layer_object = network->first_layer;
   Data_Get_Struct( layer_object, Layer_FF, layer_ff );
 
-  val_input = na_cast_object(new_input, NA_SFLOAT);
+  val_input = na_cast_object( rv_new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
 
   if ( na_input->rank != 1 ) {
@@ -326,14 +326,14 @@ VALUE network_object_run( VALUE self, VALUE new_input ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [Float]
  */
-VALUE network_object_ms_error( VALUE self, VALUE target ) {
+VALUE network_object_ms_error( VALUE self, VALUE rv_target ) {
   struct NARRAY *na_target;
   struct NARRAY *na_output;
   volatile VALUE val_target;
   Layer_FF *layer_ff;
   Network *network = get_network_struct( self );
 
-  val_target = na_cast_object(target, NA_SFLOAT);
+  val_target = na_cast_object( rv_target, NA_SFLOAT );
   GetNArray( val_target, na_target );
 
   if ( na_target->rank != 1 ) {
@@ -358,7 +358,7 @@ VALUE network_object_ms_error( VALUE self, VALUE target ) {
  * @param [NArray] target one-dimensional array of #num_outputs single-precision floats
  * @return [nil]
  */
-VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
+VALUE network_object_train_once( VALUE self, VALUE rv_new_input, VALUE rv_target ) {
   struct NARRAY *na_input;
   volatile VALUE val_input;
   struct NARRAY *na_target;
@@ -374,7 +374,7 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
   layer_object = network->first_layer;
   Data_Get_Struct( layer_object, Layer_FF, layer_ff );
 
-  val_input = na_cast_object(new_input, NA_SFLOAT);
+  val_input = na_cast_object( rv_new_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
 
   if ( na_input->rank != 1 ) {
@@ -387,7 +387,7 @@ VALUE network_object_train_once( VALUE self, VALUE new_input, VALUE target ) {
 
   ////////////////////////////////////////////////////////////////////////////////////
   // Check target is valid
-  val_target = na_cast_object(target, NA_SFLOAT);
+  val_target = na_cast_object( rv_target, NA_SFLOAT);
   GetNArray( val_target, na_target );
 
   if ( na_target->rank != 1 ) {
@@ -425,11 +425,11 @@ VALUE network_object_learning_rate( VALUE self ) {
  * @param [Float] new_learning_rate Range from 1e-6 to 1000.0.
  * @return [Float]
  */
-VALUE network_object_set_learning_rate( VALUE self, VALUE new_learning_rate ) {
+VALUE network_object_set_learning_rate( VALUE self, VALUE rv_new_learning_rate ) {
   float new_eta;
   Network *network = get_network_struct( self );
 
-  new_eta = NUM2FLT( new_learning_rate );
+  new_eta = NUM2FLT( rv_new_learning_rate );
   if ( new_eta < 1.0e-9 || new_eta > 1000.0 ) {
     rb_raise( rb_eArgError, "Learning rate %0.f out of bounds (0.000000001 to 1000.0)", new_eta );
   }
@@ -455,11 +455,11 @@ VALUE network_object_momentum( VALUE self ) {
  * @param [Float] new_momentum Range from 0.0 to 0.99
  * @return [Float]
  */
-VALUE network_object_set_momentum( VALUE self, VALUE val_momentum ) {
+VALUE network_object_set_momentum( VALUE self, VALUE rv_momentum ) {
   float new_momentum;
   Network *network = get_network_struct( self );
 
-  new_momentum = NUM2FLT( val_momentum );
+  new_momentum = NUM2FLT( rv_momentum );
   if ( new_momentum < 0.0 || new_momentum > 0.999 ) {
     rb_raise( rb_eArgError, "Momentum %0.6f out of bounds (0.0 to 0.99)", new_momentum );
   }
