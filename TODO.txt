@@ -1,10 +1,8 @@
 RuNeNe TODOs:
 
-    Variable names:
-        rv_foo    for Ruby values
-        foo       for struct pointers
-
     Finish training data class
+      ? What goes in it ?
+      Iterator (with shuffle)
 
     Finish trainer class. RuNeNe::Trainer::Backprop
 
