@@ -121,6 +121,28 @@ VALUE training_data_object_num_items( VALUE self ) {
   return INT2NUM( training_data->num_items );
 }
 
+VALUE training_data_object_next_item( VALUE self ) {
+  training_data__next( get_training_data_struct( self ) );
+  return self;
+}
+
+VALUE training_data_object_current_input_item( VALUE self ) {
+  TrainingData *training_data = get_training_data_struct( self );
+  int shape[32], dims, size;
+  struct NARRAY *narr;
+
+  // Set shape and dimensions from training record - WIP
+
+  volatile VALUE current_input = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+
+  GetNArray( current_input, narr );
+
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
+
+  float *input_data = training_data__current_input( training_data );
+
+  return Qnil;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,4 +156,9 @@ void init_training_data_class( ) {
   rb_define_method( RuNeNe_TrainingData, "inputs", training_data_object_inputs, 0 );
   rb_define_method( RuNeNe_TrainingData, "outputs", training_data_object_outputs, 0 );
   rb_define_method( RuNeNe_TrainingData, "num_items", training_data_object_num_items, 0 );
+
+  // Methods
+  rb_define_method( RuNeNe_TrainingData, "next_item", training_data_object_next_item, 0 );
+  rb_define_method( RuNeNe_TrainingData, "current_input_item", training_data_object_current_input_item, 0 );
+  // rb_define_method( RuNeNe_TrainingData, "current_output_item", training_data_object_current_output_item, 0 );
 }

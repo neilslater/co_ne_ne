@@ -4,6 +4,8 @@ RuNeNe TODOs:
       ? What goes in it ?
       Iterator (with shuffle)
 
+    Remove "attach input" logic, and do batch runs on matrices. Optionally take writable output array
+
     Finish trainer class. RuNeNe::Trainer::Backprop
 
     Split training process between  network, training data and a "trainer" class

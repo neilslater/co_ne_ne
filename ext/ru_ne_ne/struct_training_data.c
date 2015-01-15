@@ -12,9 +12,12 @@ TrainingData *training_data__create() {
   training_data = xmalloc( sizeof(TrainingData) );
   training_data->narr_inputs = Qnil;
   training_data->narr_outputs = Qnil;
-  training_data->random_sequence = 0;
   training_data->input_item_size = 0;
   training_data->output_item_size = 0;
+  training_data->input_item_rank = 0;
+  training_data->output_item_rank = 0;
+  training_data->input_item_shape = NULL;
+  training_data->output_item_shape = NULL;
   training_data->pos_idx = NULL;
   training_data->current_pos = 0;
   training_data->num_items = 0;
@@ -23,34 +26,34 @@ TrainingData *training_data__create() {
 
 void training_data__init( TrainingData *training_data, int input_rank, int *input_shape,
       int output_rank, int *output_shape, int num_items ) {
-  int *tmp_shape, i, size, *pos;
+  int i, size, *pos;
   struct NARRAY *narr;
 
-  tmp_shape = ALLOC_N( int, input_rank + 1 );
+  training_data->input_item_shape = ALLOC_N( int, input_rank + 1);
   size = 1;
   for( i = 0; i < input_rank; i++ ) {
-    tmp_shape[i] = input_shape[i];
+    training_data->input_item_shape[i] = input_shape[i];
     size *= input_shape[i];
   }
-  tmp_shape[input_rank] = num_items;
-  training_data->narr_inputs = na_make_object( NA_SFLOAT, input_rank + 1, tmp_shape, cNArray );
+  training_data->input_item_shape[input_rank] = num_items;
+  training_data->narr_inputs = na_make_object( NA_SFLOAT, input_rank + 1, training_data->input_item_shape, cNArray );
   training_data->input_item_size = size;
+  training_data->input_item_rank = input_rank;
   GetNArray( training_data->narr_inputs, narr );
   na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
-  xfree( tmp_shape );
 
-  tmp_shape = ALLOC_N( int, output_rank + 1 );
+  training_data->output_item_shape = ALLOC_N( int, output_rank + 1);
   size = 1;
   for( i = 0; i < output_rank; i++ ) {
-    tmp_shape[i] = output_shape[i];
+    training_data->output_item_shape[i] = output_shape[i];
     size *= output_shape[i];
   }
-  tmp_shape[output_rank] = num_items;
-  training_data->narr_outputs = na_make_object( NA_SFLOAT, output_rank + 1, tmp_shape, cNArray );
+  training_data->output_item_shape[output_rank] = num_items;
+  training_data->narr_outputs = na_make_object( NA_SFLOAT, output_rank + 1, training_data->output_item_shape, cNArray );
   training_data->output_item_size = size;
+  training_data->output_item_rank = output_rank;
   GetNArray( training_data->narr_outputs, narr );
   na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
-  xfree( tmp_shape );
 
   training_data->num_items = num_items;
 
@@ -59,7 +62,7 @@ void training_data__init( TrainingData *training_data, int input_rank, int *inpu
     pos[i] = i;
   }
   training_data->pos_idx = pos;
-  training_data->current_pos = 0;
+  training_data->current_pos = num_items - 1;
 
   return;
 }
@@ -81,24 +84,20 @@ float *training_data__current_output( TrainingData *training_data ) {
 }
 
 void training_data__next( TrainingData *training_data ) {
-  training_data->current_pos++;
-  training_data->current_pos %= training_data->num_items;
-  return;
-}
+  training_data->current_pos = ( training_data->current_pos + 1 ) % training_data->num_items;
 
-// Init assuming 1-dimensional arrays for input and output
-void training_data__init_simple( TrainingData *training_data, int input_size,
-      int output_size, int num_items ) {
-  int in_shape[1], out_shape[1];
-  in_shape[0] = input_size;
-  out_shape[0] = output_size;
+  // Shuffle sequence if we ran out last time
+  if ( training_data->current_pos == 0 ) {
+    shuffle_ints( training_data->num_items, training_data->pos_idx );
+  }
 
-  training_data__init( training_data, 1, in_shape, 1, out_shape, num_items );
   return;
 }
 
 void training_data__destroy( TrainingData *training_data ) {
   xfree( training_data->pos_idx );
+  xfree( training_data->input_item_shape );
+  xfree( training_data->output_item_shape );
   xfree( training_data );
 
   // No need to free NArrays - they will be handled by Ruby's GC, and may still be reachable
@@ -123,17 +122,23 @@ void training_data__init_from_narray( TrainingData *training_data, VALUE inputs,
   GetNArray( training_data->narr_inputs, na_inputs );
   GetNArray( training_data->narr_outputs, na_outputs );
 
+  training_data->input_item_rank = na_inputs->rank - 1;
+  training_data->input_item_shape = ALLOC_N( int, na_inputs->rank );
   tmp_shape = na_inputs->shape;
   size = 1;
   for( i = 0; i < na_inputs->rank - 1; i++ ) {
+    training_data->input_item_shape[i] = tmp_shape[i];
     size *= tmp_shape[i];
   }
   num_items = tmp_shape[ na_inputs->rank - 1 ];
   training_data->input_item_size = size;
 
+  training_data->output_item_rank = na_outputs->rank - 1;
+  training_data->output_item_shape = ALLOC_N( int, na_outputs->rank );
   tmp_shape = na_outputs->shape;
   size = 1;
   for( i = 0; i < na_outputs->rank - 1; i++ ) {
+    training_data->output_item_shape[i] = tmp_shape[i];
     size *= tmp_shape[i];
   }
   training_data->output_item_size = size;
@@ -143,7 +148,7 @@ void training_data__init_from_narray( TrainingData *training_data, VALUE inputs,
     pos[i] = i;
   }
   training_data->pos_idx = pos;
-  training_data->current_pos = 0;
+  training_data->current_pos = num_items - 1;
   training_data->num_items = num_items;
   return;
 }

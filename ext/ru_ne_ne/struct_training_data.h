@@ -11,11 +11,15 @@
 #include <ruby.h>
 #include "narray.h"
 #include "core_narray.h"
+#include "core_shuffle.h"
 
 typedef struct _training_data_raw {
-    int random_sequence;
     int input_item_size;
     int output_item_size;
+    int input_item_rank;
+    int output_item_rank;
+    int *input_item_shape;
+    int *output_item_shape;
     int *pos_idx;
     int current_pos;
     int num_items;
@@ -33,9 +37,6 @@ float *training_data__current_input( TrainingData *training_data );
 float *training_data__current_output( TrainingData *training_data );
 
 void training_data__next( TrainingData *training_data );
-
-void training_data__init_simple( TrainingData *training_data, int input_size,
-      int output_size, int num_items );
 
 void training_data__init_from_narray( TrainingData *training_data, VALUE inputs, VALUE outputs );
 
