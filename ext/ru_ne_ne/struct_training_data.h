@@ -25,6 +25,8 @@ typedef struct _training_data_raw {
     int num_items;
     VALUE narr_inputs;
     VALUE narr_outputs;
+    float *inputs;
+    float *outputs;
   } TrainingData;
 
 TrainingData *training_data__create();
@@ -43,5 +45,7 @@ void training_data__init_from_narray( TrainingData *training_data, VALUE inputs,
 void training_data__destroy( TrainingData *training_data );
 
 void training_data__gc_mark( TrainingData *training_data );
+
+void training_data__reinit( TrainingData *training_data );
 
 #endif

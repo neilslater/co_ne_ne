@@ -91,6 +91,8 @@ VALUE training_data_class_initialize_copy( VALUE copy, VALUE orig ) {
   training_data_copy->narr_outputs = na_clone( training_data_orig->narr_outputs );
   training_data_copy->narr_inputs = na_clone( training_data_orig->narr_inputs );
 
+  training_data__reinit( training_data_copy );
+
   return copy;
 }
 
