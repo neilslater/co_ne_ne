@@ -186,6 +186,35 @@ describe RuNeNe::TrainingData do
         end
         expect( first_group ).to_not eql second_group
       end
+
+      it "works with different input and output shapes" do
+        shapes = [
+          { :in => [3,3], :out => [1,3] },
+          { :in => [7,7,19], :out => [2,2,19] },
+          { :in => [1,1], :out => [2,1] },
+          { :in => [12,3], :out => [1,3] },
+          { :in => [3,3,3,3], :out => [5,1,3] },
+        ]
+        shapes.each do |ioshapes|
+          inputs = NArray.sfloat( *(ioshapes[:in]) ).random
+          outputs = NArray.sfloat( *(ioshapes[:out]) ).random
+          td = RuNeNe::TrainingData.new( inputs, outputs )
+          items = (0...td.num_items).map do |x|
+            td.next_item
+            Hash[ :i => td.current_input_item.to_a, :o => td.current_output_item.to_a ]
+          end
+          expect( items.uniq ).to eql items
+          items.each do |fetched_item|
+            input_item = fetched_item[:i]
+            output_item = fetched_item[:o]
+            expect( inputs.to_a ).to include input_item
+            expect( outputs.to_a ).to include output_item
+            expect( inputs.to_a.find_index { |i| i == input_item } ).to eql outputs.to_a.find_index { |o| o == output_item }
+          end
+        end
+      end
     end
+
+
   end
 end
