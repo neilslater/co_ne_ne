@@ -96,6 +96,20 @@ describe RuNeNe::TrainingData do
         ciia = @tdata.current_input_item.to_a
         expect( [ [-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0] ] ).to include ciia
       end
+
+      it "works with different input shapes" do
+        shapes = [ [3,3], [7,7,19], [1,1], [12,3], [3,3,3,3] ]
+        shapes.each do |ishape|
+          oshape = [1,ishape[-1]]
+          inputs = NArray.sfloat( *ishape ).random
+          outputs = NArray.sfloat( *oshape ).random
+          td = RuNeNe::TrainingData.new( inputs, outputs )
+          cii = td.current_input_item
+          expect( cii ).to be_a NArray
+          expect( cii.shape ).to eql ishape[0..(ishape.size-2)]
+          expect( inputs.to_a ).to include cii.to_a
+        end
+      end
     end
 
     describe "#current_output_item" do
@@ -108,6 +122,20 @@ describe RuNeNe::TrainingData do
       it "is a sample from the instance's output data" do
         coia = @tdata.current_output_item.to_a
         expect( [ [0.0], [1.0], [1.0], [0.0] ] ).to include coia
+      end
+
+      it "works with different output shapes" do
+        shapes = [ [3,3], [7,7,19], [1,1], [12,3], [3,3,3,3] ]
+        shapes.each do |oshape|
+          ishape = [4,oshape[-1]]
+          inputs = NArray.sfloat( *ishape ).random
+          outputs = NArray.sfloat( *oshape ).random
+          td = RuNeNe::TrainingData.new( inputs, outputs )
+          coi = td.current_output_item
+          expect( coi ).to be_a NArray
+          expect( coi.shape ).to eql oshape[0..(oshape.size-2)]
+          expect( outputs.to_a ).to include coi.to_a
+        end
       end
     end
   end
