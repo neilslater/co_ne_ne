@@ -68,19 +68,17 @@ void training_data__init( TrainingData *training_data, int input_rank, int *inpu
 }
 
 float *training_data__current_input( TrainingData *training_data ) {
-  int i;
   struct NARRAY *narr;
   GetNArray( training_data->narr_inputs, narr );
-  i = training_data->pos_idx[ training_data->current_pos ];
-  return (float*) ( narr->ptr + training_data->input_item_size * i );
+  // Must cast to (float*) before doing pointer arithmetic
+  return ( (float*) narr->ptr ) + training_data->input_item_size * training_data->pos_idx[ training_data->current_pos ];
 }
 
 float *training_data__current_output( TrainingData *training_data ) {
-  int i;
   struct NARRAY *narr;
   GetNArray( training_data->narr_outputs, narr );
-  i = training_data->pos_idx[ training_data->current_pos ];
-  return (float*) ( narr->ptr + training_data->output_item_size * i );
+  // Must cast to (float*) before doing pointer arithmetic
+  return ( ( float*) narr->ptr ) + training_data->output_item_size * training_data->pos_idx[ training_data->current_pos ];
 }
 
 void training_data__next( TrainingData *training_data ) {

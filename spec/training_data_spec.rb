@@ -65,20 +65,49 @@ describe RuNeNe::TrainingData do
   end
 
   describe "instance methods" do
+    before :each do
+      @tdata = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
+    end
+
     describe "#clone" do
       it "makes deep copy of training data" do
-        @orig_data = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
-        @copy_data =  @orig_data.clone
-        expect( @copy_data ).to_not be @orig_data
+        @copy_data = @tdata.clone
+        expect( @copy_data ).to_not be @tdata
         expect( @copy_data.num_items ).to be 4
-        orig_inputs = @orig_data.inputs
+        orig_inputs = @tdata.inputs
         copy_inputs = @copy_data.inputs
         expect( copy_inputs ).to_not be orig_inputs
         expect( copy_inputs ).to be_narray_like orig_inputs
-        orig_outputs = @orig_data.outputs
+        orig_outputs = @tdata.outputs
         copy_outputs = @copy_data.outputs
         expect( copy_outputs ).to_not be orig_outputs
         expect( copy_outputs ).to be_narray_like orig_outputs
+      end
+    end
+
+    describe "#current_input_item" do
+      it "returns an NArray of correct shape" do
+        cii = @tdata.current_input_item
+        expect( cii ).to be_a NArray
+        expect( cii.shape ).to eql [2]
+      end
+
+      it "is a sample from the instance's input data" do
+        ciia = @tdata.current_input_item.to_a
+        expect( [ [-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0] ] ).to include ciia
+      end
+    end
+
+    describe "#current_output_item" do
+      it "returns an NArray of correct shape" do
+        coi = @tdata.current_output_item
+        expect( coi ).to be_a NArray
+        expect( coi.shape ).to eql [1]
+      end
+
+      it "is a sample from the instance's output data" do
+        coia = @tdata.current_output_item.to_a
+        expect( [ [0.0], [1.0], [1.0], [0.0] ] ).to include coia
       end
     end
   end

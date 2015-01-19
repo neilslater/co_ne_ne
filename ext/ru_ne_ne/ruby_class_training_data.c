@@ -128,20 +128,26 @@ VALUE training_data_object_next_item( VALUE self ) {
 
 VALUE training_data_object_current_input_item( VALUE self ) {
   TrainingData *training_data = get_training_data_struct( self );
-  int shape[32], dims, size;
-  struct NARRAY *narr;
-
-  // Set shape and dimensions from training record - WIP
-
-  volatile VALUE current_input = na_make_object( NA_SFLOAT, 1, shape, cNArray );
-
-  GetNArray( current_input, narr );
-
-  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
-
   float *input_data = training_data__current_input( training_data );
 
-  return Qnil;
+  struct NARRAY *narr;
+  volatile VALUE current_input = na_make_object( NA_SFLOAT, training_data->input_item_rank, training_data->input_item_shape, cNArray );
+  GetNArray( current_input, narr );
+  memcpy( (float*) narr->ptr, input_data, training_data->input_item_size * sizeof(float) );
+
+  return current_input;
+}
+
+VALUE training_data_object_current_output_item( VALUE self ) {
+  TrainingData *training_data = get_training_data_struct( self );
+  float *output_data = training_data__current_output( training_data );
+
+  struct NARRAY *narr;
+  volatile VALUE current_output = na_make_object( NA_SFLOAT, training_data->output_item_rank, training_data->output_item_shape, cNArray );
+  GetNArray( current_output, narr );
+  memcpy( (float*) narr->ptr, output_data, training_data->output_item_size * sizeof(float) );
+
+  return current_output;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,5 +166,5 @@ void init_training_data_class( ) {
   // Methods
   rb_define_method( RuNeNe_TrainingData, "next_item", training_data_object_next_item, 0 );
   rb_define_method( RuNeNe_TrainingData, "current_input_item", training_data_object_current_input_item, 0 );
-  // rb_define_method( RuNeNe_TrainingData, "current_output_item", training_data_object_current_output_item, 0 );
+  rb_define_method( RuNeNe_TrainingData, "current_output_item", training_data_object_current_output_item, 0 );
 }

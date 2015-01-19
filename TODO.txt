@@ -1,8 +1,8 @@
 RuNeNe TODOs:
 
     Finish training data class
-      ? What goes in it ?
       Iterator (with shuffle)
+      Cache pointers
 
     Remove "attach input" logic, and do batch runs on matrices. Optionally take writable output array
 
