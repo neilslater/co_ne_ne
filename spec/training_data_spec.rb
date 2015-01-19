@@ -213,6 +213,22 @@ describe RuNeNe::TrainingData do
           end
         end
       end
+
+      it "works when input and output are same NArray object (for auto-encoders)" do
+        inputs = NArray.sfloat( 20,5 ).random
+        td = RuNeNe::TrainingData.new( inputs, inputs )
+        items = (0..4).map do |x|
+          td.next_item
+          Hash[ :i => td.current_input_item.to_a, :o => td.current_output_item.to_a ]
+        end
+        expect( items.uniq ).to eql items
+        items.each do |fetched_item|
+          input_item = fetched_item[:i]
+          output_item = fetched_item[:o]
+          expect( input_item ).to eql output_item
+          expect( inputs.to_a ).to include input_item
+        end
+      end
     end
 
 

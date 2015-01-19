@@ -1,7 +1,7 @@
 RuNeNe TODOs:
 
     Finish training data class
-      Cache pointers
+      Split
 
     Remove "attach input" logic, and do batch runs on matrices. Optionally take writable output array
 
