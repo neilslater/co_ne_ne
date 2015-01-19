@@ -138,5 +138,54 @@ describe RuNeNe::TrainingData do
         end
       end
     end
+
+    describe "#next_item" do
+      it "changes the current input item" do
+        @tdata.next_item
+        cii_a = @tdata.current_input_item
+        @tdata.next_item
+        cii_b = @tdata.current_input_item
+        expect( cii_a.to_a ).to_not eql cii_b.to_a
+      end
+
+      it "always changes input and output to same item" do
+        100.times do
+          @tdata.next_item
+          cii = @tdata.current_input_item
+          coi = @tdata.current_output_item
+          xor_result = cii[0] == cii[1] ? 0.0 : 1.0
+          expect( coi[0] ).to eql xor_result
+        end
+      end
+
+      it "shuffles items at the start of each group" do
+        # Check single iteration through group
+        first_group = (0..3).map do |x|
+          @tdata.next_item
+          @tdata.current_input_item.to_a
+        end
+        expect( first_group.uniq ).to eql first_group
+
+        second_group = (0..3).map do |x|
+          @tdata.next_item
+          @tdata.current_input_item.to_a
+        end
+        first_group.each do |item|
+          expect( second_group ).to include item
+        end
+
+        # Check larger groups for differences to reduce likelihood that test fails
+        # due to coincidence
+        first_group = (0..11).map do |x|
+          @tdata.next_item
+          @tdata.current_input_item.to_a
+        end
+        second_group = (0..11).map do |x|
+          @tdata.next_item
+          @tdata.current_input_item.to_a
+        end
+        expect( first_group ).to_not eql second_group
+      end
+    end
   end
 end
