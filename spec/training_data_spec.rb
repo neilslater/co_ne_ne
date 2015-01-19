@@ -230,7 +230,5 @@ describe RuNeNe::TrainingData do
         end
       end
     end
-
-
   end
 end

@@ -1,18 +1,20 @@
 RuNeNe TODOs:
 
-    Finish training data class
-      Split
+    Remove "attach input" logic, and take input array as param for methods that need it
 
-    Remove "attach input" logic, and do batch runs on matrices. Optionally take writable output array
+    Perform batch feed-forward runs
 
-    Finish trainer class. RuNeNe::Trainer::Backprop
+    Make a trainer class: RuNeNe::Trainer::Backprop
 
     Split training process between  network, training data and a "trainer" class
+
+    Perform batch backprop runs
 
     Re-do backprop into separate dE_da, dE_dz and dE_dW stages
 
     Gradient-checking tests
 
+    Separate out cost/loss functions
 
     Layer init weights
 
@@ -27,12 +29,15 @@ RuNeNe TODOs:
 
 ----- v0.0.1 release ?
 
+    Optionally take writable output array (for performance)
 
     improved vectorisation
 
     Bulk predictions
 
     Training set normalisation
+
+    Training set split (into CV, Test etc)
 
     dropout
 
@@ -50,8 +55,6 @@ RuNeNe TODOs:
 
     Residual gradients for RELU (& others?)
 
-    ---- Start from here in 2014 ??? ---
-
     Use SIMD for weight updates
 
     Holdout sets for generalisation
@@ -60,8 +63,11 @@ RuNeNe TODOs:
 
     auto-encoders
 
+    Import other NN trained models (cxxnet, caffe)
 
 RuNeNe DONE:
+
+    Training data shuffled inputs/outputs
 
     Training data Marshal
 
