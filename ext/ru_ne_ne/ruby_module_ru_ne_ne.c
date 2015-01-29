@@ -198,7 +198,7 @@ void init_module_ru_ne_ne() {
   RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
   RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );
 
-  RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
+  // RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
 
   RuNeNe_TrainingData = rb_define_class_under( RuNeNe, "TrainingData", rb_cObject );
 
@@ -211,7 +211,7 @@ void init_module_ru_ne_ne() {
 
   init_transfer_module();
   init_layer_ff_class();
-  init_network_class();
+  // init_network_class();
   init_training_data_class();
   init_srand_by_time();
 }
