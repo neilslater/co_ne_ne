@@ -37,9 +37,12 @@ void layer_ff__new_narrays( Layer_FF *layer_ff ) {
 // Creates weights, using randn()
 void layer_ff__init_weights( Layer_FF *layer_ff ) {
   int i;
+
+  struct NARRAY *narr;
+  GetNArray( layer_ff->narr_weights, narr );
   int t = narr->total;
 
-  sigma = 0.5 * sqrt ( 6.0 / ( layer_ff->num_inputs + layer_ff->num_outputs ));
+  double sigma = 0.5 * sqrt ( 6.0 / ( layer_ff->num_inputs + layer_ff->num_outputs ));
   for ( i = 0; i < t; i++ ) {
     layer_ff->weights[i] = sigma * genrand_norm();
   }

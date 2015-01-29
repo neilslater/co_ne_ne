@@ -12,6 +12,7 @@
 #include "narray.h"
 #include "mt.h"
 #include "ruby_module_transfer.h"
+#include "core_backprop.h"
 
 typedef struct _layer_ff_raw {
     int num_inputs;
@@ -33,6 +34,6 @@ void layer_ff__init_weights( Layer_FF *layer_ff );
 
 void layer_ff__set_weights( Layer_FF *layer_ff, VALUE weights );
 
-void layer_ff__run( Layer_FF *layer_ff );
+void layer_ff__run( Layer_FF *layer_ff, float *input, float *output );
 
 #endif

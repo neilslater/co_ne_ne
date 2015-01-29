@@ -278,14 +278,21 @@ VALUE layer_ff_object_weights( VALUE self ) {
  */
 VALUE layer_ff_object_run( VALUE self, VALUE rv_input ) {
   Layer_FF *layer_ff = get_layer_ff_struct( self );
+  int out_shape[1] = { layer_ff->num_outputs };
 
   struct NARRAY *na_input;
   volatile VALUE val_input = na_cast_object(rv_input, NA_SFLOAT);
   GetNArray( val_input, na_input );
 
-  layer_ff__run( layer_ff );
+  if ( na_input->total != layer_ff->num_inputs ) {
+    rb_raise( rb_eArgError, "Input array must be size %d, but it was size %d", layer_ff->num_inputs, na_input->total );
+  }
 
-  // TODO:
+  struct NARRAY *na_output;
+  volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
+  GetNArray( val_output, na_output );
+
+  layer_ff__run( layer_ff, (float*) na_input->ptr, (float*) na_output->ptr );
 
   return val_output;
 }
