@@ -60,5 +60,6 @@ double genrand_res53(void);
 float genrand_real1(void);
 long genrand_int31(void);
 void init_srand_by_time();
+float genrand_norm(void);
 
 #endif

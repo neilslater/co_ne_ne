@@ -147,6 +147,18 @@ float genrand_real1(void)
     + (0.5 + 0.5/4294967295.0);
 }
 
+/* generates a random number from normal distribution with SD 1 */
+float genrand_norm(void)
+{
+    float n1 = genrand_real1();
+    float n2 = genrand_real1();
+
+    // Box-Muller transform (well, half of it)
+    if ( n1 < 1e-50 ) n1 = 1e-50;
+    n1 = -2 * log( n1 );
+    return sqrt( n1 ) * cos( n2 * 6.2831853071795 );
+}
+
 /* generates a random number on [0,1) with 53-bit resolution */
 double genrand_res53(void)
 {

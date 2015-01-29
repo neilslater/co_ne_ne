@@ -1,12 +1,14 @@
 RuNeNe TODOs:
 
-    Remove "attach input" logic, and take input array as param for methods that need it
-
-    Perform batch feed-forward runs
+    Completely re-architect layer/network
+      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function
+       - all processing uses supplied params, not internal state
+      network adds architecture (initially just a stack of layers)
+      trainer adds data structures for tracking weight deltas etc
 
     Make a trainer class: RuNeNe::Trainer::Backprop
 
-    Split training process between  network, training data and a "trainer" class
+    Perform batch feed-forward runs
 
     Perform batch backprop runs
 
