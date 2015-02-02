@@ -25,17 +25,8 @@ describe RuNeNe::Layer::FeedForward do
         expect( layer.transfer ).to be RuNeNe::Transfer::Sigmoid
 
         expect( layer.weights ).to be_narray_like NArray[
-            [ 0.088395, 0.759151, -0.00383174, 0.756848 ],
-            [ -0.422237, -0.552743, -0.128862, 0.774815 ] ]
-
-        expect( layer.weights_last_deltas ).to be_a NArray
-        expect( layer.weights_last_deltas.shape ).to eql [4,2]
-
-        expect( layer.output ).to be_a NArray
-        expect( layer.output.shape ).to eql [2]
-
-        expect( layer.output_deltas ).to be_a NArray
-        expect( layer.output_deltas.shape ).to eql [2]
+         [ 0.586514, 0.637854, 0.525343, 0.718463 ],
+         [ 0.957125, 0.0273813, 0.0794556, -0.730958 ] ]
       end
 
       it "accepts an optional transfer function type param" do
@@ -63,9 +54,6 @@ describe RuNeNe::Layer::FeedForward do
 
         expect( layer.num_inputs ).to be 3
         expect( layer.num_outputs ).to be 5
-
-        expect( layer.output ).to be_a NArray
-        expect( layer.output.shape ).to eql [ 5 ]
       end
 
       it "assigns to the weights attribute directly (not a copy)" do
@@ -111,7 +99,6 @@ describe RuNeNe::Layer::FeedForward do
         expect( copy_layer.weights ).to be_narray_like orig_layer.weights
       end
     end
-
   end
 
   describe "instance methods" do
@@ -128,33 +115,11 @@ describe RuNeNe::Layer::FeedForward do
         expect( copy.transfer ).to eql layer.transfer
       end
 
-      it "should deep clone all arrays of weights and output" do
+      it "should deep clone weights" do
         copy = layer.clone
 
         expect( copy.weights ).to_not be layer.weights
         expect( copy.weights ).to be_narray_like layer.weights
-
-        expect( copy.output ).to_not be layer.output
-        expect( copy.output ).to be_narray_like layer.output
-
-        expect( copy.weights ).to_not be layer.weights
-        expect( copy.weights ).to be_narray_like layer.weights
-
-        expect( copy.output_deltas ).to_not be layer.output_deltas
-        expect( copy.output_deltas ).to be_narray_like layer.output_deltas
-
-        expect( copy.weights_last_deltas ).to_not be layer.weights_last_deltas
-        expect( copy.weights_last_deltas ).to be_narray_like layer.weights_last_deltas
-      end
-
-      it "should disconnect inputs and outputs" do
-        layer.attach_input_layer RuNeNe::Layer::FeedForward.new( 4, 3 )
-        layer.attach_output_layer RuNeNe::Layer::FeedForward.new( 2, 1 )
-        copy = layer.clone
-
-        expect( copy.input ).to be_nil
-        expect( copy.input_layer ).to be_nil
-        expect( copy.output_layer ).to be_nil
       end
 
       it "should copy the transfer function" do
@@ -173,295 +138,60 @@ describe RuNeNe::Layer::FeedForward do
         RuNeNe.srand(800)
       end
 
-      it "should set weights in range -0.8 to 0.8 by default" do
+      it "should set weights to normal distribution by default" do
         layer.init_weights
         expect( layer.weights ).to be_narray_like NArray[
-            [ 0.130206, 0.520598, 0.614333, -0.275051 ],
-            [ 0.564844, -0.236939, 0.256392, -0.466942 ] ]
+          [ 0.26017, -0.128192, -0.184518, 0.129694 ],
+          [ -0.366275, 0.188048, -0.0444051, -0.103807 ] ]
       end
 
-      it "should accept a single param to set +- range" do
-        layer.init_weights( 4.0 )
+      it "should accept an optional multiplier" do
+        layer.init_weights( 0.1 )
         expect( layer.weights ).to be_narray_like NArray[
-            [ 0.65103, 2.60299, 3.07167, -1.37525 ],
-            [ 2.82422, -1.18469, 1.28196, -2.33471 ] ]
+          [ 0.026017, -0.0128192, -0.0184518, 0.0129694 ],
+          [ -0.0366275, 0.0188048, -0.00444051, -0.0103807 ] ]
       end
 
-      it "should accept two params to select from a range" do
-        layer.init_weights( 0.2, 1.8 )
-        expect( layer.weights ).to be_narray_like NArray[
-            [ 1.13021, 1.5206, 1.61433, 0.724949 ],
-            [ 1.56484, 0.763061, 1.25639, 0.533058 ] ]
-      end
-
-      it "should work with a negative single param" do
-        layer.init_weights( -0.8 )
-        expect( layer.weights ).to be_narray_like NArray[
-            [ -0.130206, -0.520598, -0.614333, 0.275051 ],
-            [ -0.564844, 0.236939, -0.256392, 0.466942 ] ]
-      end
-
-      it "should work with a 'reversed' range" do
-        layer.init_weights( 1.0, 0.0 )
-        expect( layer.weights ).to be_narray_like NArray[
-            [ 0.418621, 0.174627, 0.116042, 0.671907 ],
-            [ 0.146972, 0.648087, 0.339755, 0.791839 ] ]
-      end
-
-      it "should raise an error for non-numeric params" do
-        expect { layer.init_weights( [] ) }.to raise_error
-        expect { layer.init_weights( "Hi" ) }.to raise_error
-        expect { layer.init_weights( 2.5, :foo => 'bar' ) }.to raise_error
-      end
-
-      it "returns nil" do
-        expect( layer.init_weights() ).to be_nil
-        expect( layer.init_weights( 2.5 ) ).to be_nil
-        expect( layer.init_weights( -0.7, 1.0 ) ).to be_nil
-      end
-    end
-
-    describe "#set_input" do
-      it "uses sfloat parameter as new input attribute directly" do
-        i = NArray.sfloat(3).random()
-        layer.set_input i
-        expect( layer.input ).to be i
-      end
-
-      it "casts other NArray types to sfloat, and uses a copy" do
-        i = NArray.float(3).random()
-        layer.set_input i
-        expect( layer.input ).to_not be i
-        expect( layer.input ).to be_narray_like i
-      end
-
-      it "refuses to attach wrong size of input" do
-        i = NArray.sfloat(4).random()
-        expect { layer.set_input i }.to raise_error
-        expect( layer.input ).to be nil
-      end
-
-      it "disconnects connected layers" do
-        lower_layer = RuNeNe::Layer::FeedForward.new( 7, 3 )
-        layer.attach_input_layer( lower_layer )
-
-        i = NArray.sfloat(3).random()
-        layer.set_input i
-        expect( layer.input ).to be i
-        expect( layer.input_layer ).to be_nil
-        expect( lower_layer.output_layer ).to be_nil
-      end
-    end
-
-    describe "#attach_input_layer" do
-      it "uses parameter as new input_layer attribute directly" do
-        il = RuNeNe::Layer::FeedForward.new( 7, 3 )
-        layer.attach_input_layer il
-        expect( layer.input_layer ).to be il
-        expect( layer.input ).to be il.output
-      end
-
-      it "refuses to attach wrong size of input" do
-        il = RuNeNe::Layer::FeedForward.new( 7, 4 )
-        expect { layer.attach_input_layer il }.to raise_error
-        expect( layer.input_layer ).to be nil
-      end
-
-      it "refuses to create cyclic connections" do
-        il = RuNeNe::Layer::FeedForward.new( 3, 3 )
-        layer.attach_input_layer( il )
-
-        expect { il.attach_input_layer layer }.to raise_error
-
-        expect( il.input_layer ).to be_nil
-        expect( il.input ).to be_nil
-      end
-
-      it "replaces existing input layer" do
-        prev_layer = RuNeNe::Layer::FeedForward.new( 7, 3 )
-        layer.attach_input_layer( prev_layer )
-
-        il = RuNeNe::Layer::FeedForward.new( 3, 3 )
-        layer.attach_input_layer( il )
-
-        layer.attach_input_layer il
-        expect( layer.input_layer ).to be il
-        expect( layer.input ).to be il.output
-        expect( prev_layer.output_layer ).to be_nil
-      end
-    end
-
-    describe "#attach_output_layer" do
-      it "uses parameter as new output_layer attribute directly" do
-        ol = RuNeNe::Layer::FeedForward.new( 2, 1 )
-        layer.attach_output_layer ol
-        expect( layer.output_layer ).to be ol
-        expect( ol.input ).to be layer.output
-      end
-
-      it "refuses to attach wrong size of output" do
-        ol = RuNeNe::Layer::FeedForward.new( 4, 1 )
-        expect { layer.attach_output_layer ol }.to raise_error
-        expect( layer.output_layer ).to be nil
-      end
-
-      it "refuses to create cyclic connections" do
-        ol = RuNeNe::Layer::FeedForward.new( 2, 2 )
-        layer.attach_output_layer( ol )
-
-        expect { ol.attach_output_layer layer }.to raise_error
-
-        expect( ol.output_layer ).to be_nil
-        expect( layer.input ).to be_nil
-      end
-
-      it "replaces existing output connection" do
-        next_layer = RuNeNe::Layer::FeedForward.new( 2, 2 )
-        layer.attach_output_layer( next_layer )
-
-        ol = RuNeNe::Layer::FeedForward.new( 2, 3 )
-        layer.attach_output_layer( ol )
-
-        layer.attach_output_layer ol
-        expect( layer.output_layer ).to be ol
-        expect( ol.input ).to be layer.output
-        expect( next_layer.input_layer ).to be_nil
+      it "returns self" do
+        expect( layer.init_weights() ).to be layer
+        expect( layer.init_weights( 2.5 ) ).to be layer
       end
     end
 
     describe "#run" do
-      before :each do
-        layer.set_input NArray.cast( [0.1, 0.2, 0.3], 'sfloat' )
-      end
+      let(:input) {  NArray.cast( [0.1, 0.2, 0.3], 'sfloat' ) }
 
       it "calculates output associated with input and weights" do
-        layer.run
-        expect( layer.output ).to be_narray_like NArray[ 0.742691, 0.68568 ]
+        output = layer.run( input )
+        expect( output ).to be_narray_like NArray[ 0.742691, 0.68568 ]
       end
 
       it "gives different output for different input" do
-        layer.run
-        result_one = layer.output.clone
+        result_one = layer.run( input )
 
-        layer.set_input NArray.cast( [0.5, 0.4, 0.3], 'sfloat' )
-
-        layer.run
-        result_two = layer.output.clone
+        other_input = NArray.cast( [0.5, 0.4, 0.3], 'sfloat' )
+        result_two = layer.run( other_input )
 
         expect( result_one ).to_not eq result_two
         expect( result_one ).to_not be_narray_like result_two
       end
 
       it "gives similar output for similar input" do
-        layer.run
-        result_one = layer.output.clone
+        result_one = layer.run( input )
 
-        layer.set_input NArray.cast( [0.1002, 0.1998, 0.3001], 'sfloat' )
-
-        layer.run
-        result_two = layer.output.clone
+        other_input =NArray.cast( [0.1002, 0.1998, 0.3001], 'sfloat' )
+        result_two = layer.run( other_input )
 
         expect( result_one ).to be_narray_like result_two
         expect( result_one ).to_not eq result_two
       end
 
-      it "sets all output values between 0 and 1" do
-        layer.run
-        layer.output.each do |r|
+      it "sets all output values between 0 and 1 (for sigmoid)" do
+        output = layer.run( input )
+        output.each do |r|
           expect( r ).to be >= 0.0
           expect( r ).to be <= 1.0
         end
-      end
-    end
-
-    describe "#ms_error" do
-      before :each do
-        layer.set_input NArray.cast( [0.1, 0.4, 0.9], 'sfloat' )
-        layer.run
-      end
-
-      it "returns current error value for network" do
-        err = layer.ms_error( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-        expect( err ).to be_within(1e-6).of 0.089057
-
-        err = layer.ms_error( NArray.cast( [0.0, 0.5], 'sfloat' ) )
-        expect( err ).to be_within(1e-6).of 0.390664
-      end
-
-      it "returns similar values for similar targets" do
-        err = layer.ms_error( NArray.cast( [0.12, 0.12], 'sfloat' ) )
-        expect( err ).to be_within(1e-6).of 0.466518
-
-        err = layer.ms_error( NArray.cast( [0.13, 0.11], 'sfloat' ) )
-        expect( err ).to be_within(1e-6).of 0.465739
-      end
-    end
-
-    describe "#calc_output_deltas" do
-      before :each do
-        layer.set_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
-        layer.run
-      end
-
-      it "returns an array of error values" do
-        errs = layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-        expect( errs ).to be_narray_like NArray[ -0.0451288, 0.0444903 ]
-      end
-
-      it "sets output_deltas" do
-        layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-        expect( layer.output_deltas ).to be_narray_like NArray[ -0.0451288, 0.0444903 ]
-      end
-    end
-
-    describe "#backprop_deltas" do
-      before :each do
-        weights = NArray.cast( [ [ -0.1, 0.5, -0.2 ] ], 'sfloat' )
-        @ol = RuNeNe::Layer::FeedForward.from_weights( weights )
-
-        layer.set_input NArray.cast( [0.1, 0.4, 0.9 ], 'sfloat' )
-        layer.attach_output_layer( @ol )
-        layer.run
-        @ol.run
-        @ol.calc_output_deltas( NArray.cast( [1.0], 'sfloat' ) )
-      end
-
-      it "returns an array of delta values" do
-        deltas = @ol.backprop_deltas
-        expect( deltas ).to be_narray_like NArray[ -0.00155221, 0.0109102 ]
-      end
-
-      it "back propagates the deltas to input layer" do
-        @ol.backprop_deltas
-        expect( layer.output_deltas ).to be_narray_like NArray[ -0.00155221, 0.0109102 ]
-      end
-    end
-
-    describe "#update_weights" do
-      before :each do
-        layer.set_input NArray.cast( [0.1, 0.4, 0.9], 'sfloat' )
-        layer.run
-        layer.calc_output_deltas( NArray.cast( [0.5, 1.0], 'sfloat' ) )
-      end
-
-      it "alters the weights" do
-        layer.update_weights( 1.0 )
-        original_weights = NArray.cast( [ [ -0.1, 0.5, 0.9, 0.7 ], [ -0.6, 0.6, 0.4, 0.6 ] ], 'sfloat' )
-        expect( layer.weights ).to_not be_narray_like original_weights
-        diff = original_weights - layer.weights
-        expect( (diff * diff).sum ).to be > 0.001
-      end
-
-      it "reduces the mean square error" do
-        target = NArray.cast( [1.0, 0.0], 'sfloat' )
-        original_err =  layer.ms_error( target )
-        50.times do
-          layer.run
-          layer.calc_output_deltas( target )
-          layer.update_weights( 1.0 )
-        end
-        new_err = layer.ms_error( target )
-        expect( (original_err - new_err) ).to be > 0.05
       end
     end
   end

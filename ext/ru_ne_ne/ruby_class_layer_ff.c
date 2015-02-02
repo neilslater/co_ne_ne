@@ -270,6 +270,35 @@ VALUE layer_ff_object_weights( VALUE self ) {
   return layer_ff->narr_weights;
 }
 
+/* @overload init_weights( mult = 1.0 )
+ * Initialises weights to a normal distribution based on number of inputs and outputs.
+ * @param [Float] mult optional size factor
+ * @return [RuNeNe::Layer::FeedForward] self
+ */
+VALUE layer_ff_object_init_weights( int argc, VALUE* argv, VALUE self ) {
+  VALUE rv_mult;
+  Layer_FF *layer_ff = get_layer_ff_struct( self );
+  double m = 1.0;
+  int i, t;
+  struct NARRAY *narr;
+
+  rb_scan_args( argc, argv, "01", &rv_mult );
+
+  layer_ff__init_weights( layer_ff );
+
+  if ( ! NIL_P( rv_mult ) ) {
+    m = NUM2DBL( rv_mult );
+    GetNArray( layer_ff->narr_weights, narr );
+    t = narr->total;
+    for ( i = 0; i < t; i++ ) {
+      layer_ff->weights[i] *= m;
+    }
+  }
+
+  return self;
+}
+
+
 /* @overload run( )
  * Runs the layer with supplied input(s). The input array can be a single, one-dimensional
  * vector, or can be
@@ -313,5 +342,7 @@ void init_layer_ff_class() {
   rb_define_method( RuNeNe_Layer_FeedForward, "weights", layer_ff_object_weights, 0 );
 
   // FeedForward methods
+  rb_define_method( RuNeNe_Layer_FeedForward, "init_weights", layer_ff_object_init_weights, -1 );
+
   rb_define_method( RuNeNe_Layer_FeedForward, "run", layer_ff_object_run, 1 );
 }
