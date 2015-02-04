@@ -1,8 +1,10 @@
 RuNeNe TODOs:
 
+    RuNeNe::NCel
+      "Array" of related NArrays
+
     Completely re-architect layer/network
-      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function
-       - all processing uses supplied params, not internal state
+      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
       network adds architecture (initially just a stack of layers)
       trainer adds data structures for tracking weight deltas etc
 
@@ -17,8 +19,6 @@ RuNeNe TODOs:
     Gradient-checking tests
 
     Separate out cost/loss functions
-
-    Layer init weights
 
     Log loss cost
 
@@ -100,3 +100,5 @@ RuNeNe DONE:
     Fisher-Yates shuffle
 
     srand accept arrays
+
+    Layer init weights

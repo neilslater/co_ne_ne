@@ -2,7 +2,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Ruby bindings for multi-layer perceptron code - the deeper implementation is in
+//  Ruby bindings for a single feed-forward layer - the deeper implementation is in
 //  layer_ff_raw.c and network_raw.c
 //
 
@@ -343,6 +343,5 @@ void init_layer_ff_class() {
 
   // FeedForward methods
   rb_define_method( RuNeNe_Layer_FeedForward, "init_weights", layer_ff_object_init_weights, -1 );
-
   rb_define_method( RuNeNe_Layer_FeedForward, "run", layer_ff_object_run, 1 );
 }
