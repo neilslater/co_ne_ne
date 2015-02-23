@@ -1,36 +1,3 @@
-class RuNeNe::Network
-
-  # Creates new network from an array of layers. The layers are connected together to form the
-  # new network - this requires that they have matching input and output sizes on each
-  # connection, and they will be reconnected if neccessary to form the new network.
-  # @param [Array<RuNeNe::Layer::FeedForward>] layers an array of layers
-  # @return [RuNeNe::Network] the new network
-  def self.from_layers layers
-    unless layers.is_a?( Array ) && layers.count > 0 && layers.all? { |l| l.is_a?( RuNeNe::Layer::FeedForward ) }
-      raise TypeError, "Expecting an Array with one or more RuNeNe::Layer::FeedForward objects"
-    end
-
-    # Pre-check for size mismatches
-    i = 0
-    layers.each_cons(2) do |first,second|
-      if first.num_outputs != second.num_inputs
-        raise ArgumentError, "Layer #{i} has #{first.num_outputs} outputs, layer #{i+1} has #{second.num_inputs} inputs, they cannot be connected."
-      end
-      i += 1
-    end
-
-    # Force first layer to detach any previous input
-    layers[0].set_input( NArray.sfloat( layers[0].num_inputs ) )
-
-    layers.each_cons(2) do |first,second|
-      second.attach_input_layer( first )
-    end
-
-    from_layer( layers[0] )
-  end
-
-end
-
 # RuNeNe adds support for Marshal to NArray. Code originally from http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/194510
 class NArray
   # @!visibility private
@@ -120,7 +87,7 @@ class RuNeNe::Layer::FeedForward
   end
 end
 
-class RuNeNe::Network
+class RuNeNe::NetworkOld
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h

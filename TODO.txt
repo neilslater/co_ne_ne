@@ -1,7 +1,7 @@
 RuNeNe TODOs:
 
-    RuNeNe::NCel
-      "Array" of related NArrays
+    RuNeNe::BackpropTrainer::Layer
+    RuNeNe::BackpropTrainer::Network
 
     Completely re-architect layer/network
       layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
