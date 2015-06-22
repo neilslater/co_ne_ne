@@ -25,7 +25,7 @@ typedef struct _train_bp_layer_raw {
     // Training rate params
     float lr;
     float momentum;
-    bool rmsprop;
+    char rmsprop;
     float rmsprop_adapt_rate;
 
     // Regularisation params

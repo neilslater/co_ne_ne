@@ -69,15 +69,15 @@ void train_bp_layer__init_training( Train_BP_Layer *train_bp_layer, VALUE rv_lay
 
   train_bp_layer->narr_dE_dW = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( train_bp_layer->narr_dE_dW, narr );
-  na_sfloat_set( narr->total, train_bp_layer->narr_dE_dW, (float) 0.0 );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   train_bp_layer->narr_momentum_dE_dW = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( train_bp_layer->narr_momentum_dE_dW, narr );
-  na_sfloat_set( narr->total, train_bp_layer->narr_momentum_dE_dW, (float) 0.0 );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   train_bp_layer->narr_rmsprop_dE_dW = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( train_bp_layer->narr_rmsprop_dE_dW, narr );
-  na_sfloat_set( narr->total, train_bp_layer->narr_rmsprop_dE_dW, (float) 0.0 );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   return;
 }
@@ -85,7 +85,7 @@ void train_bp_layer__init_training( Train_BP_Layer *train_bp_layer, VALUE rv_lay
 void train_bp_layer__init_deltas( Train_BP_Layer *train_bp_layer ) {
   struct NARRAY *narr;
   GetNArray( train_bp_layer->narr_dE_dW, narr );
-  na_sfloat_set( narr->total, train_bp_layer->narr_dE_dW, (float) 0.0 );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
   return;
 }
 
