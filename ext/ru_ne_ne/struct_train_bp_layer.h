@@ -18,6 +18,7 @@ typedef struct _train_bp_layer_raw {
     VALUE narr_dE_dW;           // Sum of delta back-propagated to weights (per batch)
     VALUE narr_momentum_dE_dW;  // Per-batch momentum term
     VALUE narr_rmsprop_dE_dW;   // Per-batch rmsprop weight update factor
+    VALUE narr_dE_da;           // Most-recent delta back-propagated to input activations
 
     // This is cached for performance when init_training is called
     Layer_FF *layer_ff;

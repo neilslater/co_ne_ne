@@ -12,6 +12,7 @@ Train_BP_Layer *train_bp_layer__create() {
   train_bp_layer = xmalloc( sizeof(Train_BP_Layer) );
 
   train_bp_layer->rv_layer_ff = Qnil;
+  train_bp_layer->narr_dE_da = Qnil;
   train_bp_layer->narr_dE_dW = Qnil;
   train_bp_layer->narr_momentum_dE_dW = Qnil;
   train_bp_layer->narr_rmsprop_dE_dW = Qnil;
@@ -33,7 +34,7 @@ Train_BP_Layer *train_bp_layer__create() {
 }
 
 void train_bp_layer__destroy( Train_BP_Layer *train_bp_layer ) {
-  // Clear cache (not necessary)
+  // Clear cache (not necessary, just being neat and tidy)
   train_bp_layer->layer_ff = NULL;
 
   xfree( train_bp_layer );
@@ -43,6 +44,7 @@ void train_bp_layer__destroy( Train_BP_Layer *train_bp_layer ) {
 
 void train_bp_layer__gc_mark( Train_BP_Layer *train_bp_layer ) {
   rb_gc_mark( train_bp_layer->rv_layer_ff );
+  rb_gc_mark( train_bp_layer->narr_dE_da );
   rb_gc_mark( train_bp_layer->narr_dE_dW );
   rb_gc_mark( train_bp_layer->narr_momentum_dE_dW );
   rb_gc_mark( train_bp_layer->narr_rmsprop_dE_dW );
@@ -77,6 +79,11 @@ void train_bp_layer__init_training( Train_BP_Layer *train_bp_layer, VALUE rv_lay
 
   train_bp_layer->narr_rmsprop_dE_dW = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( train_bp_layer->narr_rmsprop_dE_dW, narr );
+  na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
+
+  shape[0] = layer_ff->num_inputs;
+  train_bp_layer->narr_dE_da = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  GetNArray( train_bp_layer->narr_dE_da, narr );
   na_sfloat_set( narr->total, (float*) narr->ptr, (float) 0.0 );
 
   return;
