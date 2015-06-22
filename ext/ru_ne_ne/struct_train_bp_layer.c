@@ -16,6 +16,7 @@ Train_BP_Layer *train_bp_layer__create() {
   train_bp_layer->narr_dE_dW = Qnil;
   train_bp_layer->narr_momentum_dE_dW = Qnil;
   train_bp_layer->narr_rmsprop_dE_dW = Qnil;
+  // TODO: Add batch store of rms_prop_dE_dW?
 
   // This is cached for performance when init_training is called
   train_bp_layer->layer_ff = NULL;

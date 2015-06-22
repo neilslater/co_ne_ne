@@ -1,5 +1,9 @@
 RuNeNe TODOs:
 
+    Separate out cost/loss functions
+
+    Log loss cost
+
     RuNeNe::Trainer::BPLayer
 
     Completely re-architect layer/network
@@ -16,10 +20,6 @@ RuNeNe TODOs:
     Re-do backprop into separate dE_da, dE_dz and dE_dW stages
 
     Gradient-checking tests
-
-    Separate out cost/loss functions
-
-    Log loss cost
 
     Tests using MNIST digits
 

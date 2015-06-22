@@ -14,6 +14,9 @@ VALUE RuNeNe_Transfer_ReLU = Qnil;
 VALUE RuNeNe_Transfer_Linear = Qnil;
 VALUE RuNeNe_Transfer_Softmax = Qnil;
 
+VALUE RuNeNe_Objective = Qnil;
+VALUE RuNeNe_Objective_MeanSquaredError = Qnil;
+
 VALUE RuNeNe_Layer = Qnil;
 VALUE RuNeNe_Layer_FeedForward  = Qnil;
 
@@ -195,6 +198,9 @@ void init_module_ru_ne_ne() {
   RuNeNe_Transfer_Linear = rb_define_module_under( RuNeNe_Transfer, "Linear" );
   RuNeNe_Transfer_Softmax = rb_define_module_under( RuNeNe_Transfer, "Softmax" );
 
+  RuNeNe_Objective = rb_define_module_under( RuNeNe, "Objective" );
+  RuNeNe_Objective_MeanSquaredError = rb_define_module_under( RuNeNe_Objective, "MeanSquaredError" );
+
   RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
   RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );
 
@@ -210,6 +216,7 @@ void init_module_ru_ne_ne() {
   rb_define_singleton_method( RuNeNe, "shuffled_integers", runene_shuffled_integers, 1 );
 
   init_transfer_module();
+  init_objective_module();
   init_layer_ff_class();
   // init_network_class();
   init_training_data_class();

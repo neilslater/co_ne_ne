@@ -57,6 +57,15 @@ module RuNeNe::Transfer::Softmax
   end
 end
 
+module RuNeNe::Objective::MeanSquaredError
+  # Short name for MeanSquaredError objective function, used as a parameter to some methods.
+  # @return [Symbol] :mse
+  def self.label
+    :mse
+  end
+end
+
+
 class RuNeNe::Layer::FeedForward
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods

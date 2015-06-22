@@ -14,6 +14,7 @@
 #include "core_convolve.h"
 #include "core_max_pool.h"
 #include "ruby_module_transfer.h"
+#include "ruby_module_objective.h"
 #include "ruby_class_layer_ff.h"
 #include "ruby_class_training_data.h"
 #include "mt.h"
