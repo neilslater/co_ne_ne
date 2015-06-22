@@ -9,6 +9,8 @@
 
 *Ru*by *Ne*ural *Ne*tworks.
 
+*Please note this gem is not published, nor anywhere near being ready to use. It is currently a long-term personal project.*
+
 ## Features
 
  * Uses NArray sfloat arrays to represent inputs, outputs and weights.
