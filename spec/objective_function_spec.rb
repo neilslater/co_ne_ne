@@ -27,9 +27,9 @@ describe RuNeNe::Objective::MeanSquaredError do
 
       dl =  RuNeNe::Objective::MeanSquaredError.delta_loss( preds, targets )
 
-      expect( dl[0] ).to be 0.0
+      expect( dl[0] ).to be_within(1e-6).of 0.0
       expect( dl[1] ).to be < 0.0
-      expect( dl[2] ).to be 0.0
+      expect( dl[2] ).to be_within(1e-6).of 0.0
       expect( dl[3] ).to be < 0.0
     end
 
