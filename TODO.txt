@@ -1,18 +1,14 @@
 RuNeNe TODOs:
 
     Combine cost de_da with da_dz to go direct to de_dz for most/all output deltas . . .
-        Combos for de_dz
+        Optimised combos for de_dz
         *  linear & mse
         *  sigmoid & logloss
         *  softmax & mlogloss
         *  relu & mse
 
         Non-optimised combos:
-        *  sigmoid & mlogloss?
-        *  tanh & logloss?
-
-        *  sigmoid & mse?
-        *  tanh & mse?
+        *  everything else (block difficult or impossible combinations, such as logloss for linear?)
 
     RuNeNe::Trainer::BPLayer
 

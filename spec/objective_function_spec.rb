@@ -18,6 +18,16 @@ describe RuNeNe::Objective::MeanSquaredError do
 
       expect( RuNeNe::Objective::MeanSquaredError.loss( preds1, targets ) ).to be < RuNeNe::Objective::MeanSquaredError.loss( preds2, targets )
     end
+
+    it "matches value from documentation" do
+      5.times do
+        targets = NArray.sfloat(4).random(4.0)
+        predictions = NArray.sfloat(4).random(4.0)
+        expected_loss = 0.5 * ( predictions.to_a.zip( targets.to_a ).inject(0.0) { |sum,pt| sum + (pt.first-pt.last)**2 } )
+        actual_loss = RuNeNe::Objective::MeanSquaredError.loss( predictions, targets )
+        expect( actual_loss ).to be_within( 1e-6 ).of actual_loss
+      end
+    end
   end
 
   describe "#delta_loss" do
@@ -135,6 +145,8 @@ describe RuNeNe::Objective::MulticlassLogLoss do
           predictions = NArray.sfloat(n).random(0.98) + 0.01
           loss = RuNeNe::Objective::MulticlassLogLoss.loss( predictions, targets )
           dl = RuNeNe::Objective::MulticlassLogLoss.delta_loss( predictions, targets )
+
+          affected_gradients = 0
           (0...n).each do |i|
             up_predictions = predictions.clone
             up_predictions[i] += 0.0005
@@ -149,8 +161,10 @@ describe RuNeNe::Objective::MulticlassLogLoss do
               expect( dl[i] ).to be == 0.0
             else
                expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+               affected_gradients += 1
             end
           end
+          expect( affected_gradients ).to be 1
         end
       end
     end

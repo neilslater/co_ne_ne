@@ -7,6 +7,11 @@
 //  Definitions of objective functions used as optimisation targets
 //
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Mean Square Error
+//
+
 float raw_mse_loss( int n, float* predictions, float* targets ) {
   float t = 0.0;
   int i;
@@ -25,10 +30,43 @@ void raw_mse_delta_loss( int n, float* predictions, float* targets, float* delta
 }
 
 // Linear sub-type just for completeness
-void raw_mse_de_dz_linear( int n, float* predictions, float* targets, float* delta_loss ) {
-  raw_mse_delta_loss( n, predictions, targets, delta_loss );
+void obj_mse_tr_linear_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  raw_mse_delta_loss( n, predictions, targets, output_de_dz );
 }
 
+void obj_mse_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  // This two-step process is typical of a non-optimised calculation of de_dz given by
+  // chain rule:  de_dz = de_da * da_dz
+  int i;
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n );
+
+  raw_mse_delta_loss( n, predictions, targets, output_de_dz );
+  raw_sigmoid_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    output_de_dz[i] *= da_dz[i];
+  }
+
+  xfree( da_dz );
+}
+
+void obj_mse_tr_tanh_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+
+}
+
+void obj_mse_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+
+}
+
+void obj_mse_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Log Loss / Cross-Entropy
+//
 
 float raw_logloss( int n, float* predictions, float* targets, float eta ) {
   float p1, p2, t = 0.0;

@@ -80,7 +80,7 @@ static VALUE generic_delta_loss_function( VALUE rv_predictions, VALUE rv_targets
 
 /* @overload loss( predictions, targets )
  * Calculates a single example row's contributions to mean squared error loss, equivalent to Ruby code
- *     0.5 * ( predictions.zip( targets ).inject(0) { |p,t| (p-t)**2 } )
+ *     0.5 * ( predictions.zip( targets ).inject(0) { |sum,pt| sum + (pt.first-pt.last)**2 } )
  * @param [NArray<sfloat>] predictions
  * @param [NArray<sfloat>] targets
  * @return [Float] loss for the example
@@ -155,7 +155,6 @@ static VALUE mlogloss_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets )
 static VALUE mlogloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
   return generic_delta_loss_function( rv_predictions, rv_targets, wrapped_delta_mlogloss );
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

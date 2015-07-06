@@ -8,12 +8,12 @@ describe RuNeNe::Layer::FeedForward do
       end
 
       it "refuses to create new layers for bad parameters" do
-        expect { RuNeNe::Layer::FeedForward.new( 0, 2 ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( 3, -1 ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( "hello", 2 ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( 3, 2, "garbage" ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( 3, 2, :foobar ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( 3, 2, :tanh, 17 ) }.to raise_error
+        expect { RuNeNe::Layer::FeedForward.new( 0, 2 ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.new( 3, -1 ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.new( "hello", 2 ) }.to raise_error TypeError
+        expect { RuNeNe::Layer::FeedForward.new( 3, 2, "garbage" ) }.to raise_error TypeError
+        expect { RuNeNe::Layer::FeedForward.new( 3, 2, :foobar ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.new( 3, 2, :tanh, 17 ) }.to raise_error ArgumentError
       end
 
       it "sets values of attributes based on input and output size" do
@@ -77,12 +77,12 @@ describe RuNeNe::Layer::FeedForward do
       end
 
       it "refuses to create new layers for bad parameters" do
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(3,2,1) ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(1,2) ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(7)) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(5,2), "NOTVALID" ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(4,1), :blah ) }.to raise_error
-        expect { RuNeNe::Layer::FeedForward.new( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(3,2,1) ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(1,2) ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(7)) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(5,2), "NOTVALID" ) }.to raise_error TypeError
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(4,1), :blah ) }.to raise_error ArgumentError
+        expect { RuNeNe::Layer::FeedForward.from_weights( NArray.sfloat(4,1), :tanh, "extras" ) }.to raise_error ArgumentError
       end
     end
 
