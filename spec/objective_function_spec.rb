@@ -1,6 +1,10 @@
 require 'helpers'
 
 describe RuNeNe::Objective::MeanSquaredError do
+  before :all do
+    NArray.srand(41937510)
+  end
+
   describe "#loss" do
     it "is 0.0 when predictions and targets match" do
       (1..5).each do |n|
@@ -63,6 +67,44 @@ describe RuNeNe::Objective::MeanSquaredError do
             # gradient delta is swamped by other effects in random example). Typical values from set of 5:
             # 1.0000091719077568, 0.999966054313099, 0.9999890442611848, 1.0000013064133018, 1.0000042944172576
             expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
+
+  describe "linear_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Linear )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(2.0) - 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.linear_de_dz( demi_layer.output, targets )
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
+
+  describe "sigmoid_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(10.0) - 5.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.sigmoid_de_dz( demi_layer.output, targets )
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
           end
         end
       end

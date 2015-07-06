@@ -89,7 +89,7 @@ static VALUE mse_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
   return generic_loss_function( rv_predictions, rv_targets, raw_mse_loss );
 }
 
-/* @overload delta_loss( x )
+/* @overload delta_loss( predictions, targets )
  * Calculates the partial derivative of the loss value with respect to each prediction.
  * @param [NArray<sfloat>] predictions
  * @param [NArray<sfloat>] targets
@@ -99,6 +99,27 @@ static VALUE mse_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets 
   return generic_delta_loss_function( rv_predictions, rv_targets, raw_mse_delta_loss );
 }
 
+/* @overload linear_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * linear transfer function for given predictions and targets. Identical in practice to delta_loss
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
+ */
+static VALUE mse_linear_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_linear_de_dz );
+}
+
+/* @overload sigmoid_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * sigmoid transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
+ */
+static VALUE mse_sigmoid_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_sigmoid_de_dz );
+}
 
 /* Document-module:  RuNeNe::Objective::LogLoss
  *
@@ -161,6 +182,8 @@ static VALUE mlogloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_tar
 void init_objective_module( ) {
   rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "loss", mse_loss, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "delta_loss", mse_delta_loss, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "linear_de_dz", mse_linear_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "sigmoid_de_dz", mse_sigmoid_de_dz, 2 );
 
   rb_define_singleton_method( RuNeNe_Objective_LogLoss, "loss", logloss_loss, 2 );
   rb_define_singleton_method( RuNeNe_Objective_LogLoss, "delta_loss", logloss_delta_loss, 2 );

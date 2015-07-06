@@ -52,3 +52,34 @@ def xor_test nn
     (nn.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0] - 1.0).abs < 0.1 &&
     (nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0] - 0.0).abs < 0.1
 end
+
+class TestDemiOutputLayer
+  attr_reader :objective, :transfer, :output, :loss
+
+  def initialize objective, transfer
+    @objective = objective
+    @transfer = transfer
+  end
+
+  def run zvals, targets
+    @output = transfer.bulk_apply_function( zvals.clone )
+    @loss = objective.loss( @output, targets )
+  end
+
+  def measure_de_dz zvals, targets, eta = 0.005
+    grad_mult = 1.0/(2* eta)
+    gradients = zvals.clone
+
+    (0...zvals.size).each do |i|
+      up_zvals = zvals.clone
+      up_zvals[i] += eta
+      down_zvals = zvals.clone
+      down_zvals[i] -= eta
+      transfer.bulk_apply_function( up_zvals )
+      transfer.bulk_apply_function( down_zvals )
+      gradients[i] = grad_mult * ( objective.loss( up_zvals, targets ) - objective.loss( down_zvals, targets ) )
+    end
+
+    gradients
+  end
+end
