@@ -65,6 +65,21 @@ module RuNeNe::Objective::MeanSquaredError
   end
 end
 
+module RuNeNe::Objective::LogLoss
+  # Short name for LogLoss objective function, used as a parameter to some methods.
+  # @return [Symbol] :logloss
+  def self.label
+    :logloss
+  end
+end
+
+module RuNeNe::Objective::MulticlassLogLoss
+  # Short name for MulticlassLogLoss objective function, used as a parameter to some methods.
+  # @return [Symbol] :mlogloss
+  def self.label
+    :mlogloss
+  end
+end
 
 class RuNeNe::Layer::FeedForward
   # @!visibility private

@@ -4,6 +4,8 @@ RuNeNe TODOs:
 
     Log loss cost
 
+    Combine cost de_da with da_dz to go direct to de_dz for most/all output deltas . . .
+
     RuNeNe::Trainer::BPLayer
 
     Completely re-architect layer/network

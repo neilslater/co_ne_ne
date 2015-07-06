@@ -16,6 +16,8 @@ VALUE RuNeNe_Transfer_Softmax = Qnil;
 
 VALUE RuNeNe_Objective = Qnil;
 VALUE RuNeNe_Objective_MeanSquaredError = Qnil;
+VALUE RuNeNe_Objective_LogLoss = Qnil;
+VALUE RuNeNe_Objective_MulticlassLogLoss = Qnil;
 
 VALUE RuNeNe_Layer = Qnil;
 VALUE RuNeNe_Layer_FeedForward  = Qnil;
@@ -200,6 +202,8 @@ void init_module_ru_ne_ne() {
 
   RuNeNe_Objective = rb_define_module_under( RuNeNe, "Objective" );
   RuNeNe_Objective_MeanSquaredError = rb_define_module_under( RuNeNe_Objective, "MeanSquaredError" );
+  RuNeNe_Objective_LogLoss = rb_define_module_under( RuNeNe_Objective, "LogLoss" );
+  RuNeNe_Objective_MulticlassLogLoss = rb_define_module_under( RuNeNe_Objective, "MulticlassLogLoss" );
 
   RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
   RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );
