@@ -104,3 +104,55 @@ describe RuNeNe::Objective::LogLoss do
     end
   end
 end
+
+describe RuNeNe::Objective::MulticlassLogLoss do
+  describe "#loss" do
+    it "is 0.0 when predictions and targets match" do
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          expect( RuNeNe::Objective::MulticlassLogLoss.loss( targets, targets ) ).to be_within(1.0e-10).of 0.0
+        end
+      end
+    end
+
+    it "is larger when predictions and targets are further apart" do
+      targets = NArray.cast( [ 0.0, 0.0, 1.0, 0.0 ], 'sfloat' )
+      preds1 =  NArray.cast( [ 0.05, 0.1, 0.8, 0.05 ], 'sfloat' )
+      preds2 =  NArray.cast( [ 0.1, 0.1, 0.75, 0.05 ], 'sfloat' )
+
+      expect( RuNeNe::Objective::MulticlassLogLoss.loss( preds1, targets ) ).to be < RuNeNe::Objective::MulticlassLogLoss.loss( preds2, targets )
+    end
+  end
+
+  describe "#delta_loss" do
+    it "is numerically accurate gradient for the loss function" do
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          predictions = NArray.sfloat(n).random(0.98) + 0.01
+          loss = RuNeNe::Objective::MulticlassLogLoss.loss( predictions, targets )
+          dl = RuNeNe::Objective::MulticlassLogLoss.delta_loss( predictions, targets )
+          (0...n).each do |i|
+            up_predictions = predictions.clone
+            up_predictions[i] += 0.0005
+            up_loss = RuNeNe::Objective::MulticlassLogLoss.loss( up_predictions, targets )
+            down_predictions = predictions.clone
+            down_predictions[i] -= 0.0005
+            down_loss = RuNeNe::Objective::MulticlassLogLoss.loss( down_predictions, targets )
+            rough_gradient = 1000 * ( up_loss - down_loss )
+
+            # There is only loss, and a gradient, associated with the target class
+            if rough_gradient == 0
+              expect( dl[i] ).to be == 0.0
+            else
+               expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+            end
+          end
+        end
+      end
+    end
+  end
+end

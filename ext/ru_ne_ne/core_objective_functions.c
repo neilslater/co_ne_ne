@@ -62,11 +62,22 @@ float raw_mlogloss( int n, float* predictions, float* targets, float eta ) {
   for ( i = 0; i < n ; i++ ) {
     p1 = eta > predictions[i] ? eta : predictions[i];
     p1 = p1 > 1.0 ? 1.0 : p1;
-    t += targets[i] * log(p1);
+    t -= targets[i] * log(p1);
   }
   return t;
 }
 
 void raw_delta_mlogloss( int n, float* predictions, float* targets, float* delta_loss, float eta ) {
-
+  float p1;
+  int i;
+  for ( i = 0; i < n ; i++ ) {
+    if ( targets[i] >= 1.0 ) {
+      p1 = eta > predictions[i] ? eta : predictions[i];
+      p1 = p1 > 1.0 ? 1.0 : p1;
+      delta_loss[i] = -1.0 / p1;
+    } else {
+      delta_loss[i] = 0;
+    }
+  }
+  return;
 }
