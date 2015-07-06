@@ -24,6 +24,12 @@ void raw_mse_delta_loss( int n, float* predictions, float* targets, float* delta
   return;
 }
 
+// Linear sub-type just for completeness
+void raw_mse_de_dz_linear( int n, float* predictions, float* targets, float* delta_loss ) {
+  raw_mse_delta_loss( n, predictions, targets, delta_loss );
+}
+
+
 float raw_logloss( int n, float* predictions, float* targets, float eta ) {
   float p1, p2, t = 0.0;
   int i;

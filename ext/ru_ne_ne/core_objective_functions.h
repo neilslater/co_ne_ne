@@ -15,6 +15,8 @@ typedef enum {MSE} objective_type;
 float raw_mse_loss( int n, float* predictions, float* targets );
 void raw_mse_delta_loss( int n, float* predictions, float* targets, float* delta_loss );
 
+void raw_mse_de_dz_linear( int n, float* predictions, float* targets, float* delta_loss );
+
 float raw_logloss( int n, float* predictions, float* targets, float eta );
 void raw_delta_logloss( int n, float* predictions, float* targets, float* delta_loss, float eta );
 
