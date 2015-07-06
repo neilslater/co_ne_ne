@@ -2,8 +2,33 @@
 
 #include "ruby_module_objective.h"
 
-/* TODO: Use a C function pointer in place of void* fun
-static VALUE generic_loss_function( VALUE rv_predictions, VALUE rv_targets, void* fun ) {
+// Pointer types for generic loss function
+typedef float (*loss_fn)(int n, float * p, float * t);
+typedef void (*delta_loss_fn)(int n, float * p, float * t, float * d);
+
+// Following wrappers define functions so that they can be used with function pointers
+
+#define ETA 1e-15
+
+float wrapped_logloss( int n, float* predictions, float* targets ) {
+  return raw_logloss( n, predictions, targets, ETA );
+}
+
+void wrapped_delta_logloss( int n, float* predictions, float* targets, float* delta_loss ) {
+  raw_delta_logloss( n, predictions, targets, delta_loss, ETA );
+  return;
+}
+
+float wrapped_mlogloss( int n, float* predictions, float* targets ) {
+  return raw_mlogloss( n, predictions, targets, ETA );
+}
+
+void wrapped_delta_mlogloss( int n, float* predictions, float* targets, float* delta_loss ) {
+  raw_delta_mlogloss( n, predictions, targets, delta_loss, ETA );
+  return;
+}
+
+static VALUE generic_loss_function( VALUE rv_predictions, VALUE rv_targets, loss_fn fn ) {
   volatile VALUE val_predictions;
   volatile VALUE val_targets;
   struct NARRAY *na_predictions;
@@ -19,48 +44,10 @@ static VALUE generic_loss_function( VALUE rv_predictions, VALUE rv_targets, void
     rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
   }
 
-  return FLT2NUM( fun( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr ) );
-}
-*/
-
-/* Document-module:  RuNeNe::Objective::MeanSquaredError
- *
- * The mean squared error function is a common choice for regression problems.
- */
-
-/* @overload loss( predictions, targets )
- * Calculates a single example row's contributions to mean squared error loss, equivalent to Ruby code
- *     0.5 * ( predictions.zip( targets ).inject(0) { |p,t| (p-t)**2 } )
- * @param [NArray<sfloat>] predictions
- * @param [NArray<sfloat>] targets
- * @return [Float] loss for the example
- */
-static VALUE mse_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
-  volatile VALUE val_predictions;
-  volatile VALUE val_targets;
-  struct NARRAY *na_predictions;
-  struct NARRAY *na_targets;
-
-  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
-  GetNArray( val_predictions, na_predictions );
-
-  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
-  GetNArray( val_targets, na_targets );
-
-  if ( na_predictions->total !=  na_targets->total ) {
-    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
-  }
-
-  return FLT2NUM( raw_mse_loss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr ) );
+  return FLT2NUM( fn( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr ) );
 }
 
-/* @overload delta_loss( x )
- * Calculates the partial derivative of the loss value with respect to each prediction.
- * @param [NArray<sfloat>] predictions
- * @param [NArray<sfloat>] targets
- * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
- */
-static VALUE mse_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+static VALUE generic_delta_loss_function( VALUE rv_predictions, VALUE rv_targets, delta_loss_fn fn ) {
   volatile VALUE val_predictions;
   volatile VALUE val_targets;
   struct NARRAY *na_predictions;
@@ -80,9 +67,36 @@ static VALUE mse_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets 
   volatile VALUE rv_delta_loss = na_make_object( NA_SFLOAT, na_predictions->rank, na_predictions->shape, cNArray );
   GetNArray( rv_delta_loss, na_delta_loss );
 
-  raw_mse_delta_loss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, (float*) na_delta_loss->ptr );
+  fn( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, (float*) na_delta_loss->ptr );
 
   return rv_delta_loss;
+}
+
+
+/* Document-module:  RuNeNe::Objective::MeanSquaredError
+ *
+ * The mean squared error function is a common choice for regression problems.
+ */
+
+/* @overload loss( predictions, targets )
+ * Calculates a single example row's contributions to mean squared error loss, equivalent to Ruby code
+ *     0.5 * ( predictions.zip( targets ).inject(0) { |p,t| (p-t)**2 } )
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [Float] loss for the example
+ */
+static VALUE mse_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_loss_function( rv_predictions, rv_targets, raw_mse_loss );
+}
+
+/* @overload delta_loss( x )
+ * Calculates the partial derivative of the loss value with respect to each prediction.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
+ */
+static VALUE mse_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, raw_mse_delta_loss );
 }
 
 
@@ -101,22 +115,7 @@ static VALUE mse_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets 
  * @return [Float] loss for the example
  */
 static VALUE logloss_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
-  volatile VALUE val_predictions;
-  volatile VALUE val_targets;
-  struct NARRAY *na_predictions;
-  struct NARRAY *na_targets;
-
-  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
-  GetNArray( val_predictions, na_predictions );
-
-  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
-  GetNArray( val_targets, na_targets );
-
-  if ( na_predictions->total !=  na_targets->total ) {
-    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
-  }
-
-  return FLT2NUM( raw_logloss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, 1e-15 ) );
+  return generic_loss_function( rv_predictions, rv_targets, wrapped_logloss );
 }
 
 /* @overload delta_loss( x )
@@ -126,28 +125,7 @@ static VALUE logloss_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) 
  * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
  */
 static VALUE logloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
-  volatile VALUE val_predictions;
-  volatile VALUE val_targets;
-  struct NARRAY *na_predictions;
-  struct NARRAY *na_targets;
-
-  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
-  GetNArray( val_predictions, na_predictions );
-
-  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
-  GetNArray( val_targets, na_targets );
-
-  if ( na_predictions->total !=  na_targets->total ) {
-    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
-  }
-
-  struct NARRAY *na_delta_loss;
-  volatile VALUE rv_delta_loss = na_make_object( NA_SFLOAT, na_predictions->rank, na_predictions->shape, cNArray );
-  GetNArray( rv_delta_loss, na_delta_loss );
-
-  raw_delta_logloss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, (float*) na_delta_loss->ptr, 1e-15 );
-
-  return rv_delta_loss;
+  return generic_delta_loss_function( rv_predictions, rv_targets, wrapped_delta_logloss );
 }
 
 /* Document-module:  RuNeNe::Objective::MulticlassLogLoss
@@ -165,22 +143,7 @@ static VALUE logloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targ
  * @return [Float] loss for the example
  */
 static VALUE mlogloss_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
-  volatile VALUE val_predictions;
-  volatile VALUE val_targets;
-  struct NARRAY *na_predictions;
-  struct NARRAY *na_targets;
-
-  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
-  GetNArray( val_predictions, na_predictions );
-
-  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
-  GetNArray( val_targets, na_targets );
-
-  if ( na_predictions->total !=  na_targets->total ) {
-    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
-  }
-
-  return FLT2NUM( raw_mlogloss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, 1e-15 ) );
+    return generic_loss_function( rv_predictions, rv_targets, wrapped_mlogloss );
 }
 
 /* @overload delta_loss( x )
@@ -190,28 +153,7 @@ static VALUE mlogloss_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets )
  * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
  */
 static VALUE mlogloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
-  volatile VALUE val_predictions;
-  volatile VALUE val_targets;
-  struct NARRAY *na_predictions;
-  struct NARRAY *na_targets;
-
-  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
-  GetNArray( val_predictions, na_predictions );
-
-  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
-  GetNArray( val_targets, na_targets );
-
-  if ( na_predictions->total !=  na_targets->total ) {
-    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
-  }
-
-  struct NARRAY *na_delta_loss;
-  volatile VALUE rv_delta_loss = na_make_object( NA_SFLOAT, na_predictions->rank, na_predictions->shape, cNArray );
-  GetNArray( rv_delta_loss, na_delta_loss );
-
-  raw_delta_mlogloss( na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, (float*) na_delta_loss->ptr, 1e-15 );
-
-  return rv_delta_loss;
+  return generic_delta_loss_function( rv_predictions, rv_targets, wrapped_delta_mlogloss );
 }
 
 
