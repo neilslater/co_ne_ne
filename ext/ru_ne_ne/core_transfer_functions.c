@@ -132,11 +132,17 @@ void raw_softmax_bulk_apply_function( int n, float *ptr ) {
   return;
 }
 
+// NB deriv_ptr needs to have size n*n as the bulk derivative
 void raw_softmax_bulk_derivative_at( int n, float *func_ptr, float *deriv_ptr ) {
-  int i;
+  int i, k;
   for( i = 0; i < n; i++ ) {
-    // Softmax derivative is same as sigmoid?
-    deriv_ptr[i] = func_ptr[i] * ( 1.0 - func_ptr[i] );
+    for( k = 0; k < n; k++ ) {
+      if ( i == k ) {
+        deriv_ptr[i+n*k] = func_ptr[i] * ( 1.0 - func_ptr[k] );
+      } else {
+        deriv_ptr[i+n*k] = func_ptr[i] * ( - func_ptr[k] );
+      }
+    }
   }
 }
 

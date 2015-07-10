@@ -126,3 +126,57 @@ describe "Output value tests for" do
     end
   end
 end
+
+
+describe RuNeNe::Transfer::Softmax do
+  describe "#bulk_apply_function" do
+    it "alters the whole input narray" do
+      10.times do |n|
+        test_array = NArray.sfloat( n + 2 ).random(2.0) - 1.0
+        original_array = test_array.clone
+        expect( test_array ).to be_narray_like original_array
+        RuNeNe::Transfer::Softmax.bulk_apply_function( test_array )
+        expect( test_array ).to_not be_narray_like original_array
+
+        # Specific to Softmax, probabilities should sum to 1.0
+        expect( test_array.sum ).to be_within(1e-6).of 1.0
+      end
+    end
+  end
+
+  def approx_dy_dx orig_inputs
+    # This is numerical approximation of derivative
+    d = 5e-4
+    s = orig_inputs.size
+    dy_dx = NArray.sfloat( s, s )
+
+    (0...s).each do |k|
+      # We figure out dy(i)_dx(k)
+      up_values = orig_inputs.clone
+      up_values[k] += d
+      RuNeNe::Transfer::Softmax.bulk_apply_function( up_values )
+
+      down_values = orig_inputs.clone
+      down_values[k] -= d
+      RuNeNe::Transfer::Softmax.bulk_apply_function( down_values )
+      dy_dx[k,(0...s)] = (up_values - down_values) / ( 2 * d )
+    end
+
+    dy_dx
+  end
+
+  describe "#bulk_derivative_at" do
+    it "should return function slope matrix" do
+      5.times do |n|
+        orig_inputs = NArray.sfloat( n + 2 ).random(2.0) - 1.0
+
+        # It's a matrix because each input value affects every output value in a different way
+        rough_gradient = approx_dy_dx( orig_inputs )
+
+        fn_values = orig_inputs.clone
+        RuNeNe::Transfer::Softmax.bulk_apply_function( fn_values )
+        expect( RuNeNe::Transfer::Softmax.bulk_derivative_at( fn_values ) ).to be_narray_like( rough_gradient, 1e-6 )
+      end
+    end
+  end
+end

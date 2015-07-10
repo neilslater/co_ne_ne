@@ -115,10 +115,43 @@ static VALUE mse_linear_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_target
  * sigmoid transfer function for given predictions and targets.
  * @param [NArray<sfloat>] predictions
  * @param [NArray<sfloat>] targets
- * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
  */
 static VALUE mse_sigmoid_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
   return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_sigmoid_de_dz );
+}
+
+/* @overload tanh_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * tanh transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mse_tanh_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_tanh_de_dz );
+}
+
+/* @overload relu_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * relu transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mse_relu_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_relu_de_dz );
+}
+
+/* @overload softmax_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * relu transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mse_softmax_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mse_tr_softmax_de_dz );
 }
 
 /* Document-module:  RuNeNe::Objective::LogLoss
@@ -184,6 +217,10 @@ void init_objective_module( ) {
   rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "delta_loss", mse_delta_loss, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "linear_de_dz", mse_linear_de_dz, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "sigmoid_de_dz", mse_sigmoid_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "tanh_de_dz", mse_tanh_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "relu_de_dz", mse_relu_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MeanSquaredError, "softmax_de_dz", mse_softmax_de_dz, 2 );
+
 
   rb_define_singleton_method( RuNeNe_Objective_LogLoss, "loss", logloss_loss, 2 );
   rb_define_singleton_method( RuNeNe_Objective_LogLoss, "delta_loss", logloss_delta_loss, 2 );

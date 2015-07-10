@@ -227,6 +227,60 @@ static VALUE linear_derivative_at( VALUE self, VALUE r_y ) {
   return FLT2NUM( raw_linear_derivative_at( y ) );
 }
 
+/* Document-module:  RuNeNe::Transfer::Softmax
+ *
+ * Softmax is used for multi-class classification where an example can only be in one of
+ * many possible classes. It is usually paired with the MulticlassLogLoss objective function.
+ *
+ * Softmax is applied to a whole vector at once, so only bulk methods are available.
+ */
+
+
+/* @overload bulk_apply_function( narray )
+ * Maps an array of values.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values.
+ */
+static VALUE softmax_bulk_apply_function( VALUE self, VALUE r_narr ) {
+  struct NARRAY *na_a;
+  volatile VALUE val_a;
+
+  val_a = na_cast_object(r_narr, NA_SFLOAT);
+  GetNArray( val_a, na_a );
+
+  raw_softmax_bulk_apply_function( na_a->total, (float*) na_a->ptr );
+
+  return val_a;
+}
+
+/* @overload bulk_derivative_at( narray )
+ * Maps an array of values.
+ * @param [NArray] narray array of input values
+ * @return [NArray<sfloat>] mapped values.
+ */
+
+static VALUE softmax_bulk_derivative_at( VALUE self, VALUE r_narr ) {
+  struct NARRAY *na_a;
+  volatile VALUE val_a;
+
+  struct NARRAY *na_b;
+  volatile VALUE val_b;
+  int softmax_deriv_shape[2];
+
+  val_a = na_cast_object(r_narr, NA_SFLOAT);
+  GetNArray( val_a, na_a );
+
+  softmax_deriv_shape[0] = na_a->total;
+  softmax_deriv_shape[1] = na_a->total;
+
+  val_b = na_make_object( NA_SFLOAT, 2, softmax_deriv_shape, cNArray );
+  GetNArray( val_b, na_b );
+
+  raw_softmax_bulk_derivative_at( na_a->total, (float*) na_a->ptr, (float*) na_b->ptr );
+
+  return val_b;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_transfer_module( ) {
@@ -249,4 +303,7 @@ void init_transfer_module( ) {
   rb_define_singleton_method( RuNeNe_Transfer_Linear, "bulk_apply_function", linear_bulk_apply_function, 1 );
   rb_define_singleton_method( RuNeNe_Transfer_Linear, "derivative", linear_derivative, 1 );
   rb_define_singleton_method( RuNeNe_Transfer_Linear, "derivative_at", linear_derivative_at, 1 );
+
+  rb_define_singleton_method( RuNeNe_Transfer_Softmax, "bulk_apply_function", softmax_bulk_apply_function, 1 );
+  rb_define_singleton_method( RuNeNe_Transfer_Softmax, "bulk_derivative_at", softmax_bulk_derivative_at, 1 );
 }

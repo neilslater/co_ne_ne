@@ -2,7 +2,7 @@ require 'helpers'
 
 describe RuNeNe::Objective::MeanSquaredError do
   before :all do
-    NArray.srand(41937510)
+    NArray.srand(41233510)
   end
 
   describe "#loss" do
@@ -110,6 +110,70 @@ describe RuNeNe::Objective::MeanSquaredError do
       end
     end
   end
+
+  describe "tanh_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::TanH )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.8) - 0.9
+          zvals = NArray.sfloat(n).random(5.0) - 2.5
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.tanh_de_dz( demi_layer.output, targets )
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
+
+  describe "relu_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::ReLU )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(3.0)
+          zvals = NArray.sfloat(n).random(4.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.relu_de_dz( demi_layer.output, targets )
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            if rough_gradients[i].abs > 1e-6
+              expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+            else
+              expect( got_de_dz[i] ).to be < 1e-5
+            end
+          end
+        end
+      end
+    end
+  end
+
+
+  describe "softmax_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Softmax )
+
+      (3..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(2.0)
+          demi_layer.run( zvals, targets )
+
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.softmax_de_dz( demi_layer.output, targets )
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
+
 end
 
 

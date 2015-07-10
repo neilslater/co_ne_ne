@@ -52,15 +52,58 @@ void obj_mse_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float*
 }
 
 void obj_mse_tr_tanh_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i;
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n );
 
+  raw_mse_delta_loss( n, predictions, targets, output_de_dz );
+  raw_tanh_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    output_de_dz[i] *= da_dz[i];
+  }
+
+  xfree( da_dz );
 }
 
 void obj_mse_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i, k;
+  float t;
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n * n );
+  float *tmp_de_dz = xmalloc( sizeof(float) * n );
 
+  raw_mse_delta_loss( n, predictions, targets, output_de_dz );
+
+  raw_softmax_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    t = 0.0;
+    for ( k = 0; k < n ; k++ ) {
+      t += output_de_dz[k] * da_dz[i * n + k];
+    }
+    tmp_de_dz[i] = t;
+  }
+
+  memcpy( output_de_dz, tmp_de_dz, n * sizeof(float) );
+
+  xfree( da_dz );
+  xfree( tmp_de_dz );
 }
 
 void obj_mse_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i;
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n );
 
+  raw_mse_delta_loss( n, predictions, targets, output_de_dz );
+  raw_relu_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    output_de_dz[i] *= da_dz[i];
+  }
+
+  xfree( da_dz );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
