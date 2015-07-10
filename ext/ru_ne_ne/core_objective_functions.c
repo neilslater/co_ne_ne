@@ -126,18 +126,25 @@ float raw_logloss( int n, float* predictions, float* targets, float eta ) {
 }
 
 void raw_delta_logloss( int n, float* predictions, float* targets, float* delta_loss, float eta ) {
-  float p1;
+  float p1, p2;
   int i;
   for ( i = 0; i < n ; i++ ) {
     if ( targets[i] >= 1.0 ) {
       p1 = eta > predictions[i] ? eta : predictions[i];
       p1 = p1 > 1.0 ? 1.0 : p1;
       delta_loss[i] = -1.0 / p1;
+    } else if ( targets[i] <= 0.0 ){
+      p2 = 1.0 - predictions[i];
+      p2 = eta > p2 ? eta : p2;
+      p2 = p2 > 1.0 ? 1.0 : p2;
+      delta_loss[i] = 1.0 / p2;
     } else {
-      p1 = 1.0 - predictions[i];
-      p1 = eta > p1 ? eta : p1;
+      p1 = eta > predictions[i] ? eta : predictions[i];
       p1 = p1 > 1.0 ? 1.0 : p1;
-      delta_loss[i] = 1.0 / p1;
+      p2 = 1.0 - predictions[i];
+      p2 = eta > p2 ? eta : p2;
+      p2 = p2 > 1.0 ? 1.0 : p2;
+      delta_loss[i] = ( 1.0 / p2 ) - ( 1.0 / p1 );
     }
   }
   return;
