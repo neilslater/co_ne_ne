@@ -144,7 +144,7 @@ void raw_delta_logloss( int n, float* predictions, float* targets, float* delta_
       p2 = 1.0 - predictions[i];
       p2 = eta > p2 ? eta : p2;
       p2 = p2 > 1.0 ? 1.0 : p2;
-      delta_loss[i] = ( 1.0 / p2 ) - ( 1.0 / p1 );
+      delta_loss[i] = ( ( 1.0 - targets[i] ) / p2 ) - ( targets[i] / p1 );
     }
   }
   return;

@@ -179,7 +179,7 @@ end
 
 describe RuNeNe::Objective::LogLoss do
   describe "#loss" do
-    it "is 0.0 when predictions and targets match" do
+    it "is 0.0 when predictions and targets match at y=0.0 or y=1.0" do
       (1..5).each do |n|
         5.times do
           targets = NArray.int(n).random(2).to_f
@@ -198,7 +198,7 @@ describe RuNeNe::Objective::LogLoss do
   end
 
   describe "#delta_loss" do
-    it "is numerically accurate gradient for the loss function" do
+    it "is numerically accurate gradient for the loss function when y=0.0 or y=1.0" do
       (1..5).each do |n|
         5.times do
           targets = NArray.int(n).random(2).to_f
@@ -214,6 +214,49 @@ describe RuNeNe::Objective::LogLoss do
             down_loss = RuNeNe::Objective::LogLoss.loss( down_predictions, targets )
             rough_gradient = 1000 * ( up_loss - down_loss )
             expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function when y is between 0.0 and 1.0" do
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(0.98) + 0.01
+          predictions = NArray.sfloat(n).random(0.98) + 0.01
+          loss = RuNeNe::Objective::LogLoss.loss( predictions, targets )
+          dl = RuNeNe::Objective::LogLoss.delta_loss( predictions, targets )
+          (0...n).each do |i|
+            up_predictions = predictions.clone
+            up_predictions[i] += 0.0005
+            up_loss = RuNeNe::Objective::LogLoss.loss( up_predictions, targets )
+            down_predictions = predictions.clone
+            down_predictions[i] -= 0.0005
+            down_loss = RuNeNe::Objective::LogLoss.loss( down_predictions, targets )
+            rough_gradient = 1000 * ( up_loss - down_loss )
+            expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+
+    it "is zero when a == y" do
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(0.98) + 0.01
+          predictions = targets.clone
+          loss = RuNeNe::Objective::LogLoss.loss( predictions, targets )
+          dl = RuNeNe::Objective::LogLoss.delta_loss( predictions, targets )
+          (0...n).each do |i|
+            up_predictions = predictions.clone
+            up_predictions[i] += 0.0005
+            up_loss = RuNeNe::Objective::LogLoss.loss( up_predictions, targets )
+            down_predictions = predictions.clone
+            down_predictions[i] -= 0.0005
+            down_loss = RuNeNe::Objective::LogLoss.loss( down_predictions, targets )
+            rough_gradient = 1000 * ( up_loss - down_loss )
+            expect( rough_gradient ).to be_within(0.001).of 0.0
+            expect( dl[i] ).to be_within( 1e-6 ).of 0.0
           end
         end
       end
