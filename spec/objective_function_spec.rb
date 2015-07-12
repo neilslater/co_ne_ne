@@ -300,6 +300,46 @@ describe RuNeNe::Objective::LogLoss do
       end
     end
   end
+
+  describe "softmax_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets, 0.005 )
+
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets, 0.005 )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
 end
 
 describe RuNeNe::Objective::MulticlassLogLoss do
@@ -356,7 +396,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       end
     end
 
-    it "is numerically accurate gradient for the loss function when there is split probability targets" do
+    it "is numerically accurate gradient for the loss function when there are split probability targets" do
       (2..5).each do |n|
         5.times do
           targets = NArray.sfloat(n).random
