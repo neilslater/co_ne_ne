@@ -35,4 +35,10 @@ void obj_logloss_tr_relu_de_dz( int n, float* predictions, float* targets, float
 float raw_mlogloss( int n, float* predictions, float* targets, float eta );
 void raw_delta_mlogloss( int n, float* predictions, float* targets, float* delta_loss, float eta );
 
+void obj_mlogloss_tr_linear_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
+void obj_mlogloss_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
+void obj_mlogloss_tr_tanh_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
+void obj_mlogloss_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
+void obj_mlogloss_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
+
 #endif

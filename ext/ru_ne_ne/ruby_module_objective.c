@@ -266,6 +266,62 @@ static VALUE mlogloss_delta_loss( VALUE self, VALUE rv_predictions, VALUE rv_tar
   return generic_delta_loss_function( rv_predictions, rv_targets, wrapped_delta_mlogloss );
 }
 
+
+/* @overload linear_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * linear transfer function for given predictions and targets. Identical in practice to delta_loss
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt predictions
+ */
+static VALUE mlogloss_linear_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_linear_de_dz );
+}
+
+/* @overload sigmoid_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * sigmoid transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mlogloss_sigmoid_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_sigmoid_de_dz );
+}
+
+/* @overload tanh_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * tanh transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mlogloss_tanh_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_tanh_de_dz );
+}
+
+/* @overload relu_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * relu transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mlogloss_relu_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_relu_de_dz );
+}
+
+/* @overload softmax_de_dz( predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * relu transfer function for given predictions and targets.
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE mlogloss_softmax_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_targets ) {
+  return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_softmax_de_dz );
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_objective_module( ) {
@@ -289,4 +345,10 @@ void init_objective_module( ) {
 
   rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "loss", mlogloss_loss, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "delta_loss", mlogloss_delta_loss, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "linear_de_dz", mlogloss_linear_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "sigmoid_de_dz", mlogloss_sigmoid_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "tanh_de_dz", mlogloss_tanh_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "relu_de_dz", mlogloss_relu_de_dz, 2 );
+  rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "softmax_de_dz", mlogloss_softmax_de_dz, 2 );
+
 }

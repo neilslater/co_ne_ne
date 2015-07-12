@@ -237,3 +237,57 @@ void raw_delta_mlogloss( int n, float* predictions, float* targets, float* delta
   }
   return;
 }
+
+void obj_mlogloss_tr_linear_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine mlogloss objective and linear output layer." );
+}
+
+void obj_mlogloss_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i;
+
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n );
+
+  raw_delta_mlogloss( n, predictions, targets, output_de_dz, 1e-15 );
+  raw_sigmoid_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    output_de_dz[i] *= da_dz[i];
+  }
+
+  xfree( da_dz );
+  return;
+}
+
+void obj_mlogloss_tr_tanh_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine mlogloss objective and tanh output layer." );
+}
+
+void obj_mlogloss_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i, k;
+  float t;
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n * n );
+  float *tmp_de_dz = xmalloc( sizeof(float) * n );
+
+  raw_delta_mlogloss( n, predictions, targets, output_de_dz, 1e-15 );
+
+  raw_softmax_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    t = 0.0;
+    for ( k = 0; k < n ; k++ ) {
+      t += output_de_dz[k] * da_dz[i * n + k];
+    }
+    tmp_de_dz[i] = t;
+  }
+
+  memcpy( output_de_dz, tmp_de_dz, n * sizeof(float) );
+
+  xfree( da_dz );
+  xfree( tmp_de_dz );
+}
+
+void obj_mlogloss_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine mlogloss objective and relu output layer." );
+}

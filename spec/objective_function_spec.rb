@@ -73,7 +73,7 @@ describe RuNeNe::Objective::MeanSquaredError do
     end
   end
 
-  describe "linear_de_dz" do
+  describe "#linear_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Linear )
 
@@ -92,7 +92,7 @@ describe RuNeNe::Objective::MeanSquaredError do
     end
   end
 
-  describe "sigmoid_de_dz" do
+  describe "#sigmoid_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Sigmoid )
 
@@ -111,7 +111,7 @@ describe RuNeNe::Objective::MeanSquaredError do
     end
   end
 
-  describe "tanh_de_dz" do
+  describe "#tanh_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::TanH )
 
@@ -130,7 +130,7 @@ describe RuNeNe::Objective::MeanSquaredError do
     end
   end
 
-  describe "relu_de_dz" do
+  describe "#relu_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::ReLU )
 
@@ -154,7 +154,7 @@ describe RuNeNe::Objective::MeanSquaredError do
   end
 
 
-  describe "softmax_de_dz" do
+  describe "#softmax_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Softmax )
 
@@ -263,7 +263,7 @@ describe RuNeNe::Objective::LogLoss do
     end
   end
 
-  describe "sigmoid_de_dz" do
+  describe "#sigmoid_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
 
@@ -301,7 +301,7 @@ describe RuNeNe::Objective::LogLoss do
     end
   end
 
-  describe "softmax_de_dz" do
+  describe "#softmax_de_dz" do
     it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
 
@@ -421,6 +421,92 @@ describe RuNeNe::Objective::MulticlassLogLoss do
             else
                expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
             end
+          end
+        end
+      end
+    end
+  end
+
+  describe "#sigmoid_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).random(2).to_f
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            if rough_gradients[i] == 0
+              expect( got_de_dz[i] ).to be_within(1e-6).of 0.0
+            else
+               expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+            end
+          end
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            if rough_gradients[i] == 0
+              expect( got_de_dz[i] ).to be_within(1e-6).of 0.0
+            else
+              expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe "#softmax_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets, 0.005 )
+
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets, 0.005 )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
           end
         end
       end
