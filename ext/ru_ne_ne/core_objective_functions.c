@@ -193,14 +193,14 @@ float raw_mlogloss( int n, float* predictions, float* targets, float eta ) {
   float p1, t = 0.0;
   int i;
   for ( i = 0; i < n ; i++ ) {
-    p1 = eta > predictions[i] ? eta : predictions[i];
-    p1 = p1 > 1.0 ? 1.0 : p1;
-    t -= targets[i] * log(p1);
+    if ( targets[i] > 0.0 ) {
+      p1 = eta > predictions[i] ? eta : predictions[i];
+      p1 = p1 > 1.0 ? 1.0 : p1;
+      t -= targets[i] * log(p1);
+    }
   }
   return t;
 }
-
-// TODO: Fix this for when  targets[i] can have other values than just one item at 1.0.
 
 void raw_delta_mlogloss( int n, float* predictions, float* targets, float* delta_loss, float eta ) {
   float p1;
