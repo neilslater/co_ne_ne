@@ -31,10 +31,10 @@ RuNeNe TODOs:
 
     mini-batch training
 
-    Softmax layer
-
 
 ----- v0.0.1 release ?
+
+    Parametric transfer functions?
 
     Optionally take writable output array (for performance)
 
@@ -111,3 +111,5 @@ RuNeNe DONE:
     Separate out cost/loss functions
 
     Log loss cost
+
+    Softmax layer

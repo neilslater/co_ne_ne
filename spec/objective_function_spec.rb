@@ -262,6 +262,44 @@ describe RuNeNe::Objective::LogLoss do
       end
     end
   end
+
+  describe "sigmoid_de_dz" do
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.int(n).random(2).to_f
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
+
+          rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+          (0...n).each do |i|
+            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+          end
+        end
+      end
+    end
+  end
 end
 
 describe RuNeNe::Objective::MulticlassLogLoss do
@@ -286,7 +324,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
   end
 
   describe "#delta_loss" do
-    it "is numerically accurate gradient for the loss function" do
+    it "is numerically accurate gradient for the loss function when there is a single target class" do
       (2..5).each do |n|
         5.times do
           targets = NArray.int(n).to_f
@@ -314,6 +352,36 @@ describe RuNeNe::Objective::MulticlassLogLoss do
             end
           end
           expect( affected_gradients ).to be 1
+        end
+      end
+    end
+
+    it "is numerically accurate gradient for the loss function when there is split probability targets" do
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random
+          targets /= targets.sum
+          predictions = NArray.sfloat(n).random(0.98) + 0.01
+          loss = RuNeNe::Objective::MulticlassLogLoss.loss( predictions, targets )
+          dl = RuNeNe::Objective::MulticlassLogLoss.delta_loss( predictions, targets )
+
+          affected_gradients = 0
+          (0...n).each do |i|
+            up_predictions = predictions.clone
+            up_predictions[i] += 0.0005
+            up_loss = RuNeNe::Objective::MulticlassLogLoss.loss( up_predictions, targets )
+            down_predictions = predictions.clone
+            down_predictions[i] -= 0.0005
+            down_loss = RuNeNe::Objective::MulticlassLogLoss.loss( down_predictions, targets )
+            rough_gradient = 1000 * ( up_loss - down_loss )
+
+            # There is only loss, and a gradient, associated with the target class
+            if rough_gradient == 0
+              expect( dl[i] ).to be == 0.0
+            else
+               expect( dl[i] / rough_gradient ).to be_within( 0.01 ).of 1.0
+            end
+          end
         end
       end
     end

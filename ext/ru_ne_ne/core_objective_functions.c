@@ -150,6 +150,45 @@ void raw_delta_logloss( int n, float* predictions, float* targets, float* delta_
   return;
 }
 
+void obj_logloss_tr_linear_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine logloss objective and linear output layer." );
+}
+
+void obj_logloss_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  int i;
+
+  // TODO: Initialise and re-use this for a whole training run?
+  float *da_dz = xmalloc( sizeof(float) * n );
+
+  raw_delta_logloss( n, predictions, targets, output_de_dz, 1e-15 );
+  raw_sigmoid_bulk_derivative_at( n, predictions, da_dz );
+
+  for ( i = 0; i < n ; i++ ) {
+    output_de_dz[i] *= da_dz[i];
+  }
+
+  xfree( da_dz );
+  return;
+}
+
+void obj_logloss_tr_tanh_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine logloss objective and tanh output layer." );
+}
+
+void obj_logloss_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+
+}
+
+void obj_logloss_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
+  rb_raise( rb_eRuntimeError, "Cannot combine logloss objective and relu output layer." );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Multiclass Log Loss
+//
+
 float raw_mlogloss( int n, float* predictions, float* targets, float eta ) {
   float p1, t = 0.0;
   int i;
@@ -161,14 +200,16 @@ float raw_mlogloss( int n, float* predictions, float* targets, float eta ) {
   return t;
 }
 
+// TODO: Fix this for when  targets[i] can have other values than just one item at 1.0.
+
 void raw_delta_mlogloss( int n, float* predictions, float* targets, float* delta_loss, float eta ) {
   float p1;
   int i;
   for ( i = 0; i < n ; i++ ) {
-    if ( targets[i] >= 1.0 ) {
+    if ( targets[i] > 0.0 ) {
       p1 = eta > predictions[i] ? eta : predictions[i];
       p1 = p1 > 1.0 ? 1.0 : p1;
-      delta_loss[i] = -1.0 / p1;
+      delta_loss[i] = -targets[i] / p1;
     } else {
       delta_loss[i] = 0;
     }
