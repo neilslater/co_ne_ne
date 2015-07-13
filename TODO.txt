@@ -1,14 +1,9 @@
 RuNeNe TODOs:
 
-    Combine cost de_da with da_dz to go direct to de_dz for most/all output deltas . . .
-        Optimised combos for de_dz
-        *  linear & mse
-        *  sigmoid & logloss
-        *  softmax & mlogloss
-        *  relu & mse
-
-        Non-optimised combos:
-        *  everything else (block difficult or impossible combinations, such as logloss for linear?)
+    RuNeNe::DataSet
+      - Support for no output, maybe generating output for predictions
+      - Allow support for splitting/re-organising data
+      - Rename C and Ruby source files for new name
 
     RuNeNe::Trainer::BPLayer
 
@@ -31,10 +26,17 @@ RuNeNe TODOs:
 
     mini-batch training
 
+    Easy save/load methods for all major objects
+
+    transfer issues below to tickets in Github (how to give priorities and dependencies?)
 
 ----- v0.0.1 release ?
 
     Parametric transfer functions?
+
+    Metric functions
+
+    Optimise de_dz for output layers
 
     Optionally take writable output array (for performance)
 
@@ -46,7 +48,7 @@ RuNeNe TODOs:
 
     Training set split (into CV, Test etc)
 
-    dropout
+    Dropout layer
 
     max norm regularisation
 
@@ -70,7 +72,12 @@ RuNeNe TODOs:
 
     auto-encoders
 
+    Split/Branch layers
+
+    Maxout layer
+
     Import other NN trained models (cxxnet, caffe)
+
 
 RuNeNe DONE:
 
@@ -113,3 +120,13 @@ RuNeNe DONE:
     Log loss cost
 
     Softmax layer
+
+    Combine cost de_da with da_dz to go direct to de_dz for most/all output deltas . . .
+        Optimised combos for de_dz
+        *  linear & mse
+        *  sigmoid & logloss
+        *  softmax & mlogloss
+        *  relu & mse
+
+        Non-optimised combos:
+        *  everything else (block difficult or impossible combinations, such as logloss for linear?)

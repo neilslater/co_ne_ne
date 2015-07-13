@@ -1,4 +1,4 @@
-// ext/con_ne_ne/struct_training_data.h
+// ext/con_ne_ne/struct_dataset.h
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,7 +13,7 @@
 #include "core_narray.h"
 #include "core_shuffle.h"
 
-typedef struct _training_data_raw {
+typedef struct _dataset_raw {
     int input_item_size;
     int output_item_size;
     int input_item_rank;
@@ -27,25 +27,25 @@ typedef struct _training_data_raw {
     VALUE narr_outputs;
     float *inputs;
     float *outputs;
-  } TrainingData;
+  } DataSet;
 
-TrainingData *training_data__create();
+DataSet *dataset__create();
 
-void training_data__init( TrainingData *training_data, int input_rank, int *input_shape,
+void dataset__init( DataSet *dataset, int input_rank, int *input_shape,
       int output_rank, int *output_shape, int num_items );
 
-float *training_data__current_input( TrainingData *training_data );
+float *dataset__current_input( DataSet *dataset );
 
-float *training_data__current_output( TrainingData *training_data );
+float *dataset__current_output( DataSet *dataset );
 
-void training_data__next( TrainingData *training_data );
+void dataset__next( DataSet *dataset );
 
-void training_data__init_from_narray( TrainingData *training_data, VALUE inputs, VALUE outputs );
+void dataset__init_from_narray( DataSet *dataset, VALUE inputs, VALUE outputs );
 
-void training_data__destroy( TrainingData *training_data );
+void dataset__destroy( DataSet *dataset );
 
-void training_data__gc_mark( TrainingData *training_data );
+void dataset__gc_mark( DataSet *dataset );
 
-void training_data__reinit( TrainingData *training_data );
+void dataset__reinit( DataSet *dataset );
 
 #endif

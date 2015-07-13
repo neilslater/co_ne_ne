@@ -147,7 +147,7 @@ class RuNeNe::NetworkOld
   end
 end
 
-class RuNeNe::TrainingData
+class RuNeNe::DataSet
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -158,11 +158,11 @@ class RuNeNe::TrainingData
   end
 
   # @!visibility private
-  # Constructs a TrainingData from hash description. Used internally to support Marshal.
+  # Constructs a DataSet from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
   # @return [RuNeNe::Layer::FeedForward] new object
   def self.from_h h
-    RuNeNe::TrainingData.new( h[:inputs], h[:outputs] )
+    RuNeNe::DataSet.new( h[:inputs], h[:outputs] )
   end
 
   # @!visibility private

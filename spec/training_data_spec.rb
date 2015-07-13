@@ -1,17 +1,17 @@
 require 'helpers'
 
-describe RuNeNe::TrainingData do
+describe RuNeNe::DataSet do
   let(:xor_inputs) { NArray.cast( [ [-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0] ], 'sfloat' ) }
   let(:xor_targets) { NArray.cast( [ [0.0], [1.0], [1.0], [0.0] ], 'sfloat' ) }
 
   describe "class methods" do
     describe "#new" do
       it "creates a new object" do
-        expect( RuNeNe::TrainingData.new( xor_inputs, xor_targets ) ).to be_a RuNeNe::TrainingData
+        expect( RuNeNe::DataSet.new( xor_inputs, xor_targets ) ).to be_a RuNeNe::DataSet
       end
 
       it "should create training data with properties derived from supplied arrays" do
-        training = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
+        training = RuNeNe::DataSet.new( xor_inputs, xor_targets )
         expect( training.inputs ).to be xor_inputs
         expect( training.outputs ).to be xor_targets
         expect( training.num_items ).to be 4
@@ -21,7 +21,7 @@ describe RuNeNe::TrainingData do
         quad_xor_inputs = NArray.cast( [ [ [-1.0, -1.0], [1.0, -1.0] ],
             [ [-1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, -1.0], [1.0, -1.0] ],
             [ [ 1.0, -1.0], [1.0, -1.0] ] ], 'sfloat' )
-        training = RuNeNe::TrainingData.new( quad_xor_inputs, xor_targets )
+        training = RuNeNe::DataSet.new( quad_xor_inputs, xor_targets )
         expect( training.inputs ).to be quad_xor_inputs
         expect( training.outputs ).to be xor_targets
         expect( training.num_items ).to be 4
@@ -30,21 +30,21 @@ describe RuNeNe::TrainingData do
       it "refuses to create new object when inputs or targets rank is too low" do
         bad_inputs = NArray.cast( [ -1.0, 0.0, 0.5, 1.0 ], 'sfloat' )
         bad_targets = NArray.cast( [ 0.0, 1.0, 1.0, 0.0 ], 'sfloat' )
-        expect { RuNeNe::TrainingData.new( bad_inputs, xor_targets ) }.to raise_error ArgumentError
-        expect { RuNeNe::TrainingData.new( xor_inputs, bad_targets ) }.to raise_error ArgumentError
+        expect { RuNeNe::DataSet.new( bad_inputs, xor_targets ) }.to raise_error ArgumentError
+        expect { RuNeNe::DataSet.new( xor_inputs, bad_targets ) }.to raise_error ArgumentError
       end
 
       it "refuses to create new object when inputs and targets last dimension does not match" do
         xor_target_missing = NArray.cast( [ [0.0], [1.0], [1.0] ], 'sfloat' )
         expect {
-          RuNeNe::TrainingData.new( xor_inputs, xor_target_missing )
+          RuNeNe::DataSet.new( xor_inputs, xor_target_missing )
         }.to raise_error ArgumentError
       end
     end
 
     describe "with Marshal" do
       before do
-        @orig_data = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
+        @orig_data = RuNeNe::DataSet.new( xor_inputs, xor_targets )
         @saved_data = Marshal.dump( @orig_data )
         @copy_data =  Marshal.load( @saved_data )
       end
@@ -66,7 +66,7 @@ describe RuNeNe::TrainingData do
 
   describe "instance methods" do
     before :each do
-      @tdata = RuNeNe::TrainingData.new( xor_inputs, xor_targets )
+      @tdata = RuNeNe::DataSet.new( xor_inputs, xor_targets )
     end
 
     describe "#clone" do
@@ -103,7 +103,7 @@ describe RuNeNe::TrainingData do
           oshape = [1,ishape[-1]]
           inputs = NArray.sfloat( *ishape ).random
           outputs = NArray.sfloat( *oshape ).random
-          td = RuNeNe::TrainingData.new( inputs, outputs )
+          td = RuNeNe::DataSet.new( inputs, outputs )
           cii = td.current_input_item
           expect( cii ).to be_a NArray
           expect( cii.shape ).to eql ishape[0..(ishape.size-2)]
@@ -130,7 +130,7 @@ describe RuNeNe::TrainingData do
           ishape = [4,oshape[-1]]
           inputs = NArray.sfloat( *ishape ).random
           outputs = NArray.sfloat( *oshape ).random
-          td = RuNeNe::TrainingData.new( inputs, outputs )
+          td = RuNeNe::DataSet.new( inputs, outputs )
           coi = td.current_output_item
           expect( coi ).to be_a NArray
           expect( coi.shape ).to eql oshape[0..(oshape.size-2)]
@@ -198,7 +198,7 @@ describe RuNeNe::TrainingData do
         shapes.each do |ioshapes|
           inputs = NArray.sfloat( *(ioshapes[:in]) ).random
           outputs = NArray.sfloat( *(ioshapes[:out]) ).random
-          td = RuNeNe::TrainingData.new( inputs, outputs )
+          td = RuNeNe::DataSet.new( inputs, outputs )
           items = (0...td.num_items).map do |x|
             td.next_item
             Hash[ :i => td.current_input_item.to_a, :o => td.current_output_item.to_a ]
@@ -216,7 +216,7 @@ describe RuNeNe::TrainingData do
 
       it "works when input and output are same NArray object (for auto-encoders)" do
         inputs = NArray.sfloat( 20,5 ).random
-        td = RuNeNe::TrainingData.new( inputs, inputs )
+        td = RuNeNe::DataSet.new( inputs, inputs )
         items = (0..4).map do |x|
           td.next_item
           Hash[ :i => td.current_input_item.to_a, :o => td.current_output_item.to_a ]

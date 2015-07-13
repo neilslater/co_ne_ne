@@ -16,7 +16,7 @@
 #include "ruby_module_transfer.h"
 #include "ruby_module_objective.h"
 #include "ruby_class_layer_ff.h"
-#include "ruby_class_training_data.h"
+#include "ruby_class_dataset.h"
 #include "mt.h"
 #include "core_shuffle.h"
 #include "shared_vars.h"
