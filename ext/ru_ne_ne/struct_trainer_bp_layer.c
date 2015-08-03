@@ -26,7 +26,7 @@ TrainerBPLayer *trainer_bp_layer__create() {
   trainer_bp_layer->narr_de_dw_rmsprop = Qnil;
   trainer_bp_layer->de_dw_rmsprop = NULL;
   trainer_bp_layer->learning_rate = 0.01;
-  trainer_bp_layer->smoothing_type = 0;
+  trainer_bp_layer->smoothing_type = SMOOTH_TYPE_NONE;
   trainer_bp_layer->smoothing_rate = 0.9;
   trainer_bp_layer->max_norm = 0.0;
   trainer_bp_layer->weight_decay = 0.0;
