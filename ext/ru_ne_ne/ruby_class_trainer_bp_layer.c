@@ -156,7 +156,7 @@ VALUE trainer_bp_layer_rbobject__set_weight_decay( VALUE self, VALUE rv_weight_d
   return rv_weight_decay;
 }
 
-/* @!attribute  [r] de_dz
+/* @!attribute  [r] narr_de_dz
  * Description goes here
  * @return [NArray<sfloat>]
  */
@@ -165,7 +165,7 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dz( VALUE self ) {
   return trainer_bp_layer->narr_de_dz;
 }
 
-/* @!attribute  [r] de_da
+/* @!attribute  [r] narr_de_da
  * Description goes here
  * @return [NArray<sfloat>]
  */
@@ -174,7 +174,7 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_da( VALUE self ) {
   return trainer_bp_layer->narr_de_da;
 }
 
-/* @!attribute  [r] de_dw
+/* @!attribute  [r] narr_de_dw
  * Description goes here
  * @return [NArray<sfloat>]
  */
@@ -183,7 +183,7 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw( VALUE self ) {
   return trainer_bp_layer->narr_de_dw;
 }
 
-/* @!attribute  [r] de_dw_momentum
+/* @!attribute  [r] narr_de_dw_momentum
  * Description goes here
  * @return [NArray<sfloat>]
  */
@@ -192,7 +192,7 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw_momentum( VALUE self ) {
   return trainer_bp_layer->narr_de_dw_momentum;
 }
 
-/* @!attribute  [r] de_dw_rmsprop
+/* @!attribute  [r] narr_de_dw_rmsprop
  * Description goes here
  * @return [NArray<sfloat>]
  */
@@ -206,17 +206,17 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop( VALUE self ) {
 void init_trainer_bp_layer_class( ) {
   // TrainerBPLayer instantiation and class methods
   rb_define_alloc_func( RuNeNe_Trainer_BPLayer, trainer_bp_layer_alloc );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "initialize", trainer_bp_layer_rbobject__initialize, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "initialize", trainer_bp_layer_rbobject__initialize, 2 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "initialize_copy", trainer_bp_layer_rbobject__initialize_copy, 1 );
 
   // TrainerBPLayer attributes
   rb_define_method( RuNeNe_Trainer_BPLayer, "num_inputs", trainer_bp_layer_rbobject__get_num_inputs, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "num_outputs", trainer_bp_layer_rbobject__get_num_outputs, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dz", trainer_bp_layer_rbobject__get_narr_de_dz, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_da", trainer_bp_layer_rbobject__get_narr_de_da, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw", trainer_bp_layer_rbobject__get_narr_de_dw, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_momentum", trainer_bp_layer_rbobject__get_narr_de_dw_momentum, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_rmsprop", trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "narr_de_dz", trainer_bp_layer_rbobject__get_narr_de_dz, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "narr_de_da", trainer_bp_layer_rbobject__get_narr_de_da, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "narr_de_dw", trainer_bp_layer_rbobject__get_narr_de_dw, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "narr_de_dw_momentum", trainer_bp_layer_rbobject__get_narr_de_dw_momentum, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "narr_de_dw_rmsprop", trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate", trainer_bp_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate=", trainer_bp_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_type", trainer_bp_layer_rbobject__get_smoothing_type, 0 );

@@ -46,6 +46,7 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
 
   trainer_bp_layer->num_outputs = num_outputs;
 
+  trainer_bp_layer->de_dz_shape = ALLOC_N( int, 1 );
   trainer_bp_layer->de_dz_shape[0] = num_outputs;
   trainer_bp_layer->narr_de_dz = na_make_object( NA_SFLOAT, 1, trainer_bp_layer->de_dz_shape, cNArray );
   GetNArray( trainer_bp_layer->narr_de_dz, narr );
@@ -55,6 +56,7 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
   }
   trainer_bp_layer->de_dz = (float *) narr->ptr;
 
+  trainer_bp_layer->de_da_shape = ALLOC_N( int, 1 );
   trainer_bp_layer->de_da_shape[0] = num_inputs + 1;
   trainer_bp_layer->narr_de_da = na_make_object( NA_SFLOAT, 1, trainer_bp_layer->de_da_shape, cNArray );
   GetNArray( trainer_bp_layer->narr_de_da, narr );
@@ -64,6 +66,7 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
   }
   trainer_bp_layer->de_da = (float *) narr->ptr;
 
+  trainer_bp_layer->de_dw_shape = ALLOC_N( int, 2 );
   trainer_bp_layer->de_dw_shape[0] = num_inputs + 1;
   trainer_bp_layer->de_dw_shape[1] = num_outputs;
   trainer_bp_layer->narr_de_dw = na_make_object( NA_SFLOAT, 2, trainer_bp_layer->de_dw_shape, cNArray );
@@ -152,6 +155,6 @@ void trainer_bp_layer__deep_copy( TrainerBPLayer *trainer_bp_layer_copy, Trainer
 
 TrainerBPLayer * trainer_bp_layer__clone( TrainerBPLayer *trainer_bp_layer_orig ) {
   TrainerBPLayer * trainer_bp_layer_copy = trainer_bp_layer__create();
-  trainer_bp_layer__copy( trainer_bp_layer_copy, trainer_bp_layer_orig );
+  trainer_bp_layer__deep_copy( trainer_bp_layer_copy, trainer_bp_layer_orig );
   return trainer_bp_layer_copy;
 }
