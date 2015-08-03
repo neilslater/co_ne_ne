@@ -125,19 +125,19 @@ void trainer_bp_layer__deep_copy( TrainerBPLayer *trainer_bp_layer_copy, Trainer
   GetNArray( trainer_bp_layer_copy->narr_de_dz, narr );
   trainer_bp_layer_copy->de_dz = (float *) narr->ptr;
   trainer_bp_layer_copy->de_dz_shape = ALLOC_N( int, 1 );
-  memcpy( trainer_bp_layer_copy->de_dz_shape, trainer_bp_layer_orig->de_dz_shape, ( 1 * sizeof(int) );
+  memcpy( trainer_bp_layer_copy->de_dz_shape, trainer_bp_layer_orig->de_dz_shape, 1 * sizeof(int) );
 
   trainer_bp_layer_copy->narr_de_da = na_clone( trainer_bp_layer_orig->narr_de_da );
   GetNArray( trainer_bp_layer_copy->narr_de_da, narr );
   trainer_bp_layer_copy->de_da = (float *) narr->ptr;
   trainer_bp_layer_copy->de_da_shape = ALLOC_N( int, 1 );
-  memcpy( trainer_bp_layer_copy->de_da_shape, trainer_bp_layer_orig->de_da_shape, ( 1 * sizeof(int) );
+  memcpy( trainer_bp_layer_copy->de_da_shape, trainer_bp_layer_orig->de_da_shape, 1 * sizeof(int) );
 
   trainer_bp_layer_copy->narr_de_dw = na_clone( trainer_bp_layer_orig->narr_de_dw );
   GetNArray( trainer_bp_layer_copy->narr_de_dw, narr );
   trainer_bp_layer_copy->de_dw = (float *) narr->ptr;
   trainer_bp_layer_copy->de_dw_shape = ALLOC_N( int, 2 );
-  memcpy( trainer_bp_layer_copy->de_dw_shape, trainer_bp_layer_orig->de_dw_shape, ( 2 * sizeof(int) );
+  memcpy( trainer_bp_layer_copy->de_dw_shape, trainer_bp_layer_orig->de_dw_shape, 2 * sizeof(int) );
 
   trainer_bp_layer_copy->narr_de_dw_momentum = na_clone( trainer_bp_layer_orig->narr_de_dw_momentum );
   GetNArray( trainer_bp_layer_copy->narr_de_dw_momentum, narr );

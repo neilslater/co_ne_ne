@@ -1,4 +1,4 @@
-// ext/ru_ne_ne/ruby_class_.h
+// ext/ru_ne_ne/ruby_class_trainer_bp_layer.h
 
 #ifndef RUBY_CLASS_TRAINER_BP_LAYER_H
 #define RUBY_CLASS_TRAINER_BP_LAYER_H
