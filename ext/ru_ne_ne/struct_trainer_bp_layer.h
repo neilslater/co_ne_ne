@@ -16,13 +16,10 @@ typedef enum {SMOOTH_TYPE_NONE, SMOOTH_TYPE_MOMENTUM, SMOOTH_TYPE_RMSPROP} bp_sm
 typedef struct _trainer_bp_layer_raw {
   int num_inputs;
   int num_outputs;
-  int *de_dz_shape;
   VALUE narr_de_dz;
   float *de_dz;
-  int *de_da_shape;
   VALUE narr_de_da;
   float *de_da;
-  int *de_dw_shape;
   VALUE narr_de_dw;
   float *de_dw;
   VALUE narr_de_dw_momentum;
