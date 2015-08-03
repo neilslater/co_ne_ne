@@ -57,7 +57,7 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
   trainer_bp_layer->de_dz = (float *) narr->ptr;
 
   trainer_bp_layer->de_da_shape = ALLOC_N( int, 1 );
-  trainer_bp_layer->de_da_shape[0] = num_inputs + 1;
+  trainer_bp_layer->de_da_shape[0] = num_inputs;
   trainer_bp_layer->narr_de_da = na_make_object( NA_SFLOAT, 1, trainer_bp_layer->de_da_shape, cNArray );
   GetNArray( trainer_bp_layer->narr_de_da, narr );
   narr_de_da_ptr = (float*) narr->ptr;
