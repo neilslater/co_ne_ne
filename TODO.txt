@@ -6,6 +6,11 @@ RuNeNe TODOs:
       - Rename C and Ruby source files for new name
 
     RuNeNe::Trainer::BPLayer
+      - Support settings as options hash on init
+      - Create from layer
+      - Marshal support
+      - backprop algorithm
+      - batch apply algorithm
 
     Completely re-architect layer/network
       layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
@@ -22,9 +27,9 @@ RuNeNe TODOs:
 
     Gradient-checking tests
 
-    Tests using MNIST digits
-
     mini-batch training
+
+    Tests using MNIST digits
 
     Easy save/load methods for all major objects
 
