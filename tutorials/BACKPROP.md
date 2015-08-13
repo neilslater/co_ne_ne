@@ -55,7 +55,8 @@ with training. Usually that is the weights between neurons, but in more complex 
 parameters to transfer functions or starting values for internal state.
 
 To start the process, the network is assessed against a training example, and a value obtained for
-the objective function. Then the partial derivative with respect to the objective function is needed:
+the objective function. Then the partial derivative of the objective or error value with respect to
+the output layer activations is needed:
 
 ![Backprop start gradient](backprop_starting_derivatives.png)
 
