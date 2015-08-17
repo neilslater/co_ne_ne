@@ -31,18 +31,19 @@ void assert_value_wraps_dataset( VALUE obj ) {
 
 /* Document-class:  RuNeNe::DataSet
  *
+ * A DataSet represents numeric data used for training, cross-validation, testing or prediction.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Network method definitions
+//  DataSet method definitions
 //
 
 /* @overload initialize( inputs, targets )
- * Creates a new network and initializes the weights in all layers.
- * @param [NArray] inputs size of input array for first layer
- * @param [NArray] targets sizes of output arrays for each hidden layer
- * @return [RuNeNe::DataSet] new network consisting of new layers, with random weights
+ * Creates a new dataset from example data.
+ * @param [NArray<sfloat>] inputs the input examples that a network will process
+ * @param [NArray<sfloat>] targets known outputs that can be used to train or assess a network
+ * @return [RuNeNe::DataSet] new dataset
  */
 VALUE dataset_class_initialize( VALUE self, VALUE rv_inputs, VALUE rv_targets ) {
   volatile VALUE val_inputs;
