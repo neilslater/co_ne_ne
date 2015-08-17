@@ -18,6 +18,10 @@ describe RuNeNe::Trainer::BPLayer do
         # :de_dz has wrong number of elements here
         expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
             :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
+
+        # :de_dw has wrong rank here
+        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+            :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
       end
 
       it "creates expected sizes and defaults for arrays" do
