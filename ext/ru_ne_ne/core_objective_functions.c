@@ -256,9 +256,36 @@ void obj_mlogloss_tr_tanh_de_dz( int n, float* predictions, float* targets, floa
 }
 
 void obj_mlogloss_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
-  int i, k;
+  int i,k,n_ones=0,n_zeros=0,is_simple = 1;
   float t;
-  // TODO: Initialise and re-use this for a whole training run?
+
+  // There is an optimised case for mclass-logloss plus softmax, when there is a single target class
+  // Annoyingly, detecting it takes some effort (but still worthwhile)
+  for ( i = 0; i < n ; i++ ) {
+    switch ( (int) targets[i] * 1000000 ) {
+      case 0:
+        n_zeros++;
+        break;
+      case 1000000:
+        n_ones++;
+        break;
+      default:
+        is_simple = 0;
+    }
+  }
+  if ( (n_ones != 1) || (n_zeros+n_ones != n) ) {
+    is_simple = 0;
+  }
+
+  // Optimised gradient is just predictions - targets
+  if (is_simple) {
+    for ( i = 0; i < n ; i++ ) {
+      output_de_dz[i] = predictions[i] - targets[i];
+    }
+    return;
+  }
+
+  // Sadly this cannot be fully optimised, and we have to create more complex temporary measurements
   float *da_dz = xmalloc( sizeof(float) * n * n );
   float *tmp_de_dz = xmalloc( sizeof(float) * n );
 

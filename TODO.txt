@@ -1,8 +1,7 @@
 RuNeNe TODOs:
 
     Objective functions
-        Check for optimisations possible to get dE_dz for some combinations
-
+        Flag to allow optimisation of dE_dz with mlogloss + softmax, only when targets meet simplicity requirements
 
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions
@@ -10,7 +9,6 @@ RuNeNe TODOs:
       - Rename C and Ruby source files for new name
 
     RuNeNe::Trainer::BPLayer
-      - Support settings as options hash on init
       - Create from layer
       - Marshal support
       - backprop algorithm
