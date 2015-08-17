@@ -2,7 +2,6 @@ RuNeNe TODOs:
 
     RuNeNe::Trainer::BPLayer
       - Create from layer
-      - Marshal support
       - backprop algorithm
       - batch apply algorithm
 
@@ -24,8 +23,6 @@ RuNeNe TODOs:
     Perform batch feed-forward runs
 
     Perform batch backprop runs
-
-    Re-do backprop into separate dE_da, dE_dz and dE_dW stages
 
     Gradient-checking tests
 

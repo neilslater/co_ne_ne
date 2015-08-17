@@ -66,6 +66,62 @@ describe RuNeNe::Trainer::BPLayer do
       end
     end
 
+    describe "#from_layer" do
+      before :each do
+        @layer = RuNeNe::Layer::FeedForward.new( 2, 1 )
+      end
+
+      it "creates a new backprop trainer for a layer" do
+        expect( RuNeNe::Trainer::BPLayer.from_layer( @layer ) ).to be_a RuNeNe::Trainer::BPLayer
+      end
+
+      it "refuses to create new trainers for bad parameters" do
+        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer, 0 ) }.to raise_error TypeError
+        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+            :de_dz => "Fish" ) }.to raise_error TypeError
+
+        # :de_dz has wrong number of elements here
+        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+            :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
+
+        # :de_dw has wrong rank here
+        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+            :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
+      end
+
+      it "creates expected sizes and defaults for arrays" do
+        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer )
+        expect( bpl.de_dz ).to be_narray_like NArray[ 0.0 ]
+        expect( bpl.de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
+        expect( bpl.de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+      end
+
+      it "uses options hash to set learning params" do
+        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
+            :learning_rate => 0.005, :smoothing_rate => 0.99, :weight_decay => 1e-4,
+            :max_norm => 2.4, :smoothing_type => :rmsprop )
+        expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
+        expect( bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.99
+        expect( bpl.smoothing_type ).to be :rmsprop
+        expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
+        expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
+      end
+
+      it "uses options hash to set narrays" do
+        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
+            :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
+            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001] ], :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002] ]
+            )
+        expect( bpl.de_dz ).to be_narray_like NArray[ 0.2 ]
+        expect( bpl.de_da ).to be_narray_like NArray[ 0.1, 0.1 ]
+        expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
+        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
+        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
+      end
+    end
+
     describe "with Marshal" do
       it "can save and retrieve a training layer, preserving all property values" do
         orig_bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 2,

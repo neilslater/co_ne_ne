@@ -227,6 +227,42 @@ VALUE trainer_bp_layer_rbobject__initialize( VALUE self, VALUE rv_opts ) {
   return self;
 }
 
+/* @overload from_layer( opts )
+ * Creates a new RuNeNe::Trainer::BPLayer instance to match a given layer
+ * @param [RuNeNe::Layer::FeedForward] layer to create training structures for
+ * @param [Hash] opts initialisation options
+ * @return [RuNeNe::Trainer::BPLayer] the new RuNeNe::Trainer::BPLayer object.
+ */
+VALUE trainer_bp_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self ) {
+  volatile VALUE rv_layer, rv_opts;
+  Layer_FF *layer_ff;
+  TrainerBPLayer *trainer_bp_layer;
+
+  rb_scan_args( argc, argv, "11", &rv_layer, &rv_opts );
+
+  // Check we really have a layer object to build on
+  if ( TYPE(rv_layer) != T_DATA ||
+      RDATA(rv_layer)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
+  }
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
+
+  if (!NIL_P(rv_opts)) {
+    Check_Type( rv_opts, T_HASH );
+  }
+
+  volatile VALUE rv_new_trainer_bp_layer = trainer_bp_layer_alloc( RuNeNe_Trainer_BPLayer );
+  trainer_bp_layer = get_trainer_bp_layer_struct( rv_new_trainer_bp_layer );
+
+  trainer_bp_layer__init( trainer_bp_layer, layer_ff->num_inputs, layer_ff->num_outputs );
+
+  if (!NIL_P(rv_opts)) {
+    copy_hash_to_bplayer_properties( rv_opts, trainer_bp_layer );
+  }
+
+  return rv_new_trainer_bp_layer;
+}
+
 /* @overload clone
  * When cloned, the returned TrainerBPLayer has deep copies of C data.
  * @return [RuNeNe::Trainer::BPLayer] new
@@ -401,6 +437,7 @@ void init_trainer_bp_layer_class( ) {
   rb_define_alloc_func( RuNeNe_Trainer_BPLayer, trainer_bp_layer_alloc );
   rb_define_method( RuNeNe_Trainer_BPLayer, "initialize", trainer_bp_layer_rbobject__initialize, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "initialize_copy", trainer_bp_layer_rbobject__initialize_copy, 1 );
+  rb_define_singleton_method( RuNeNe_Trainer_BPLayer, "from_layer", trainer_bp_layer_rbclass__from_layer, -1 );
 
   // TrainerBPLayer attributes
   rb_define_method( RuNeNe_Trainer_BPLayer, "num_inputs", trainer_bp_layer_rbobject__get_num_inputs, 0 );

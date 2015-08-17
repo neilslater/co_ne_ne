@@ -5,6 +5,7 @@
 
 #include <ruby.h>
 #include "narray.h"
+#include "struct_layer_ff.h"
 #include "struct_trainer_bp_layer.h"
 #include "shared_vars.h"
 
