@@ -5,6 +5,7 @@
 // Hash lookup helper
 VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
 
+// Convert symbol to internal smoothing type
 bp_smooth_type smoothing_type_from_symbol( VALUE smth_type ) {
   ID smth_id;
 
