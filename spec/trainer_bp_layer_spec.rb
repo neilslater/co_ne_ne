@@ -12,6 +12,12 @@ describe RuNeNe::Trainer::BPLayer do
         expect { RuNeNe::Trainer::BPLayer.new( :num_inputs => 3 ) }.to raise_error ArgumentError
         expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3 ) }.to raise_error ArgumentError
         expect { RuNeNe::Trainer::BPLayer.new( :num_inputs => "hello", :num_outputs => 3 ) }.to raise_error TypeError
+        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+            :de_dz => "Fish" ) }.to raise_error TypeError
+
+        # :de_dz has wrong number of elements here
+        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+            :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
       end
 
       it "creates expected sizes and defaults for arrays" do
@@ -45,7 +51,7 @@ describe RuNeNe::Trainer::BPLayer do
 
       it "uses options hash to set narrays" do
         bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
-            :de_dz => NArray[ 0.2, 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
+            :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
             :de_dw_momentum => NArray[ [0.1, -0.01, -0.001] ], :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002] ]
             )
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.2 ]
