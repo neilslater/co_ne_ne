@@ -203,6 +203,14 @@ VALUE trainer_bp_layer_rbobject__get_smoothing_type( VALUE self ) {
   }
 }
 
+VALUE trainer_bp_layer_rbobject__set_smoothing_type( VALUE self, VALUE rv_smoothing_type ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+
+  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( rv_smoothing_type );
+
+  return rv_smoothing_type;
+}
+
 /* @!attribute smoothing_rate
  * Description goes here
  * @return [Float]
@@ -312,6 +320,7 @@ void init_trainer_bp_layer_class( ) {
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate", trainer_bp_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate=", trainer_bp_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_type", trainer_bp_layer_rbobject__get_smoothing_type, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_type=", trainer_bp_layer_rbobject__set_smoothing_type, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_rate", trainer_bp_layer_rbobject__get_smoothing_rate, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_rate=", trainer_bp_layer_rbobject__set_smoothing_rate, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "max_norm", trainer_bp_layer_rbobject__get_max_norm, 0 );

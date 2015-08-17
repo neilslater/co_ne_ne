@@ -1,5 +1,11 @@
 RuNeNe TODOs:
 
+    RuNeNe::Trainer::BPLayer
+      - Create from layer
+      - Marshal support
+      - backprop algorithm
+      - batch apply algorithm
+
     Objective functions
         Flag to allow optimisation of dE_dz with mlogloss + softmax, only when targets meet simplicity requirements
 
@@ -7,12 +13,6 @@ RuNeNe TODOs:
       - Support for no output, maybe generating output for predictions
       - Allow support for splitting/re-organising data
       - Rename C and Ruby source files for new name
-
-    RuNeNe::Trainer::BPLayer
-      - Create from layer
-      - Marshal support
-      - backprop algorithm
-      - batch apply algorithm
 
     Completely re-architect layer/network
       layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
