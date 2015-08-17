@@ -2,6 +2,31 @@
 
 #include "ruby_class_trainer_bp_layer.h"
 
+// Hash lookup helper
+VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
+
+bp_smooth_type smoothing_type_from_symbol( VALUE smth_type ) {
+  ID smth_id;
+
+  smth_id = rb_intern("none");
+  if ( ! NIL_P(smth_type) ) {
+    if ( TYPE(smth_type) != T_SYMBOL ) {
+      rb_raise( rb_eTypeError, "Expected symbol for smoothing type" );
+    }
+    smth_id = SYM2ID(smth_type);
+  }
+
+  if ( rb_intern("none") == smth_id ) {
+    return SMOOTH_TYPE_NONE;
+  } else if ( rb_intern("momentum") == smth_id ) {
+    return SMOOTH_TYPE_MOMENTUM;
+  } else if ( rb_intern("rmsprop") == smth_id ) {
+    return SMOOTH_TYPE_RMSPROP;
+  } else {
+    rb_raise( rb_eArgError, "Smoothing type %s not recognised", rb_id2name(smth_id) );
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for training data arrays - the deeper implementation is in
@@ -31,6 +56,9 @@ void assert_value_wraps_trainer_bp_layer( VALUE obj ) {
 
 /* Document-class:  RuNeNe::Trainer::BPLayer
  *
+ * This class models the training algorithms and data used across a single layer during gradient
+ * descent by backpropagation. An instance of this class represents the training state of a specific
+ * layer in a network.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,26 +66,60 @@ void assert_value_wraps_trainer_bp_layer( VALUE obj ) {
 //  Network method definitions
 //
 
-/* @overload initialize( num_inputs, num_outputs )
- * Creates a new ...
- * @param [Integer] num_inputs ...
- * @param [Integer] num_outputs ...
- * @return [RuNeNe::Trainer::BPLayer] new ...
+/* @overload initialize( opts )
+ * Creates a new RuNeNe::Trainer::BPLayer instance. In normal use, the network trainer will create
+ * the necessary layer objects automatically from the network acrhitecture.
+ * @param [Hash] opts initialisation options
+ * @return [RuNeNe::Trainer::BPLayer] the new RuNeNe::Trainer::BPLayer object.
  */
-VALUE trainer_bp_layer_rbobject__initialize( VALUE self, VALUE rv_num_inputs, VALUE rv_num_outputs ) {
+VALUE trainer_bp_layer_rbobject__initialize( VALUE self, VALUE rv_opts ) {
+  volatile VALUE rv_var;
   int num_ins, num_outs;
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
 
-  num_ins = NUM2INT( rv_num_inputs );
+  Check_Type( rv_opts, T_HASH );
+
+  rv_var = ValAtSymbol(rv_opts,"num_inputs");
+  if ( NIL_P(rv_var) ) {
+    rb_raise( rb_eArgError, "Missing :num_inputs option" );
+  }
+  num_ins = NUM2INT( rv_var );
   if ( num_ins < 1 ) {
     rb_raise( rb_eArgError, "Input size %d is less than minimum of 1", num_ins );
   }
-  num_outs = NUM2INT( rv_num_outputs );
+
+  rv_var = ValAtSymbol(rv_opts,"num_outputs");
+  if ( NIL_P(rv_var) ) {
+    rb_raise( rb_eArgError, "Missing :num_outputs option" );
+  }
+  num_outs = NUM2INT( rv_var );
   if ( num_outs  < 1 ) {
     rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", num_outs );
   }
 
   trainer_bp_layer__init( trainer_bp_layer, num_ins, num_outs );
+
+  rv_var = ValAtSymbol(rv_opts,"learning_rate");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->learning_rate = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"smoothing_rate");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->smoothing_rate = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"weight_decay");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->weight_decay = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"max_norm");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->max_norm = NUM2FLT( rv_var );
+  }
+
+  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( ValAtSymbol(rv_opts,"smoothing_type") );
 
   return self;
 }
@@ -226,7 +288,7 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop( VALUE self ) {
 void init_trainer_bp_layer_class( ) {
   // TrainerBPLayer instantiation and class methods
   rb_define_alloc_func( RuNeNe_Trainer_BPLayer, trainer_bp_layer_alloc );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "initialize", trainer_bp_layer_rbobject__initialize, 2 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "initialize", trainer_bp_layer_rbobject__initialize, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "initialize_copy", trainer_bp_layer_rbobject__initialize_copy, 1 );
 
   // TrainerBPLayer attributes
