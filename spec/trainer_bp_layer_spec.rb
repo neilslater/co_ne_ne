@@ -42,6 +42,18 @@ describe RuNeNe::Trainer::BPLayer do
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
       end
+
+      it "uses options hash to set narrays" do
+        bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
+            :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
+            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001] ], :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002] ]
+            )
+        expect( bpl.de_dz ).to be_narray_like NArray[ 0.2 ]
+        expect( bpl.de_da ).to be_narray_like NArray[ 0.1, 0.1 ]
+        expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
+        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
+        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
+      end
     end
   end
 
