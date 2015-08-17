@@ -31,6 +31,10 @@ bp_smooth_type smoothing_type_from_symbol( VALUE smth_type ) {
 // Helper for converting hash to C properties
 void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_layer ) {
   volatile VALUE rv_var;
+  volatile VALUE new_narray;
+  struct NARRAY* narr;
+
+  // Start with simple properties
 
   rv_var = ValAtSymbol(rv_opts,"learning_rate");
   if ( !NIL_P(rv_var) ) {
@@ -53,6 +57,95 @@ void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_
   }
 
   trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( ValAtSymbol(rv_opts,"smoothing_type") );
+
+  // Now deal with more complex properties, allow setting of NArrays, provided they fit
+
+  rv_var = ValAtSymbol(rv_opts,"de_dz");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    if ( narr->rank != 1 ) {
+      rb_raise( rb_eArgError, "de_dz rank should be 1, but got %d", narr->rank );
+    }
+
+    if ( narr->shape[0] !=  trainer_bp_layer->num_outputs ) {
+      rb_raise( rb_eArgError, "de_dz size %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+    }
+    trainer_bp_layer->narr_de_dz = new_narray;
+    trainer_bp_layer->de_dz = (float *) narr->ptr;
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"de_da");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    if ( narr->rank != 1 ) {
+      rb_raise( rb_eArgError, "de_da rank should be 1, but got %d", narr->rank );
+    }
+
+    if ( narr->shape[0] != trainer_bp_layer->num_inputs ) {
+      rb_raise( rb_eArgError, "de_dz size %d is not same as num_inputs %d",narr->shape[0], trainer_bp_layer->num_inputs );
+    }
+    trainer_bp_layer->narr_de_da = new_narray;
+    trainer_bp_layer->de_da = (float *) narr->ptr;
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"de_dw");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    if ( narr->rank != 2 ) {
+      rb_raise( rb_eArgError, "de_dw rank should be 2, but got %d", narr->rank );
+    }
+
+    if ( narr->shape[0] != ( 1 + trainer_bp_layer->num_inputs ) ) {
+      rb_raise( rb_eArgError, "de_dw num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
+    }
+
+    if ( narr->shape[1] != ( trainer_bp_layer->num_outputs ) ) {
+      rb_raise( rb_eArgError, "de_dw num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+    }
+    trainer_bp_layer->narr_de_dw = new_narray;
+    trainer_bp_layer->de_dw = (float *) narr->ptr;
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"de_dw_momentum");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    if ( narr->rank != 2 ) {
+      rb_raise( rb_eArgError, "de_dw_momentum rank should be 2, but got %d", narr->rank );
+    }
+
+    if ( narr->shape[0] != ( 1 + trainer_bp_layer->num_inputs ) ) {
+      rb_raise( rb_eArgError, "de_dw_momentum num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
+    }
+
+    if ( narr->shape[1] != ( trainer_bp_layer->num_outputs ) ) {
+      rb_raise( rb_eArgError, "de_dw_momentum num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+    }
+    trainer_bp_layer->narr_de_dw_momentum = new_narray;
+    trainer_bp_layer->de_dw_momentum = (float *) narr->ptr;
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"de_dw_rmsprop");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    if ( narr->rank != 2 ) {
+      rb_raise( rb_eArgError, "de_dw_rmsprop rank should be 2, but got %d", narr->rank );
+    }
+
+    if ( narr->shape[0] != ( 1 + trainer_bp_layer->num_inputs ) ) {
+      rb_raise( rb_eArgError, "de_dw_rmsprop num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
+    }
+
+    if ( narr->shape[1] != ( trainer_bp_layer->num_outputs ) ) {
+      rb_raise( rb_eArgError, "de_dw_rmsprop num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+    }
+    trainer_bp_layer->narr_de_dw_rmsprop = new_narray;
+    trainer_bp_layer->de_dw_rmsprop = (float *) narr->ptr;
+  }
 
   return;
 }
