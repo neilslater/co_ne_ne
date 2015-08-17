@@ -1,5 +1,9 @@
 RuNeNe TODOs:
 
+    Objective functions
+        Check for optimisations possible to get dE_dz for some combinations
+
+
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions
       - Allow support for splitting/re-organising data

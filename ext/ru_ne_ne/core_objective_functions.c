@@ -154,20 +154,12 @@ void obj_logloss_tr_linear_de_dz( int n, float* predictions, float* targets, flo
   rb_raise( rb_eRuntimeError, "Cannot combine logloss objective and linear output layer." );
 }
 
+// logloss objective plus sigmoid transfer optimises to (predictions - targets)
 void obj_logloss_tr_sigmoid_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
   int i;
-
-  // TODO: Initialise and re-use this for a whole training run?
-  float *da_dz = xmalloc( sizeof(float) * n );
-
-  raw_delta_logloss( n, predictions, targets, output_de_dz, 1e-15 );
-  raw_sigmoid_bulk_derivative_at( n, predictions, da_dz );
-
   for ( i = 0; i < n ; i++ ) {
-    output_de_dz[i] *= da_dz[i];
+    output_de_dz[i] = predictions[i] - targets[i];
   }
-
-  xfree( da_dz );
   return;
 }
 
