@@ -20,7 +20,7 @@ describe RuNeNe::Trainer::BPLayer do
             :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
 
         # :de_dw has wrong rank here
-        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 1, :num_inputs => 3,
             :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
       end
 
@@ -63,6 +63,36 @@ describe RuNeNe::Trainer::BPLayer do
         expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
         expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
         expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
+      end
+    end
+
+    describe "with Marshal" do
+      it "can save and retrieve a training layer, preserving all property values" do
+        orig_bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 2,
+            :learning_rate => 0.003, :smoothing_rate => 0.97, :weight_decay => 2e-3,
+            :max_norm => 1.1, :smoothing_type => :momentum,
+            :de_dz => NArray[ 0.25, 0.5 ], :de_da => NArray[ 0.13, 0.14 ],
+            :de_dw => NArray[ [-0.1, 0.01, 0.001], [0.6, 0.5, 0.4] ],
+            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001], [0.55, 0.35, 0.14] ],
+            :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002], [0.63, 0.25, 0.24] ]
+        )
+        saved = Marshal.dump( orig_bpl )
+        copy_bpl = Marshal.load( saved )
+
+        expect( copy_bpl ).to_not be orig_bpl
+        expect( copy_bpl.num_inputs ).to be 2
+        expect( copy_bpl.num_outputs ).to be 2
+        expect( copy_bpl.learning_rate ).to be_within( 1e-6 ).of 0.003
+        expect( copy_bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.97
+        expect( copy_bpl.smoothing_type ).to be :momentum
+        expect( copy_bpl.weight_decay ).to be_within( 1e-8 ).of 2e-3
+        expect( copy_bpl.max_norm ).to be_within( 1e-6 ).of 1.1
+
+        expect( copy_bpl.de_dz ).to be_narray_like orig_bpl.de_dz
+        expect( copy_bpl.de_da ).to be_narray_like orig_bpl.de_da
+        expect( copy_bpl.de_dw ).to be_narray_like orig_bpl.de_dw
+        expect( copy_bpl.de_dw_momentum ).to be_narray_like orig_bpl.de_dw_momentum
+        expect( copy_bpl.de_dw_rmsprop ).to be_narray_like orig_bpl.de_dw_rmsprop
       end
     end
   end

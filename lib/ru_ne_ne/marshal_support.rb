@@ -111,42 +111,6 @@ class RuNeNe::Layer::FeedForward
   end
 end
 
-class RuNeNe::NetworkOld
-  # @!visibility private
-  # Adds support for Marshal, via to_h and from_h methods
-  def to_h
-    Hash[
-      :layers => self.layers.map { |l| l.to_h },
-      :lr => self.learning_rate,
-      :momentum => self.momentum,
-    ]
-  end
-
-  # @!visibility private
-  # Constructs a Layer from hash description. Used internally to support Marshal.
-  # @param [Hash] h Keys are :layers, :lr and :momentum
-  # @return [RuNeNe::Network] new object
-  def self.from_h h
-    hashed_layers = h[:layers]
-    restored_layers = hashed_layers.map { |lhash| RuNeNe::Layer::FeedForward.from_h( lhash ) }
-    network = RuNeNe::Network.from_layers( restored_layers )
-    network.learning_rate = h[:lr]
-    network.momentum = h[:momentum]
-    network
-  end
-
-  # @!visibility private
-  def _dump *ignored
-    Marshal.dump to_h
-  end
-
-  # @!visibility private
-  def self._load buf
-    h = Marshal.load buf
-    from_h h
-  end
-end
-
 class RuNeNe::DataSet
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
@@ -163,6 +127,38 @@ class RuNeNe::DataSet
   # @return [RuNeNe::Layer::FeedForward] new object
   def self.from_h h
     RuNeNe::DataSet.new( h[:inputs], h[:outputs] )
+  end
+
+  # @!visibility private
+  def _dump *ignored
+    Marshal.dump to_h
+  end
+
+  # @!visibility private
+  def self._load buf
+    h = Marshal.load buf
+    from_h h
+  end
+end
+
+class RuNeNe::Trainer::BPLayer
+  # @!visibility private
+  # Adds support for Marshal, via to_h and from_h methods
+  def to_h
+    Hash[
+      [:num_inputs, :num_outputs, :learning_rate, :smoothing_rate, :weight_decay, :max_norm,
+       :smoothing_type, :de_dz, :de_da, :de_dw, :de_dw_momentum, :de_dw_rmsprop].map do |prop|
+        [ prop, self.send(prop) ]
+      end
+    ]
+  end
+
+  # @!visibility private
+  # Constructs a BPLayer from hash description. Used internally to support Marshal.
+  # @param [Hash] h Keys are :weights and :transfer
+  # @return [RuNeNe::Trainer::BPLayer] new object
+  def self.from_h h
+    RuNeNe::Trainer::BPLayer.new( h )
   end
 
   # @!visibility private
