@@ -431,6 +431,22 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop( VALUE self ) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Backprop methods
+//
+
+/* @overload start_batch
+ * Description goes here
+ * @return [NArray<sfloat>] self
+ */
+VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  trainer_bp_layer__start_batch( trainer_bp_layer );
+  return self;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_trainer_bp_layer_class( ) {
   // TrainerBPLayer instantiation and class methods
@@ -457,4 +473,8 @@ void init_trainer_bp_layer_class( ) {
   rb_define_method( RuNeNe_Trainer_BPLayer, "max_norm=", trainer_bp_layer_rbobject__set_max_norm, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "weight_decay", trainer_bp_layer_rbobject__get_weight_decay, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "weight_decay=", trainer_bp_layer_rbobject__set_weight_decay, 1 );
+
+  // TrainerBPLayer methods
+  rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
+
 }

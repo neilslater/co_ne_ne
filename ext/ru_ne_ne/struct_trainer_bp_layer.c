@@ -144,3 +144,12 @@ TrainerBPLayer * trainer_bp_layer__clone( TrainerBPLayer *trainer_bp_layer_orig 
   trainer_bp_layer__deep_copy( trainer_bp_layer_copy, trainer_bp_layer_orig );
   return trainer_bp_layer_copy;
 }
+
+void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer ) {
+  int i,t = (trainer_bp_layer->num_inputs + 1 ) * trainer_bp_layer->num_outputs;
+  float *de_dw = trainer_bp_layer->de_dw;
+  for( i = 0; i < t; i++ ) {
+    de_dw[i] = 0.0;
+  }
+  return;
+}

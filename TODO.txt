@@ -1,9 +1,9 @@
 RuNeNe TODOs:
 
     RuNeNe::Trainer::BPLayer
-      - Create from layer
       - backprop algorithm
-      - batch apply algorithm
+      - start a training batch
+      - apply batch changes to weights
 
     Objective functions
         Flag to allow optimisation of dE_dz with mlogloss + softmax, only when targets meet simplicity requirements
@@ -81,6 +81,11 @@ RuNeNe TODOs:
     Maxout layer
 
     Import other NN trained models (cxxnet, caffe)
+
+
+
+
+
 
 
 RuNeNe DONE:

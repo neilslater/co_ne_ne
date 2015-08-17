@@ -45,4 +45,7 @@ void trainer_bp_layer__deep_copy( TrainerBPLayer *trainer_bp_layer_copy, Trainer
 
 TrainerBPLayer * trainer_bp_layer__clone( TrainerBPLayer *trainer_bp_layer_orig );
 
+void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer );
+
+
 #endif
