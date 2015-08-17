@@ -28,6 +28,35 @@ bp_smooth_type smoothing_type_from_symbol( VALUE smth_type ) {
   }
 }
 
+// Helper for converting hash to C properties
+void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_layer ) {
+  volatile VALUE rv_var;
+
+  rv_var = ValAtSymbol(rv_opts,"learning_rate");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->learning_rate = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"smoothing_rate");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->smoothing_rate = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"weight_decay");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->weight_decay = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"max_norm");
+  if ( !NIL_P(rv_var) ) {
+    trainer_bp_layer->max_norm = NUM2FLT( rv_var );
+  }
+
+  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( ValAtSymbol(rv_opts,"smoothing_type") );
+
+  return;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for training data arrays - the deeper implementation is in
@@ -100,27 +129,7 @@ VALUE trainer_bp_layer_rbobject__initialize( VALUE self, VALUE rv_opts ) {
 
   trainer_bp_layer__init( trainer_bp_layer, num_ins, num_outs );
 
-  rv_var = ValAtSymbol(rv_opts,"learning_rate");
-  if ( !NIL_P(rv_var) ) {
-    trainer_bp_layer->learning_rate = NUM2FLT( rv_var );
-  }
-
-  rv_var = ValAtSymbol(rv_opts,"smoothing_rate");
-  if ( !NIL_P(rv_var) ) {
-    trainer_bp_layer->smoothing_rate = NUM2FLT( rv_var );
-  }
-
-  rv_var = ValAtSymbol(rv_opts,"weight_decay");
-  if ( !NIL_P(rv_var) ) {
-    trainer_bp_layer->weight_decay = NUM2FLT( rv_var );
-  }
-
-  rv_var = ValAtSymbol(rv_opts,"max_norm");
-  if ( !NIL_P(rv_var) ) {
-    trainer_bp_layer->max_norm = NUM2FLT( rv_var );
-  }
-
-  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( ValAtSymbol(rv_opts,"smoothing_type") );
+  copy_hash_to_bplayer_properties( rv_opts, trainer_bp_layer );
 
   return self;
 }
