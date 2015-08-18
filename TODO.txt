@@ -36,11 +36,11 @@ RuNeNe TODOs:
 
 ----- v0.0.1 release ?
 
+    Add Adadelta and.or Adagrad options, see http://imgur.com/a/Hqolp
+
     Parametric transfer functions?
 
     Metric functions
-
-    Optimise de_dz for output layers
 
     Optionally take writable output array (for performance)
 

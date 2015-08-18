@@ -155,7 +155,7 @@ describe RuNeNe::Trainer::BPLayer do
 
   describe "instance methods" do
     before :each do
-      @bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 5, :num_outputs => 5,
+      @bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 3, :num_outputs => 2,
             :learning_rate => 0.007, :smoothing_rate => 0.95, :weight_decay => 1e-3,
             :max_norm => 1.5, :smoothing_type => :momentum )
     end
@@ -164,8 +164,8 @@ describe RuNeNe::Trainer::BPLayer do
       it "makes copies of learning params" do
         @copy = @bpl.clone
         expect( @copy ).to_not be @bpl
-        expect( @copy.num_inputs ).to be 5
-        expect( @copy.num_outputs ).to be 5
+        expect( @copy.num_inputs ).to be 3
+        expect( @copy.num_outputs ).to be 2
 
         expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.007
         expect( @copy.smoothing_rate ).to be_within( 1e-6 ).of 0.95
@@ -189,6 +189,20 @@ describe RuNeNe::Trainer::BPLayer do
         expect( @copy.de_dw ).to be_narray_like @bpl.de_dw
         expect( @copy.de_dw_momentum ).to be_narray_like @bpl.de_dw_momentum
         expect( @copy.de_dw_rmsprop ).to be_narray_like @bpl.de_dw_rmsprop
+      end
+    end
+
+    describe "#start_batch" do
+      it "resets de_dw" do
+        @bpl.de_dw[0,0] = 1.0
+        @bpl.de_dw[1,0] = 2.0
+        @bpl.de_dw[2,0] = 3.0
+        @bpl.de_dw[3,1] = 4.0
+        expect( @bpl.de_dw ).to be_narray_like NArray[[1.0,2.0,3.0,0.0],[0.0,0.0,0.0,4.0]]
+
+        @bpl.start_batch
+
+        expect( @bpl.de_dw ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
       end
     end
   end
