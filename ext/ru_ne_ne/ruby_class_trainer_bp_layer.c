@@ -5,14 +5,14 @@
 // Hash lookup helper
 VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
 
-// Convert symbol to internal smoothing type
+// Convert symbol to internal gd acceleration type
 gd_accel_type gd_accel_type_from_symbol( VALUE rv_gdaccel_symbol ) {
   ID accel_id;
 
   accel_id = rb_intern("none");
   if ( ! NIL_P(rv_gdaccel_symbol) ) {
     if ( TYPE(rv_gdaccel_symbol) != T_SYMBOL ) {
-      rb_raise( rb_eTypeError, "Expected symbol for smoothing type" );
+      rb_raise( rb_eTypeError, "Expected symbol for gradient descent acceleration type" );
     }
     accel_id = SYM2ID(rv_gdaccel_symbol);
   }
@@ -24,7 +24,7 @@ gd_accel_type gd_accel_type_from_symbol( VALUE rv_gdaccel_symbol ) {
   } else if ( rb_intern("rmsprop") == accel_id ) {
     return GDACCEL_TYPE_RMSPROP;
   } else {
-    rb_raise( rb_eArgError, "Smoothing type %s not recognised", rb_id2name(accel_id) );
+    rb_raise( rb_eArgError, "gd_accel_type %s not recognised", rb_id2name(accel_id) );
   }
 }
 
@@ -109,42 +109,42 @@ void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_
     trainer_bp_layer->de_dw = (float *) narr->ptr;
   }
 
-  rv_var = ValAtSymbol(rv_opts,"de_dw_momentum");
+  rv_var = ValAtSymbol(rv_opts,"de_dw_stats_a");
   if ( !NIL_P(rv_var) ) {
     new_narray = na_cast_object(rv_var, NA_SFLOAT);
     GetNArray( new_narray, narr );
     if ( narr->rank != 2 ) {
-      rb_raise( rb_eArgError, "de_dw_momentum rank should be 2, but got %d", narr->rank );
+      rb_raise( rb_eArgError, "de_dw_stats_a rank should be 2, but got %d", narr->rank );
     }
 
     if ( narr->shape[0] != ( 1 + trainer_bp_layer->num_inputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_momentum num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
+      rb_raise( rb_eArgError, "de_dw_stats_a num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
     }
 
     if ( narr->shape[1] != ( trainer_bp_layer->num_outputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_momentum num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+      rb_raise( rb_eArgError, "de_dw_stats_a num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
     }
-    trainer_bp_layer->narr_de_dw_momentum = new_narray;
-    trainer_bp_layer->de_dw_momentum = (float *) narr->ptr;
+    trainer_bp_layer->narr_de_dw_stats_a = new_narray;
+    trainer_bp_layer->de_dw_stats_a = (float *) narr->ptr;
   }
 
-  rv_var = ValAtSymbol(rv_opts,"de_dw_rmsprop");
+  rv_var = ValAtSymbol(rv_opts,"de_dw_stats_b");
   if ( !NIL_P(rv_var) ) {
     new_narray = na_cast_object(rv_var, NA_SFLOAT);
     GetNArray( new_narray, narr );
     if ( narr->rank != 2 ) {
-      rb_raise( rb_eArgError, "de_dw_rmsprop rank should be 2, but got %d", narr->rank );
+      rb_raise( rb_eArgError, "de_dw_stats_b rank should be 2, but got %d", narr->rank );
     }
 
     if ( narr->shape[0] != ( 1 + trainer_bp_layer->num_inputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_rmsprop num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
+      rb_raise( rb_eArgError, "de_dw_stats_b num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], trainer_bp_layer->num_inputs + 1 );
     }
 
     if ( narr->shape[1] != ( trainer_bp_layer->num_outputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_rmsprop num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
+      rb_raise( rb_eArgError, "de_dw_stats_b num rows %d is not same as num_outputs %d",narr->shape[0], trainer_bp_layer->num_outputs );
     }
-    trainer_bp_layer->narr_de_dw_rmsprop = new_narray;
-    trainer_bp_layer->de_dw_rmsprop = (float *) narr->ptr;
+    trainer_bp_layer->narr_de_dw_stats_b = new_narray;
+    trainer_bp_layer->de_dw_stats_b = (float *) narr->ptr;
   }
 
   return;
@@ -412,22 +412,22 @@ VALUE trainer_bp_layer_rbobject__get_narr_de_dw( VALUE self ) {
   return trainer_bp_layer->narr_de_dw;
 }
 
-/* @!attribute  [r] de_dw_momentum
+/* @!attribute  [r] de_dw_stats_a
  * Description goes here
  * @return [NArray<sfloat>]
  */
-VALUE trainer_bp_layer_rbobject__get_narr_de_dw_momentum( VALUE self ) {
+VALUE trainer_bp_layer_rbobject__get_narr_de_dw_stats_a( VALUE self ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-  return trainer_bp_layer->narr_de_dw_momentum;
+  return trainer_bp_layer->narr_de_dw_stats_a;
 }
 
-/* @!attribute  [r] de_dw_rmsprop
+/* @!attribute  [r] de_dw_stats_b
  * Description goes here
  * @return [NArray<sfloat>]
  */
-VALUE trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop( VALUE self ) {
+VALUE trainer_bp_layer_rbobject__get_narr_de_dw_stats_b( VALUE self ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-  return trainer_bp_layer->narr_de_dw_rmsprop;
+  return trainer_bp_layer->narr_de_dw_stats_b;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -473,8 +473,8 @@ void init_trainer_bp_layer_class( ) {
   rb_define_method( RuNeNe_Trainer_BPLayer, "de_dz", trainer_bp_layer_rbobject__get_narr_de_dz, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "de_da", trainer_bp_layer_rbobject__get_narr_de_da, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw", trainer_bp_layer_rbobject__get_narr_de_dw, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_momentum", trainer_bp_layer_rbobject__get_narr_de_dw_momentum, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_rmsprop", trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_stats_a", trainer_bp_layer_rbobject__get_narr_de_dw_stats_a, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_stats_b", trainer_bp_layer_rbobject__get_narr_de_dw_stats_b, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate", trainer_bp_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate=", trainer_bp_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "gd_accel_type", trainer_bp_layer_rbobject__get_gd_accel_type, 0 );

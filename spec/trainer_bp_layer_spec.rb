@@ -29,8 +29,8 @@ describe RuNeNe::Trainer::BPLayer do
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.0 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
-        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
-        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_stats_a ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_stats_b ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
       end
 
       it "uses conservative defaults for all learning params" do
@@ -56,13 +56,13 @@ describe RuNeNe::Trainer::BPLayer do
       it "uses options hash to set narrays" do
         bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
             :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
-            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001] ], :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002] ]
+            :de_dw_stats_a => NArray[ [0.1, -0.01, -0.001] ], :de_dw_stats_b => NArray[ [-0.2, 0.02, 0.002] ]
             )
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.2 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.1, 0.1 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
-        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
-        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
+        expect( bpl.de_dw_stats_a ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
+        expect( bpl.de_dw_stats_b ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
       end
     end
 
@@ -94,8 +94,8 @@ describe RuNeNe::Trainer::BPLayer do
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.0 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
-        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
-        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_stats_a ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+        expect( bpl.de_dw_stats_b ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
       end
 
       it "uses options hash to set learning params" do
@@ -112,13 +112,13 @@ describe RuNeNe::Trainer::BPLayer do
       it "uses options hash to set narrays" do
         bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
             :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
-            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001] ], :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002] ]
+            :de_dw_stats_a => NArray[ [0.1, -0.01, -0.001] ], :de_dw_stats_b => NArray[ [-0.2, 0.02, 0.002] ]
             )
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.2 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.1, 0.1 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
-        expect( bpl.de_dw_momentum ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
-        expect( bpl.de_dw_rmsprop ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
+        expect( bpl.de_dw_stats_a ).to be_narray_like NArray[ [0.1, -0.01, -0.001] ]
+        expect( bpl.de_dw_stats_b ).to be_narray_like NArray[ [-0.2, 0.02, 0.002] ]
       end
     end
 
@@ -129,8 +129,8 @@ describe RuNeNe::Trainer::BPLayer do
             :max_norm => 1.1, :gd_accel_type => :momentum,
             :de_dz => NArray[ 0.25, 0.5 ], :de_da => NArray[ 0.13, 0.14 ],
             :de_dw => NArray[ [-0.1, 0.01, 0.001], [0.6, 0.5, 0.4] ],
-            :de_dw_momentum => NArray[ [0.1, -0.01, -0.001], [0.55, 0.35, 0.14] ],
-            :de_dw_rmsprop => NArray[ [-0.2, 0.02, 0.002], [0.63, 0.25, 0.24] ]
+            :de_dw_stats_a => NArray[ [0.1, -0.01, -0.001], [0.55, 0.35, 0.14] ],
+            :de_dw_stats_b => NArray[ [-0.2, 0.02, 0.002], [0.63, 0.25, 0.24] ]
         )
         saved = Marshal.dump( orig_bpl )
         copy_bpl = Marshal.load( saved )
@@ -147,8 +147,8 @@ describe RuNeNe::Trainer::BPLayer do
         expect( copy_bpl.de_dz ).to be_narray_like orig_bpl.de_dz
         expect( copy_bpl.de_da ).to be_narray_like orig_bpl.de_da
         expect( copy_bpl.de_dw ).to be_narray_like orig_bpl.de_dw
-        expect( copy_bpl.de_dw_momentum ).to be_narray_like orig_bpl.de_dw_momentum
-        expect( copy_bpl.de_dw_rmsprop ).to be_narray_like orig_bpl.de_dw_rmsprop
+        expect( copy_bpl.de_dw_stats_a ).to be_narray_like orig_bpl.de_dw_stats_a
+        expect( copy_bpl.de_dw_stats_b ).to be_narray_like orig_bpl.de_dw_stats_b
       end
     end
   end
@@ -181,14 +181,14 @@ describe RuNeNe::Trainer::BPLayer do
         expect( @copy.de_dz ).to_not be @bpl.de_dz
         expect( @copy.de_da ).to_not be @bpl.de_da
         expect( @copy.de_dw ).to_not be @bpl.de_dw
-        expect( @copy.de_dw_momentum ).to_not be @bpl.de_dw_momentum
-        expect( @copy.de_dw_rmsprop ).to_not be @bpl.de_dw_rmsprop
+        expect( @copy.de_dw_stats_a ).to_not be @bpl.de_dw_stats_a
+        expect( @copy.de_dw_stats_b ).to_not be @bpl.de_dw_stats_b
 
         expect( @copy.de_dz ).to be_narray_like @bpl.de_dz
         expect( @copy.de_da ).to be_narray_like @bpl.de_da
         expect( @copy.de_dw ).to be_narray_like @bpl.de_dw
-        expect( @copy.de_dw_momentum ).to be_narray_like @bpl.de_dw_momentum
-        expect( @copy.de_dw_rmsprop ).to be_narray_like @bpl.de_dw_rmsprop
+        expect( @copy.de_dw_stats_a ).to be_narray_like @bpl.de_dw_stats_a
+        expect( @copy.de_dw_stats_b ).to be_narray_like @bpl.de_dw_stats_b
       end
     end
 

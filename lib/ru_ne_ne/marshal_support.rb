@@ -147,7 +147,7 @@ class RuNeNe::Trainer::BPLayer
   def to_h
     Hash[
       [:num_inputs, :num_outputs, :learning_rate, :gd_accel_rate, :weight_decay, :max_norm,
-       :gd_accel_type, :de_dz, :de_da, :de_dw, :de_dw_momentum, :de_dw_rmsprop].map do |prop|
+       :gd_accel_type, :de_dz, :de_da, :de_dw, :de_dw_stats_a, :de_dw_stats_b].map do |prop|
         [ prop, self.send(prop) ]
       end
     ]

@@ -22,10 +22,10 @@ typedef struct _trainer_bp_layer_raw {
   float *de_da;
   VALUE narr_de_dw;
   float *de_dw;
-  VALUE narr_de_dw_momentum;
-  float *de_dw_momentum;
-  VALUE narr_de_dw_rmsprop;
-  float *de_dw_rmsprop;
+  VALUE narr_de_dw_stats_a;
+  float *de_dw_stats_a;
+  VALUE narr_de_dw_stats_b;
+  float *de_dw_stats_b;
   float learning_rate;
   gd_accel_type gd_accel_type;
   float gd_accel_rate;

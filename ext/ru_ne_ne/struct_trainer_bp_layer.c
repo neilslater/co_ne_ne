@@ -18,10 +18,10 @@ TrainerBPLayer *trainer_bp_layer__create() {
   trainer_bp_layer->de_da = NULL;
   trainer_bp_layer->narr_de_dw = Qnil;
   trainer_bp_layer->de_dw = NULL;
-  trainer_bp_layer->narr_de_dw_momentum = Qnil;
-  trainer_bp_layer->de_dw_momentum = NULL;
-  trainer_bp_layer->narr_de_dw_rmsprop = Qnil;
-  trainer_bp_layer->de_dw_rmsprop = NULL;
+  trainer_bp_layer->narr_de_dw_stats_a = Qnil;
+  trainer_bp_layer->de_dw_stats_a = NULL;
+  trainer_bp_layer->narr_de_dw_stats_b = Qnil;
+  trainer_bp_layer->de_dw_stats_b = NULL;
   trainer_bp_layer->learning_rate = 0.01;
   trainer_bp_layer->gd_accel_type = GDACCEL_TYPE_NONE;
   trainer_bp_layer->gd_accel_rate = 0.9;
@@ -37,8 +37,8 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
   float *narr_de_dz_ptr;
   float *narr_de_da_ptr;
   float *narr_de_dw_ptr;
-  float *narr_de_dw_momentum_ptr;
-  float *narr_de_dw_rmsprop_ptr;
+  float *narr_de_dw_stats_a_ptr;
+  float *narr_de_dw_stats_b_ptr;
 
   trainer_bp_layer->num_inputs = num_inputs;
 
@@ -72,21 +72,21 @@ void trainer_bp_layer__init( TrainerBPLayer *trainer_bp_layer, int num_inputs, i
   }
   trainer_bp_layer->de_dw = (float *) narr->ptr;
 
-  trainer_bp_layer->narr_de_dw_momentum = na_make_object( NA_SFLOAT, 2, shape, cNArray );
-  GetNArray( trainer_bp_layer->narr_de_dw_momentum, narr );
-  narr_de_dw_momentum_ptr = (float*) narr->ptr;
+  trainer_bp_layer->narr_de_dw_stats_a = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+  GetNArray( trainer_bp_layer->narr_de_dw_stats_a, narr );
+  narr_de_dw_stats_a_ptr = (float*) narr->ptr;
   for( i = 0; i < narr->total; i++ ) {
-    narr_de_dw_momentum_ptr[i] = 0.0;
+    narr_de_dw_stats_a_ptr[i] = 0.0;
   }
-  trainer_bp_layer->de_dw_momentum = (float *) narr->ptr;
+  trainer_bp_layer->de_dw_stats_a = (float *) narr->ptr;
 
-  trainer_bp_layer->narr_de_dw_rmsprop = na_make_object( NA_SFLOAT, 2, shape, cNArray );
-  GetNArray( trainer_bp_layer->narr_de_dw_rmsprop, narr );
-  narr_de_dw_rmsprop_ptr = (float*) narr->ptr;
+  trainer_bp_layer->narr_de_dw_stats_b = na_make_object( NA_SFLOAT, 2, shape, cNArray );
+  GetNArray( trainer_bp_layer->narr_de_dw_stats_b, narr );
+  narr_de_dw_stats_b_ptr = (float*) narr->ptr;
   for( i = 0; i < narr->total; i++ ) {
-    narr_de_dw_rmsprop_ptr[i] = 0.0;
+    narr_de_dw_stats_b_ptr[i] = 0.0;
   }
-  trainer_bp_layer->de_dw_rmsprop = (float *) narr->ptr;
+  trainer_bp_layer->de_dw_stats_b = (float *) narr->ptr;
 
   return;
 }
@@ -100,8 +100,8 @@ void trainer_bp_layer__gc_mark( TrainerBPLayer *trainer_bp_layer ) {
   rb_gc_mark( trainer_bp_layer->narr_de_dz );
   rb_gc_mark( trainer_bp_layer->narr_de_da );
   rb_gc_mark( trainer_bp_layer->narr_de_dw );
-  rb_gc_mark( trainer_bp_layer->narr_de_dw_momentum );
-  rb_gc_mark( trainer_bp_layer->narr_de_dw_rmsprop );
+  rb_gc_mark( trainer_bp_layer->narr_de_dw_stats_a );
+  rb_gc_mark( trainer_bp_layer->narr_de_dw_stats_b );
   return;
 }
 
@@ -128,13 +128,13 @@ void trainer_bp_layer__deep_copy( TrainerBPLayer *trainer_bp_layer_copy, Trainer
   GetNArray( trainer_bp_layer_copy->narr_de_dw, narr );
   trainer_bp_layer_copy->de_dw = (float *) narr->ptr;
 
-  trainer_bp_layer_copy->narr_de_dw_momentum = na_clone( trainer_bp_layer_orig->narr_de_dw_momentum );
-  GetNArray( trainer_bp_layer_copy->narr_de_dw_momentum, narr );
-  trainer_bp_layer_copy->de_dw_momentum = (float *) narr->ptr;
+  trainer_bp_layer_copy->narr_de_dw_stats_a = na_clone( trainer_bp_layer_orig->narr_de_dw_stats_a );
+  GetNArray( trainer_bp_layer_copy->narr_de_dw_stats_a, narr );
+  trainer_bp_layer_copy->de_dw_stats_a = (float *) narr->ptr;
 
-  trainer_bp_layer_copy->narr_de_dw_rmsprop = na_clone( trainer_bp_layer_orig->narr_de_dw_rmsprop );
-  GetNArray( trainer_bp_layer_copy->narr_de_dw_rmsprop, narr );
-  trainer_bp_layer_copy->de_dw_rmsprop = (float *) narr->ptr;
+  trainer_bp_layer_copy->narr_de_dw_stats_b = na_clone( trainer_bp_layer_orig->narr_de_dw_stats_b );
+  GetNArray( trainer_bp_layer_copy->narr_de_dw_stats_b, narr );
+  trainer_bp_layer_copy->de_dw_stats_b = (float *) narr->ptr;
 
   return;
 }
