@@ -11,7 +11,7 @@
 #include <ruby.h>
 #include "narray.h"
 
-typedef enum {SMOOTH_TYPE_NONE, SMOOTH_TYPE_MOMENTUM, SMOOTH_TYPE_RMSPROP} bp_smooth_type;
+typedef enum {GDACCEL_TYPE_NONE, GDACCEL_TYPE_MOMENTUM, GDACCEL_TYPE_RMSPROP} gd_accel_type;
 
 typedef struct _trainer_bp_layer_raw {
   int num_inputs;
@@ -27,8 +27,8 @@ typedef struct _trainer_bp_layer_raw {
   VALUE narr_de_dw_rmsprop;
   float *de_dw_rmsprop;
   float learning_rate;
-  bp_smooth_type smoothing_type;
-  float smoothing_rate;
+  gd_accel_type gd_accel_type;
+  float gd_accel_rate;
   float max_norm;
   float weight_decay;
   } TrainerBPLayer;

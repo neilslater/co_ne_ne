@@ -1,8 +1,8 @@
 RuNeNe TODOs:
 
     RuNeNe::Trainer::BPLayer
-      - backprop algorithm
       - start a training batch
+      - backprop algorithm
       - apply batch changes to weights
 
     Objective functions

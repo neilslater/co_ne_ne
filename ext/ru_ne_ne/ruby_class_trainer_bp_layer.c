@@ -6,25 +6,25 @@
 VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
 
 // Convert symbol to internal smoothing type
-bp_smooth_type smoothing_type_from_symbol( VALUE smth_type ) {
-  ID smth_id;
+gd_accel_type gd_accel_type_from_symbol( VALUE rv_gdaccel_symbol ) {
+  ID accel_id;
 
-  smth_id = rb_intern("none");
-  if ( ! NIL_P(smth_type) ) {
-    if ( TYPE(smth_type) != T_SYMBOL ) {
+  accel_id = rb_intern("none");
+  if ( ! NIL_P(rv_gdaccel_symbol) ) {
+    if ( TYPE(rv_gdaccel_symbol) != T_SYMBOL ) {
       rb_raise( rb_eTypeError, "Expected symbol for smoothing type" );
     }
-    smth_id = SYM2ID(smth_type);
+    accel_id = SYM2ID(rv_gdaccel_symbol);
   }
 
-  if ( rb_intern("none") == smth_id ) {
-    return SMOOTH_TYPE_NONE;
-  } else if ( rb_intern("momentum") == smth_id ) {
-    return SMOOTH_TYPE_MOMENTUM;
-  } else if ( rb_intern("rmsprop") == smth_id ) {
-    return SMOOTH_TYPE_RMSPROP;
+  if ( rb_intern("none") == accel_id ) {
+    return GDACCEL_TYPE_NONE;
+  } else if ( rb_intern("momentum") == accel_id ) {
+    return GDACCEL_TYPE_MOMENTUM;
+  } else if ( rb_intern("rmsprop") == accel_id ) {
+    return GDACCEL_TYPE_RMSPROP;
   } else {
-    rb_raise( rb_eArgError, "Smoothing type %s not recognised", rb_id2name(smth_id) );
+    rb_raise( rb_eArgError, "Smoothing type %s not recognised", rb_id2name(accel_id) );
   }
 }
 
@@ -41,9 +41,9 @@ void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_
     trainer_bp_layer->learning_rate = NUM2FLT( rv_var );
   }
 
-  rv_var = ValAtSymbol(rv_opts,"smoothing_rate");
+  rv_var = ValAtSymbol(rv_opts,"gd_accel_rate");
   if ( !NIL_P(rv_var) ) {
-    trainer_bp_layer->smoothing_rate = NUM2FLT( rv_var );
+    trainer_bp_layer->gd_accel_rate = NUM2FLT( rv_var );
   }
 
   rv_var = ValAtSymbol(rv_opts,"weight_decay");
@@ -56,7 +56,7 @@ void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_
     trainer_bp_layer->max_norm = NUM2FLT( rv_var );
   }
 
-  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( ValAtSymbol(rv_opts,"smoothing_type") );
+  trainer_bp_layer->gd_accel_type = gd_accel_type_from_symbol( ValAtSymbol(rv_opts,"gd_accel_type") );
 
   // Now deal with more complex properties, allow setting of NArrays, provided they fit
 
@@ -313,46 +313,46 @@ VALUE trainer_bp_layer_rbobject__set_learning_rate( VALUE self, VALUE rv_learnin
   return rv_learning_rate;
 }
 
-/* @!attribute [r] smoothing_type
+/* @!attribute [r] gd_accel_type
  * Description goes here
  * @return [Integer]
  */
-VALUE trainer_bp_layer_rbobject__get_smoothing_type( VALUE self ) {
+VALUE trainer_bp_layer_rbobject__get_gd_accel_type( VALUE self ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
 
-  switch( trainer_bp_layer->smoothing_type ) {
-    case SMOOTH_TYPE_NONE:
+  switch( trainer_bp_layer->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
       return ID2SYM( rb_intern("none") );
-    case SMOOTH_TYPE_MOMENTUM:
+    case GDACCEL_TYPE_MOMENTUM:
       return ID2SYM( rb_intern("momentum") );
-    case SMOOTH_TYPE_RMSPROP:
+    case GDACCEL_TYPE_RMSPROP:
       return ID2SYM( rb_intern("rmsprop") );
     default:
-      rb_raise( rb_eRuntimeError, "smoothing_type not valid, internal error");
+      rb_raise( rb_eRuntimeError, "gd_accel_type not valid, internal error");
   }
 }
 
-VALUE trainer_bp_layer_rbobject__set_smoothing_type( VALUE self, VALUE rv_smoothing_type ) {
+VALUE trainer_bp_layer_rbobject__set_gd_accel_type( VALUE self, VALUE rv_gd_accel_type ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
 
-  trainer_bp_layer->smoothing_type = smoothing_type_from_symbol( rv_smoothing_type );
+  trainer_bp_layer->gd_accel_type = gd_accel_type_from_symbol( rv_gd_accel_type );
 
-  return rv_smoothing_type;
+  return rv_gd_accel_type;
 }
 
-/* @!attribute smoothing_rate
+/* @!attribute gd_accel_rate
  * Description goes here
  * @return [Float]
  */
-VALUE trainer_bp_layer_rbobject__get_smoothing_rate( VALUE self ) {
+VALUE trainer_bp_layer_rbobject__get_gd_accel_rate( VALUE self ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-  return FLT2NUM( trainer_bp_layer->smoothing_rate );
+  return FLT2NUM( trainer_bp_layer->gd_accel_rate );
 }
 
-VALUE trainer_bp_layer_rbobject__set_smoothing_rate( VALUE self, VALUE rv_smoothing_rate ) {
+VALUE trainer_bp_layer_rbobject__set_gd_accel_rate( VALUE self, VALUE rv_gd_accel_rate ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-  trainer_bp_layer->smoothing_rate = NUM2FLT( rv_smoothing_rate );
-  return rv_smoothing_rate;
+  trainer_bp_layer->gd_accel_rate = NUM2FLT( rv_gd_accel_rate );
+  return rv_gd_accel_rate;
 }
 
 /* @!attribute max_norm
@@ -445,6 +445,18 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
   return self;
 }
 
+/* @overload backprop_from_objective
+ * Description goes here
+ * @return [NArray<sfloat>] self
+ */
+
+////// WORK IN PROGRESS . . .
+VALUE trainer_bp_layer_rbobject__backprop_from_objective( VALUE self, VALUE rv_layer, VALUE rv_target, VALUE rv_objective ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  // trainer_bp_layer__backprop_from_objective( trainer_bp_layer );
+  return self;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -465,10 +477,10 @@ void init_trainer_bp_layer_class( ) {
   rb_define_method( RuNeNe_Trainer_BPLayer, "de_dw_rmsprop", trainer_bp_layer_rbobject__get_narr_de_dw_rmsprop, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate", trainer_bp_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "learning_rate=", trainer_bp_layer_rbobject__set_learning_rate, 1 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_type", trainer_bp_layer_rbobject__get_smoothing_type, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_type=", trainer_bp_layer_rbobject__set_smoothing_type, 1 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_rate", trainer_bp_layer_rbobject__get_smoothing_rate, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "smoothing_rate=", trainer_bp_layer_rbobject__set_smoothing_rate, 1 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "gd_accel_type", trainer_bp_layer_rbobject__get_gd_accel_type, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "gd_accel_type=", trainer_bp_layer_rbobject__set_gd_accel_type, 1 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "gd_accel_rate", trainer_bp_layer_rbobject__get_gd_accel_rate, 0 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "gd_accel_rate=", trainer_bp_layer_rbobject__set_gd_accel_rate, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "max_norm", trainer_bp_layer_rbobject__get_max_norm, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "max_norm=", trainer_bp_layer_rbobject__set_max_norm, 1 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "weight_decay", trainer_bp_layer_rbobject__get_weight_decay, 0 );
@@ -476,5 +488,5 @@ void init_trainer_bp_layer_class( ) {
 
   // TrainerBPLayer methods
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
-
+  rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_from_objective", trainer_bp_layer_rbobject__backprop_from_objective, 3 );
 }

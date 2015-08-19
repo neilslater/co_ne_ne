@@ -23,8 +23,8 @@ TrainerBPLayer *trainer_bp_layer__create() {
   trainer_bp_layer->narr_de_dw_rmsprop = Qnil;
   trainer_bp_layer->de_dw_rmsprop = NULL;
   trainer_bp_layer->learning_rate = 0.01;
-  trainer_bp_layer->smoothing_type = SMOOTH_TYPE_NONE;
-  trainer_bp_layer->smoothing_rate = 0.9;
+  trainer_bp_layer->gd_accel_type = GDACCEL_TYPE_NONE;
+  trainer_bp_layer->gd_accel_rate = 0.9;
   trainer_bp_layer->max_norm = 0.0;
   trainer_bp_layer->weight_decay = 0.0;
   return trainer_bp_layer;
@@ -111,8 +111,8 @@ void trainer_bp_layer__deep_copy( TrainerBPLayer *trainer_bp_layer_copy, Trainer
   trainer_bp_layer_copy->num_inputs = trainer_bp_layer_orig->num_inputs;
   trainer_bp_layer_copy->num_outputs = trainer_bp_layer_orig->num_outputs;
   trainer_bp_layer_copy->learning_rate = trainer_bp_layer_orig->learning_rate;
-  trainer_bp_layer_copy->smoothing_type = trainer_bp_layer_orig->smoothing_type;
-  trainer_bp_layer_copy->smoothing_rate = trainer_bp_layer_orig->smoothing_rate;
+  trainer_bp_layer_copy->gd_accel_type = trainer_bp_layer_orig->gd_accel_type;
+  trainer_bp_layer_copy->gd_accel_rate = trainer_bp_layer_orig->gd_accel_rate;
   trainer_bp_layer_copy->max_norm = trainer_bp_layer_orig->max_norm;
   trainer_bp_layer_copy->weight_decay = trainer_bp_layer_orig->weight_decay;
 

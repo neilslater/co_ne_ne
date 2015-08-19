@@ -146,8 +146,8 @@ class RuNeNe::Trainer::BPLayer
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
     Hash[
-      [:num_inputs, :num_outputs, :learning_rate, :smoothing_rate, :weight_decay, :max_norm,
-       :smoothing_type, :de_dz, :de_da, :de_dw, :de_dw_momentum, :de_dw_rmsprop].map do |prop|
+      [:num_inputs, :num_outputs, :learning_rate, :gd_accel_rate, :weight_decay, :max_norm,
+       :gd_accel_type, :de_dz, :de_da, :de_dw, :de_dw_momentum, :de_dw_rmsprop].map do |prop|
         [ prop, self.send(prop) ]
       end
     ]

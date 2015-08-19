@@ -36,19 +36,19 @@ describe RuNeNe::Trainer::BPLayer do
       it "uses conservative defaults for all learning params" do
         bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1 )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.01
-        expect( bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.9
-        expect( bpl.smoothing_type ).to be :none
+        expect( bpl.gd_accel_rate ).to be_within( 1e-6 ).of 0.9
+        expect( bpl.gd_accel_type ).to be :none
         expect( bpl.weight_decay ).to eql 0.0
         expect( bpl.max_norm ).to eql 0.0
       end
 
       it "uses options hash to set learning params" do
         bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
-            :learning_rate => 0.005, :smoothing_rate => 0.99, :weight_decay => 1e-4,
-            :max_norm => 2.4, :smoothing_type => :rmsprop )
+            :learning_rate => 0.005, :gd_accel_rate => 0.99, :weight_decay => 1e-4,
+            :max_norm => 2.4, :gd_accel_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
-        expect( bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.99
-        expect( bpl.smoothing_type ).to be :rmsprop
+        expect( bpl.gd_accel_rate ).to be_within( 1e-6 ).of 0.99
+        expect( bpl.gd_accel_type ).to be :rmsprop
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
       end
@@ -100,11 +100,11 @@ describe RuNeNe::Trainer::BPLayer do
 
       it "uses options hash to set learning params" do
         bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
-            :learning_rate => 0.005, :smoothing_rate => 0.99, :weight_decay => 1e-4,
-            :max_norm => 2.4, :smoothing_type => :rmsprop )
+            :learning_rate => 0.005, :gd_accel_rate => 0.99, :weight_decay => 1e-4,
+            :max_norm => 2.4, :gd_accel_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
-        expect( bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.99
-        expect( bpl.smoothing_type ).to be :rmsprop
+        expect( bpl.gd_accel_rate ).to be_within( 1e-6 ).of 0.99
+        expect( bpl.gd_accel_type ).to be :rmsprop
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
       end
@@ -125,8 +125,8 @@ describe RuNeNe::Trainer::BPLayer do
     describe "with Marshal" do
       it "can save and retrieve a training layer, preserving all property values" do
         orig_bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 2,
-            :learning_rate => 0.003, :smoothing_rate => 0.97, :weight_decay => 2e-3,
-            :max_norm => 1.1, :smoothing_type => :momentum,
+            :learning_rate => 0.003, :gd_accel_rate => 0.97, :weight_decay => 2e-3,
+            :max_norm => 1.1, :gd_accel_type => :momentum,
             :de_dz => NArray[ 0.25, 0.5 ], :de_da => NArray[ 0.13, 0.14 ],
             :de_dw => NArray[ [-0.1, 0.01, 0.001], [0.6, 0.5, 0.4] ],
             :de_dw_momentum => NArray[ [0.1, -0.01, -0.001], [0.55, 0.35, 0.14] ],
@@ -139,8 +139,8 @@ describe RuNeNe::Trainer::BPLayer do
         expect( copy_bpl.num_inputs ).to be 2
         expect( copy_bpl.num_outputs ).to be 2
         expect( copy_bpl.learning_rate ).to be_within( 1e-6 ).of 0.003
-        expect( copy_bpl.smoothing_rate ).to be_within( 1e-6 ).of 0.97
-        expect( copy_bpl.smoothing_type ).to be :momentum
+        expect( copy_bpl.gd_accel_rate ).to be_within( 1e-6 ).of 0.97
+        expect( copy_bpl.gd_accel_type ).to be :momentum
         expect( copy_bpl.weight_decay ).to be_within( 1e-8 ).of 2e-3
         expect( copy_bpl.max_norm ).to be_within( 1e-6 ).of 1.1
 
@@ -156,8 +156,8 @@ describe RuNeNe::Trainer::BPLayer do
   describe "instance methods" do
     before :each do
       @bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 3, :num_outputs => 2,
-            :learning_rate => 0.007, :smoothing_rate => 0.95, :weight_decay => 1e-3,
-            :max_norm => 1.5, :smoothing_type => :momentum )
+            :learning_rate => 0.007, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
+            :max_norm => 1.5, :gd_accel_type => :momentum )
     end
 
     describe "#clone" do
@@ -168,8 +168,8 @@ describe RuNeNe::Trainer::BPLayer do
         expect( @copy.num_outputs ).to be 2
 
         expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.007
-        expect( @copy.smoothing_rate ).to be_within( 1e-6 ).of 0.95
-        expect( @copy.smoothing_type ).to be :momentum
+        expect( @copy.gd_accel_rate ).to be_within( 1e-6 ).of 0.95
+        expect( @copy.gd_accel_type ).to be :momentum
         expect( @copy.weight_decay ).to be_within( 1e-8 ).of 1e-3
         expect( @copy.max_norm ).to be_within( 1e-6 ).of 1.5
       end
