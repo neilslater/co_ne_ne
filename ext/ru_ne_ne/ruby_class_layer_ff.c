@@ -63,34 +63,8 @@ void assert_value_wraps_layer_ff( VALUE obj ) {
   }
 }
 
-transfer_type transfer_fn_from_symbol( VALUE tfn_type ) {
-  ID tfn_id;
-
-  tfn_id = rb_intern("sigmoid");
-  if ( ! NIL_P(tfn_type) ) {
-    if ( TYPE(tfn_type) != T_SYMBOL ) {
-      rb_raise( rb_eTypeError, "Expected symbol for transfer function type" );
-    }
-    tfn_id = SYM2ID(tfn_type);
-  }
-
-  if ( rb_intern("sigmoid") == tfn_id ) {
-    return SIGMOID;
-  } else if ( rb_intern("tanh") == tfn_id ) {
-    return TANH;
-  } else if ( rb_intern("relu") == tfn_id ) {
-    return RELU;
-  } else if ( rb_intern("linear") == tfn_id ) {
-    return LINEAR;
-  } else if ( rb_intern("softmax") == tfn_id ) {
-    return SOFTMAX;
-  } else {
-    rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
-  }
-}
-
-void set_transfer_fn_from_symbol( Layer_FF *layer_ff , VALUE tfn_type ) {
-  layer_ff->transfer_fn = transfer_fn_from_symbol( tfn_type );
+void set_symbol_to_transfer_type( Layer_FF *layer_ff , VALUE tfn_type ) {
+  layer_ff->transfer_fn = symbol_to_transfer_type( tfn_type );
 }
 
 VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) {
@@ -148,7 +122,7 @@ VALUE layer_ff_class_initialize( int argc, VALUE* argv, VALUE self ) {
   layer_ff->num_inputs = i;
   layer_ff->num_outputs = o;
 
-  set_transfer_fn_from_symbol( layer_ff, tfn_type );
+  set_symbol_to_transfer_type( layer_ff, tfn_type );
 
   layer_ff__new_narrays( layer_ff );
   layer_ff__init_weights( layer_ff );
@@ -211,7 +185,7 @@ VALUE layer_ff_class_from_weights( int argc, VALUE* argv, VALUE self ) {
     rb_raise( rb_eArgError, "Output size %d is less than minimum of 1", o );
   }
 
-  return layer_ff_new_ruby_object_from_weights( val_weights, transfer_fn_from_symbol( tfn_type ) );
+  return layer_ff_new_ruby_object_from_weights( val_weights, symbol_to_transfer_type( tfn_type ) );
 }
 
 /* @!attribute [r] num_inputs

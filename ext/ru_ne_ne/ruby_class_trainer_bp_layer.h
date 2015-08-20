@@ -8,6 +8,7 @@
 #include "struct_layer_ff.h"
 #include "struct_trainer_bp_layer.h"
 #include "shared_vars.h"
+#include "ruby_c_conversions.h"
 
 void init_trainer_bp_layer_class( );
 

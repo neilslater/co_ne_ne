@@ -344,41 +344,8 @@ static VALUE objective_transfer_generic_de_dz( VALUE self, VALUE rv_objective_ty
   volatile VALUE val_targets;
   struct NARRAY *na_predictions;
   struct NARRAY *na_targets;
-  objective_type o;
-  transfer_type t;
-
-  // TODO: Move this to generally shared conversion code
-  if ( TYPE(rv_transfer_type) != T_SYMBOL ) {
-    rb_raise( rb_eTypeError, "Expected symbol for transfer function type" );
-  }
-  ID tfn_id = SYM2ID(rv_transfer_type);
-  if ( rb_intern("sigmoid") == tfn_id ) {
-    t = SIGMOID;
-  } else if ( rb_intern("tanh") == tfn_id ) {
-    t = TANH;
-  } else if ( rb_intern("relu") == tfn_id ) {
-    t = RELU;
-  } else if ( rb_intern("linear") == tfn_id ) {
-    t = LINEAR;
-  } else if ( rb_intern("softmax") == tfn_id ) {
-    t = SOFTMAX;
-  } else {
-    rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
-  }
-
-  if ( TYPE(rv_objective_type) != T_SYMBOL ) {
-    rb_raise( rb_eTypeError, "Expected symbol for objective function type" );
-  }
-  ID ofn_id = SYM2ID(rv_objective_type);
-  if ( rb_intern("mse") == ofn_id ) {
-    o = MSE;
-  } else if ( rb_intern("logloss") == ofn_id ) {
-    o = LOGLOSS;
-  } else if ( rb_intern("mlogloss") == ofn_id ) {
-    o = MLOGLOSS;
-  } else {
-    rb_raise( rb_eArgError, "Objective function type %s not recognised", rb_id2name(ofn_id) );
-  }
+  objective_type o = symbol_to_objective_type( rv_objective_type );
+  transfer_type t = symbol_to_transfer_type( rv_transfer_type );
 
   val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
   GetNArray( val_predictions, na_predictions );

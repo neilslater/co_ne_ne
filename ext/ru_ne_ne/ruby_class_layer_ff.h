@@ -13,6 +13,7 @@
 #include "struct_layer_ff.h"
 #include "ruby_module_transfer.h"
 #include "shared_vars.h"
+#include "ruby_c_conversions.h"
 
 void init_layer_ff_class();
 VALUE layer_ff_new_ruby_object( int n_inputs, int n_outputs, transfer_type tfn );
