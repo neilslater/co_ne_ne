@@ -158,6 +158,21 @@ describe RuNeNe::Objective::MeanSquaredError do
         end
       end
     end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :mse, :tanh ...)" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::TanH )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.8) - 0.9
+          zvals = NArray.sfloat(n).random(5.0) - 2.5
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.tanh_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mse, :tanh, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
   end
 
   describe "#relu_de_dz" do
@@ -178,6 +193,21 @@ describe RuNeNe::Objective::MeanSquaredError do
               expect( got_de_dz[i] ).to be < 1e-5
             end
           end
+        end
+      end
+    end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :mse, :relu ...)" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::ReLU )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(3.0)
+          zvals = NArray.sfloat(n).random(4.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.relu_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mse, :relu, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
         end
       end
     end
@@ -202,12 +232,31 @@ describe RuNeNe::Objective::MeanSquaredError do
         end
       end
     end
-  end
 
+    it "is same as calling RuNeNe::Objective.de_dz( :mse, :softmax ...)" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Softmax )
+
+      (3..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(2.0)
+          demi_layer.run( zvals, targets )
+
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.softmax_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mse, :softmax, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
+  end
 end
 
 
 describe RuNeNe::Objective::LogLoss do
+  before :each do
+    NArray.srand(4273421351)
+  end
+
   describe "#loss" do
     it "is 0.0 when predictions and targets match at y=0.0 or y=1.0" do
       (1..5).each do |n|
@@ -312,6 +361,21 @@ describe RuNeNe::Objective::LogLoss do
       end
     end
 
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :sigmoid ...) with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.int(n).random(2).to_f
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :logloss, :sigmoid, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
+
     it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
 
@@ -326,6 +390,21 @@ describe RuNeNe::Objective::LogLoss do
           (0...n).each do |i|
             expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
           end
+        end
+      end
+    end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :sigmoid ...) with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :logloss, :sigmoid, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
         end
       end
     end
@@ -352,6 +431,22 @@ describe RuNeNe::Objective::LogLoss do
       end
     end
 
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :softmax ...) with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :logloss, :softmax, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
+
     it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
 
@@ -369,10 +464,29 @@ describe RuNeNe::Objective::LogLoss do
         end
       end
     end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :softmax ...) with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::LogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :logloss, :softmax, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
   end
 end
 
 describe RuNeNe::Objective::MulticlassLogLoss do
+  before :each do
+    NArray.srand(427342151)
+  end
+
   describe "#loss" do
     it "is 0.0 when predictions and targets match" do
       (1..5).each do |n|
@@ -480,6 +594,21 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       end
     end
 
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :sigmoid ...) with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).random(2).to_f
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mlogloss, :sigmoid, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
+
     it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Sigmoid )
 
@@ -498,6 +627,21 @@ describe RuNeNe::Objective::MulticlassLogLoss do
               expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
             end
           end
+        end
+      end
+    end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :logloss, :sigmoid ...) with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Sigmoid )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mlogloss, :sigmoid, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
         end
       end
     end
@@ -524,6 +668,22 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       end
     end
 
+    it "is same as calling RuNeNe::Objective.de_dz( :mlogloss, :softmax ...) with y=0.0 or 1.0" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.int(n).to_f
+          targets[ rand(n) ] = 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mlogloss, :softmax, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
+
     it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
       demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Softmax )
 
@@ -538,6 +698,21 @@ describe RuNeNe::Objective::MulticlassLogLoss do
           (0...n).each do |i|
             expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
           end
+        end
+      end
+    end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :mlogloss, :softmax ...) with y in [0.0..1.0]" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MulticlassLogLoss, RuNeNe::Transfer::Softmax )
+
+      (2..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(4.0) - 2.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mlogloss, :softmax, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
         end
       end
     end
