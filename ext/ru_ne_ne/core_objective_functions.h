@@ -41,4 +41,7 @@ void obj_mlogloss_tr_tanh_de_dz( int n, float* predictions, float* targets, floa
 void obj_mlogloss_tr_softmax_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
 void obj_mlogloss_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz );
 
+// Potentially change this to resolve to correct function to call and make an "engine descriptor" . . .
+void de_dz_from_objective_and_transfer( objective_type obj, transfer_type t, int n, float* predictions, float* targets, float* output_de_dz );
+
 #endif

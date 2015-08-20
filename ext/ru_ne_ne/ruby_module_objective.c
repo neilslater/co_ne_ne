@@ -322,6 +322,83 @@ static VALUE mlogloss_softmax_de_dz( VALUE self, VALUE rv_predictions, VALUE rv_
   return generic_delta_loss_function( rv_predictions, rv_targets, obj_mlogloss_tr_softmax_de_dz );
 }
 
+/* Document-module:  RuNeNe::Objective
+ *
+ * Generic objective function module. Objective functions are identified by their Symbols:
+ * :mse -> RuNeNe::Objective::MeanSquaredError
+ * :logloss -> RuNeNe::Objective::LogLoss
+ * :mlogloss -> RuNeNe::Objective::MulticlassLogLoss
+ */
+
+/* @overload de_dz( objective_type, transfer_type, predictions, targets )
+ * Calculates the partial derivative of the loss value with respect to z value from before the
+ * transfer function for given objective type, transfer type, predictions and targets.
+ * @param [Symbol] objective_type
+ * @param [Symbol] transfer_type
+ * @param [NArray<sfloat>] predictions
+ * @param [NArray<sfloat>] targets
+ * @return [NArray<sfloat>] partial derivatives of loss wrt pre-transfer values
+ */
+static VALUE objective_transfer_generic_de_dz( VALUE self, VALUE rv_objective_type, VALUE rv_transfer_type, VALUE rv_predictions, VALUE rv_targets ) {
+  volatile VALUE val_predictions;
+  volatile VALUE val_targets;
+  struct NARRAY *na_predictions;
+  struct NARRAY *na_targets;
+  objective_type o;
+  transfer_type t;
+
+  // TODO: Move this to generally shared conversion code
+  if ( TYPE(rv_transfer_type) != T_SYMBOL ) {
+    rb_raise( rb_eTypeError, "Expected symbol for transfer function type" );
+  }
+  ID tfn_id = SYM2ID(rv_transfer_type);
+  if ( rb_intern("sigmoid") == tfn_id ) {
+    t = SIGMOID;
+  } else if ( rb_intern("tanh") == tfn_id ) {
+    t = TANH;
+  } else if ( rb_intern("relu") == tfn_id ) {
+    t = RELU;
+  } else if ( rb_intern("linear") == tfn_id ) {
+    t = LINEAR;
+  } else if ( rb_intern("softmax") == tfn_id ) {
+    t = SOFTMAX;
+  } else {
+    rb_raise( rb_eArgError, "Transfer function type %s not recognised", rb_id2name(tfn_id) );
+  }
+
+  if ( TYPE(rv_objective_type) != T_SYMBOL ) {
+    rb_raise( rb_eTypeError, "Expected symbol for objective function type" );
+  }
+  ID ofn_id = SYM2ID(rv_objective_type);
+  if ( rb_intern("mse") == ofn_id ) {
+    o = MSE;
+  } else if ( rb_intern("logloss") == ofn_id ) {
+    o = LOGLOSS;
+  } else if ( rb_intern("mlogloss") == ofn_id ) {
+    o = MLOGLOSS;
+  } else {
+    rb_raise( rb_eArgError, "Objective function type %s not recognised", rb_id2name(ofn_id) );
+  }
+
+  val_predictions = na_cast_object( rv_predictions, NA_SFLOAT );
+  GetNArray( val_predictions, na_predictions );
+
+  val_targets = na_cast_object( rv_targets, NA_SFLOAT );
+  GetNArray( val_targets, na_targets );
+
+  if ( na_predictions->total !=  na_targets->total ) {
+    rb_raise( rb_eArgError, "Predictions length %d, but targets length %d", na_predictions->total, na_targets->total );
+  }
+
+  struct NARRAY *na_delta_loss;
+  volatile VALUE rv_delta_loss = na_make_object( NA_SFLOAT, na_predictions->rank, na_predictions->shape, cNArray );
+  GetNArray( rv_delta_loss, na_delta_loss );
+
+  de_dz_from_objective_and_transfer( o, t, na_predictions->total, (float*) na_predictions->ptr, (float*) na_targets->ptr, (float*) na_delta_loss->ptr );
+
+  return rv_delta_loss;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_objective_module( ) {
@@ -350,5 +427,7 @@ void init_objective_module( ) {
   rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "tanh_de_dz", mlogloss_tanh_de_dz, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "relu_de_dz", mlogloss_relu_de_dz, 2 );
   rb_define_singleton_method( RuNeNe_Objective_MulticlassLogLoss, "softmax_de_dz", mlogloss_softmax_de_dz, 2 );
+
+  rb_define_singleton_method( RuNeNe_Objective, "de_dz", objective_transfer_generic_de_dz, 4 );
 
 }

@@ -12,7 +12,7 @@ gd_accel_type gd_accel_type_from_symbol( VALUE rv_gdaccel_symbol ) {
   accel_id = rb_intern("none");
   if ( ! NIL_P(rv_gdaccel_symbol) ) {
     if ( TYPE(rv_gdaccel_symbol) != T_SYMBOL ) {
-      rb_raise( rb_eTypeError, "Expected symbol for gradient descent acceleration type" );
+      rb_raise( rb_eTypeError, "Gradient descent acceleration type must be a Symbol" );
     }
     accel_id = SYM2ID(rv_gdaccel_symbol);
   }

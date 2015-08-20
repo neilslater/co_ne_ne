@@ -310,3 +310,85 @@ void obj_mlogloss_tr_softmax_de_dz( int n, float* predictions, float* targets, f
 void obj_mlogloss_tr_relu_de_dz( int n, float* predictions, float* targets, float* output_de_dz ) {
   rb_raise( rb_eRuntimeError, "Cannot combine mlogloss objective and relu output layer." );
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//  Combined de_dz function across all objectibe and transfer type combinations
+//
+
+void de_dz_from_objective_and_transfer( objective_type obj, transfer_type t, int n, float* predictions, float* targets, float* output_de_dz ) {
+  switch( t ) {
+    case SIGMOID:
+      switch( obj ) {
+        case MSE:
+          obj_mse_tr_sigmoid_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case LOGLOSS:
+          obj_logloss_tr_sigmoid_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case MLOGLOSS:
+          obj_mlogloss_tr_sigmoid_de_dz( n, predictions, targets, output_de_dz );
+          break;
+      }
+      break;
+
+    case TANH:
+      switch( obj ) {
+        case MSE:
+          obj_mse_tr_tanh_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case LOGLOSS:
+          obj_logloss_tr_tanh_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case MLOGLOSS:
+          obj_mlogloss_tr_tanh_de_dz( n, predictions, targets, output_de_dz );
+          break;
+      }
+      break;
+
+    case RELU:
+      switch( obj ) {
+        case MSE:
+          obj_mse_tr_relu_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case LOGLOSS:
+          obj_logloss_tr_relu_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case MLOGLOSS:
+          obj_mlogloss_tr_relu_de_dz( n, predictions, targets, output_de_dz );
+          break;
+      }
+      break;
+
+    case LINEAR:
+      switch( obj ) {
+        case MSE:
+          obj_mse_tr_linear_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case LOGLOSS:
+          obj_logloss_tr_linear_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case MLOGLOSS:
+          obj_mlogloss_tr_linear_de_dz( n, predictions, targets, output_de_dz );
+          break;
+      }
+      break;
+
+    case SOFTMAX:
+      switch( obj ) {
+        case MSE:
+          obj_mse_tr_softmax_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case LOGLOSS:
+          obj_logloss_tr_softmax_de_dz( n, predictions, targets, output_de_dz );
+          break;
+        case MLOGLOSS:
+          obj_mlogloss_tr_softmax_de_dz( n, predictions, targets, output_de_dz );
+          break;
+      }
+      break;
+  }
+
+  return;
+}

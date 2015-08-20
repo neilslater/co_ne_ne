@@ -1,8 +1,8 @@
 require 'helpers'
 
 describe RuNeNe::Objective::MeanSquaredError do
-  before :all do
-    NArray.srand(41233510)
+  before :each do
+    NArray.srand(24134223512)
   end
 
   describe "#loss" do
@@ -90,6 +90,21 @@ describe RuNeNe::Objective::MeanSquaredError do
         end
       end
     end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :mse, :linear ...)" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Linear )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(2.0) - 1.0
+          zvals = NArray.sfloat(n).random(2.0) - 1.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.linear_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mse, :linear, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
+        end
+      end
+    end
   end
 
   describe "#sigmoid_de_dz" do
@@ -106,6 +121,21 @@ describe RuNeNe::Objective::MeanSquaredError do
           (0...n).each do |i|
             expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
           end
+        end
+      end
+    end
+
+    it "is same as calling RuNeNe::Objective.de_dz( :mse, :sigmoid ...)" do
+      demi_layer = TestDemiOutputLayer.new( RuNeNe::Objective::MeanSquaredError, RuNeNe::Transfer::Sigmoid )
+
+      (1..5).each do |n|
+        5.times do
+          targets = NArray.sfloat(n).random(1.0)
+          zvals = NArray.sfloat(n).random(10.0) - 5.0
+          demi_layer.run( zvals, targets )
+          got_de_dz = RuNeNe::Objective::MeanSquaredError.sigmoid_de_dz( demi_layer.output, targets )
+          generic_de_dz = RuNeNe::Objective.de_dz( :mse, :sigmoid, demi_layer.output, targets )
+          expect( got_de_dz ).to be_narray_like generic_de_dz
         end
       end
     end
