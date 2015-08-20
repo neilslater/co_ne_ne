@@ -5,28 +5,6 @@
 // Hash lookup helper
 VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
 
-// Convert symbol to internal gd acceleration type
-gd_accel_type gd_accel_type_from_symbol( VALUE rv_gdaccel_symbol ) {
-  ID accel_id;
-
-  accel_id = rb_intern("none");
-  if ( ! NIL_P(rv_gdaccel_symbol) ) {
-    if ( TYPE(rv_gdaccel_symbol) != T_SYMBOL ) {
-      rb_raise( rb_eTypeError, "Gradient descent acceleration type must be a Symbol" );
-    }
-    accel_id = SYM2ID(rv_gdaccel_symbol);
-  }
-
-  if ( rb_intern("none") == accel_id ) {
-    return GDACCEL_TYPE_NONE;
-  } else if ( rb_intern("momentum") == accel_id ) {
-    return GDACCEL_TYPE_MOMENTUM;
-  } else if ( rb_intern("rmsprop") == accel_id ) {
-    return GDACCEL_TYPE_RMSPROP;
-  } else {
-    rb_raise( rb_eArgError, "gd_accel_type %s not recognised", rb_id2name(accel_id) );
-  }
-}
 
 // Helper for converting hash to C properties
 void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_layer ) {
@@ -56,7 +34,7 @@ void copy_hash_to_bplayer_properties( VALUE rv_opts, TrainerBPLayer *trainer_bp_
     trainer_bp_layer->max_norm = NUM2FLT( rv_var );
   }
 
-  trainer_bp_layer->gd_accel_type = gd_accel_type_from_symbol( ValAtSymbol(rv_opts,"gd_accel_type") );
+  trainer_bp_layer->gd_accel_type = symbol_to_gd_accel_type( ValAtSymbol(rv_opts,"gd_accel_type") );
 
   // Now deal with more complex properties, allow setting of NArrays, provided they fit
 
@@ -319,23 +297,13 @@ VALUE trainer_bp_layer_rbobject__set_learning_rate( VALUE self, VALUE rv_learnin
  */
 VALUE trainer_bp_layer_rbobject__get_gd_accel_type( VALUE self ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-
-  switch( trainer_bp_layer->gd_accel_type ) {
-    case GDACCEL_TYPE_NONE:
-      return ID2SYM( rb_intern("none") );
-    case GDACCEL_TYPE_MOMENTUM:
-      return ID2SYM( rb_intern("momentum") );
-    case GDACCEL_TYPE_RMSPROP:
-      return ID2SYM( rb_intern("rmsprop") );
-    default:
-      rb_raise( rb_eRuntimeError, "gd_accel_type not valid, internal error");
-  }
+  return gd_accel_type_to_symbol( trainer_bp_layer->gd_accel_type );
 }
 
 VALUE trainer_bp_layer_rbobject__set_gd_accel_type( VALUE self, VALUE rv_gd_accel_type ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
 
-  trainer_bp_layer->gd_accel_type = gd_accel_type_from_symbol( rv_gd_accel_type );
+  trainer_bp_layer->gd_accel_type = symbol_to_gd_accel_type( rv_gd_accel_type );
 
   return rv_gd_accel_type;
 }
@@ -452,7 +420,7 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
 
 ////// WORK IN PROGRESS . . .
 VALUE trainer_bp_layer_rbobject__backprop_from_objective( VALUE self, VALUE rv_layer, VALUE rv_target, VALUE rv_objective ) {
-  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  // TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
   // trainer_bp_layer__backprop_from_objective( trainer_bp_layer );
   return self;
 }

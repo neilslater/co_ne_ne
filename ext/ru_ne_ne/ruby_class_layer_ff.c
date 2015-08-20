@@ -212,25 +212,7 @@ VALUE layer_ff_object_num_outputs( VALUE self ) {
  */
 VALUE layer_ff_object_transfer( VALUE self ) {
   Layer_FF *layer_ff = get_layer_ff_struct( self );
-  VALUE t;
-  switch ( layer_ff->transfer_fn ) {
-    case SIGMOID:
-      t = RuNeNe_Transfer_Sigmoid;
-      break;
-    case TANH:
-      t = RuNeNe_Transfer_TanH;
-      break;
-    case RELU:
-      t = RuNeNe_Transfer_ReLU;
-      break;
-    case LINEAR:
-      t = RuNeNe_Transfer_Linear;
-      break;
-    case SOFTMAX:
-      t = RuNeNe_Transfer_Softmax;
-      break;
-  }
-  return t;
+  return transfer_type_to_module( layer_ff->transfer_fn );
 }
 
 /* @!attribute [r] weights
