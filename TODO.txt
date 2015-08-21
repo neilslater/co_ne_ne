@@ -1,7 +1,6 @@
 RuNeNe TODOs:
 
     Refactoring:
-        move conversions C enum <-> Ruby Symbol
         objective_function_spec DRY
         use vtables and function lookups to build a training routine from components
 
