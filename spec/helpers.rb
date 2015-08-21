@@ -46,11 +46,12 @@ RSpec::Matchers.define :be_narray_like do |expected_narray,diff_limit=1e-9|
   end
 end
 
-def xor_test nn
-  (nn.run( NArray.cast( [-1.0, -1.0], 'sfloat' ) )[0] - 0.0).abs < 0.1 &&
-    (nn.run( NArray.cast( [-1.0, 1.0], 'sfloat' ) )[0] - 1.0).abs < 0.1 &&
-    (nn.run( NArray.cast( [1.0, -1.0], 'sfloat' ) )[0] - 1.0).abs < 0.1 &&
-    (nn.run( NArray.cast( [1.0, 1.0], 'sfloat' ) )[0] - 0.0).abs < 0.1
+def test_size_range nmin = 1, nmax = 5
+  (nmin..nmax).each do |n|
+    5.times do
+      yield n
+    end
+  end
 end
 
 class TestDemiOutputLayer
