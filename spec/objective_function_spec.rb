@@ -589,12 +589,15 @@ describe RuNeNe::Objective::MulticlassLogLoss do
     end
 
     it "is numerically accurate gradient for the loss function measured pre-transfer with y in [0.0..1.0]" do
-      test_size_range(2,5) do |n|
+      def layer_setup
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(4.0) - 2.0
         demi_layer.run( zvals, targets )
         got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
+      end
 
+      test_size_range(2,5) do |n|
+        layer_setup
         rough_gradients = demi_layer.measure_de_dz( zvals, targets, 0.005 )
         (0...n).each do |i|
           expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
@@ -604,9 +607,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
 
     it "is same as calling RuNeNe::Objective.de_dz( :mlogloss, :softmax ...) with y in [0.0..1.0]" do
       test_size_range(2,5) do |n|
-        targets = NArray.sfloat(n).random(1.0)
-        zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
+        layer_setup
         got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
         generic_de_dz = RuNeNe::Objective.de_dz( :mlogloss, :softmax, demi_layer.output, targets )
         expect( got_de_dz ).to be_narray_like generic_de_dz
