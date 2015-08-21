@@ -8,6 +8,21 @@ def assert_same_as_generic_de_dz( module_name, transfer_type, demi_layer, target
   expect( got_de_dz ).to be_narray_like generic_de_dz
 end
 
+def assert_gradient_test( module_name, transfer_type, demi_layer, targets, zvals )
+  demi_layer.run( zvals, targets )
+  subject_module = RuNeNe::Objective.const_get( module_name )
+  got_de_dz = subject_module.send( "#{transfer_type}_de_dz", demi_layer.output, targets )
+
+  rough_gradients = demi_layer.measure_de_dz( zvals, targets )
+  (0...targets.size).each do |i|
+    if rough_gradients[i] == 0
+      expect( got_de_dz[i] ).to be_within(1e-6).of 0.0
+    else
+      expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
+    end
+  end
+end
+
 describe RuNeNe::Objective::MeanSquaredError do
   before :each do
     NArray.srand(24134223512)
@@ -84,12 +99,7 @@ describe RuNeNe::Objective::MeanSquaredError do
       test_size_range do |n|
         targets = NArray.sfloat(n).random(2.0) - 1.0
         zvals = NArray.sfloat(n).random(2.0) - 1.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MeanSquaredError.linear_de_dz( demi_layer.output, targets )
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MeanSquaredError, :linear, demi_layer, targets, zvals )
       end
     end
 
@@ -109,12 +119,7 @@ describe RuNeNe::Objective::MeanSquaredError do
       test_size_range do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(10.0) - 5.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MeanSquaredError.sigmoid_de_dz( demi_layer.output, targets )
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MeanSquaredError, :sigmoid, demi_layer, targets, zvals )
       end
     end
 
@@ -134,12 +139,7 @@ describe RuNeNe::Objective::MeanSquaredError do
       test_size_range do |n|
         targets = NArray.sfloat(n).random(1.8) - 0.9
         zvals = NArray.sfloat(n).random(5.0) - 2.5
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MeanSquaredError.tanh_de_dz( demi_layer.output, targets )
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MeanSquaredError, :tanh, demi_layer, targets, zvals )
       end
     end
 
@@ -159,16 +159,7 @@ describe RuNeNe::Objective::MeanSquaredError do
       test_size_range do |n|
         targets = NArray.sfloat(n).random(3.0)
         zvals = NArray.sfloat(n).random(4.0) - 1.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MeanSquaredError.relu_de_dz( demi_layer.output, targets )
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          if rough_gradients[i].abs > 1e-6
-            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-          else
-            expect( got_de_dz[i] ).to be < 1e-5
-          end
-        end
+        assert_gradient_test( :MeanSquaredError, :relu, demi_layer, targets, zvals )
       end
     end
 
@@ -188,13 +179,7 @@ describe RuNeNe::Objective::MeanSquaredError do
       test_size_range 3,6 do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(2.0)
-        demi_layer.run( zvals, targets )
-
-        got_de_dz = RuNeNe::Objective::MeanSquaredError.softmax_de_dz( demi_layer.output, targets )
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MeanSquaredError, :softmax, demi_layer, targets, zvals )
       end
     end
 
@@ -298,13 +283,7 @@ describe RuNeNe::Objective::LogLoss do
       test_size_range do |n|
         targets = NArray.int(n).random(2).to_f
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :LogLoss, :sigmoid, demi_layer, targets, zvals )
       end
     end
 
@@ -320,13 +299,7 @@ describe RuNeNe::Objective::LogLoss do
       test_size_range do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::LogLoss.sigmoid_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :LogLoss, :sigmoid, demi_layer, targets, zvals )
       end
     end
 
@@ -347,14 +320,7 @@ describe RuNeNe::Objective::LogLoss do
         targets = NArray.int(n).to_f
         targets[ rand(n) ] = 1.0
         zvals = NArray.sfloat(n).random(2.0) - 1.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :LogLoss, :softmax, demi_layer, targets, zvals )
       end
     end
 
@@ -371,13 +337,7 @@ describe RuNeNe::Objective::LogLoss do
       test_size_range(2,5) do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::LogLoss.softmax_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :LogLoss, :softmax, demi_layer, targets, zvals )
       end
     end
 
@@ -482,17 +442,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       test_size_range(2,5) do |n|
         targets = NArray.int(n).random(2).to_f
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          if rough_gradients[i] == 0
-            expect( got_de_dz[i] ).to be_within(1e-6).of 0.0
-          else
-            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-          end
-        end
+        assert_gradient_test( :MulticlassLogLoss, :sigmoid, demi_layer, targets, zvals )
       end
     end
 
@@ -508,17 +458,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       test_size_range(2,5) do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MulticlassLogLoss.sigmoid_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          if rough_gradients[i] == 0
-            expect( got_de_dz[i] ).to be_within(1e-6).of 0.0
-          else
-            expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-          end
-        end
+        assert_gradient_test( :MulticlassLogLoss, :sigmoid, demi_layer, targets, zvals )
       end
     end
 
@@ -539,14 +479,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
         targets = NArray.int(n).to_f
         targets[ rand(n) ] = 1.0
         zvals = NArray.sfloat(n).random(2.0) - 1.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MulticlassLogLoss, :softmax, demi_layer, targets, zvals )
       end
     end
 
@@ -563,13 +496,7 @@ describe RuNeNe::Objective::MulticlassLogLoss do
       test_size_range(2,5) do |n|
         targets = NArray.sfloat(n).random(1.0)
         zvals = NArray.sfloat(n).random(4.0) - 2.0
-        demi_layer.run( zvals, targets )
-        got_de_dz = RuNeNe::Objective::MulticlassLogLoss.softmax_de_dz( demi_layer.output, targets )
-
-        rough_gradients = demi_layer.measure_de_dz( zvals, targets )
-        (0...n).each do |i|
-          expect( got_de_dz[i] / rough_gradients[i] ).to be_within( 0.01 ).of 1.0
-        end
+        assert_gradient_test( :MulticlassLogLoss, :softmax, demi_layer, targets, zvals )
       end
     end
 
