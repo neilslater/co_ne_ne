@@ -10,6 +10,8 @@
 
 #include <ruby.h>
 #include "narray.h"
+#include "struct_layer_ff.h"
+#include "core_objective_functions.h"
 
 typedef enum {GDACCEL_TYPE_NONE, GDACCEL_TYPE_MOMENTUM, GDACCEL_TYPE_RMSPROP} gd_accel_type;
 
@@ -47,5 +49,6 @@ TrainerBPLayer * trainer_bp_layer__clone( TrainerBPLayer *trainer_bp_layer_orig 
 
 void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer );
 
+void trainer_bp_layer__calc_de_dz_from_example( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff, float *output, float *target, objective_type o );
 
 #endif

@@ -413,15 +413,60 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
   return self;
 }
 
-/* @overload backprop_from_objective
- * Description goes here
- * @return [NArray<sfloat>] self
+/* @overload calc_de_dz_from_example( layer, target, objective_type )
+ * Calculates the partial derivative of objective function with respect to layer z values, given
+ * current layer outputs and the target values it is expected to learn. Sets the value of de_dz
+ * internally.
+ * @param [RuNeNe::Layer::FeedForward] layer
+ * @param [NArray<sfloat>] output
+ * @param [NArray<sfloat>] target
+ * @param [Symbol] objective
+ * @return [RuNeNe::Trainer::BPLayer] self
  */
 
-////// WORK IN PROGRESS . . .
-VALUE trainer_bp_layer_rbobject__backprop_from_objective( VALUE self, VALUE rv_layer, VALUE rv_target, VALUE rv_objective ) {
-  // TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
-  // trainer_bp_layer__backprop_from_objective( trainer_bp_layer );
+VALUE trainer_bp_layer_rbobject__calc_de_dz_from_example( VALUE self, VALUE rv_layer, VALUE rv_output, VALUE rv_target, VALUE rv_objective ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  Layer_FF *layer_ff;
+  objective_type o = symbol_to_objective_type( rv_objective );
+  struct NARRAY* narr_target;
+  struct NARRAY* narr_output;
+  volatile VALUE target_narray;
+  volatile VALUE output_narray;
+
+  // Check we really have a layer object to fetch output from
+  if ( TYPE(rv_layer) != T_DATA ||
+      RDATA(rv_layer)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
+  }
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
+
+  if ( layer_ff->num_outputs != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "layer has %d outputs, but trainer is expecting %d", layer_ff->num_outputs, trainer_bp_layer->num_outputs );
+  }
+
+  // Validate targets array is correct size
+  target_narray = na_cast_object(rv_target, NA_SFLOAT);
+  GetNArray( target_narray, narr_target );
+  if ( narr_target->rank != 1 ) {
+    rb_raise( rb_eArgError, "target rank should be 1, but got %d", narr_target->rank );
+  }
+
+  if ( narr_target->shape[0] != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "target has %d entries, but trainer is expecting %d", narr_target->shape[0], trainer_bp_layer->num_outputs );
+  }
+
+  // Validate outputs array is correct size
+  output_narray = na_cast_object(rv_output, NA_SFLOAT);
+  GetNArray( output_narray, narr_output );
+  if ( narr_output->rank != 1 ) {
+    rb_raise( rb_eArgError, "output rank should be 1, but got %d", narr_output->rank );
+  }
+
+  if ( narr_output->shape[0] != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "output has %d entries, but trainer is expecting %d", narr_output->shape[0], trainer_bp_layer->num_outputs );
+  }
+
+  trainer_bp_layer__calc_de_dz_from_example( trainer_bp_layer, layer_ff, (float *) narr_output->ptr, (float *) narr_target->ptr, o );
   return self;
 }
 
@@ -456,5 +501,5 @@ void init_trainer_bp_layer_class( ) {
 
   // TrainerBPLayer methods
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_from_objective", trainer_bp_layer_rbobject__backprop_from_objective, 3 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "calc_de_dz_from_example", trainer_bp_layer_rbobject__calc_de_dz_from_example, 3 );
 }

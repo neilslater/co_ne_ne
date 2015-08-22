@@ -1,12 +1,15 @@
 RuNeNe TODOs:
 
     Refactoring:
-        objective_function_spec DRY
         use vtables and function lookups to build a training routine from components
 
     RuNeNe::Trainer::BPLayer
       - start a training batch
       - backprop algorithm
+        - calc_de_dz_from_example
+        - calc_de_dz_from_de_da
+        - incr_de_dw
+        - calc_lower_de_da
       - apply batch changes to weights
 
     Objective functions
