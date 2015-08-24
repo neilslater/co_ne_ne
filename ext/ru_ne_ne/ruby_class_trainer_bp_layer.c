@@ -413,7 +413,7 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
   return self;
 }
 
-/* @overload backprop_from_example( layer, target, objective_type )
+/* @overload backprop_for_output_layer( layer, target, objective_type )
  * Calculates the partial derivative of objective function with respect to layer z values, given
  * current layer outputs and the target values it is expected to learn. Sets the value of de_dz
  * internally.
@@ -424,14 +424,16 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
  * @return [RuNeNe::Trainer::BPLayer] self
  */
 
-VALUE trainer_bp_layer_rbobject__backprop_from_example( VALUE self, VALUE rv_layer, VALUE rv_output, VALUE rv_target, VALUE rv_objective ) {
+VALUE trainer_bp_layer_rbobject__backprop_for_output_layer( VALUE self, VALUE rv_layer, VALUE rv_input, VALUE rv_output, VALUE rv_target, VALUE rv_objective ) {
   TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
   Layer_FF *layer_ff;
   objective_type o = symbol_to_objective_type( rv_objective );
   struct NARRAY* narr_target;
   struct NARRAY* narr_output;
+  struct NARRAY* narr_input;
   volatile VALUE target_narray;
   volatile VALUE output_narray;
+  volatile VALUE input_narray;
 
   // Check we really have a layer object to fetch output from
   if ( TYPE(rv_layer) != T_DATA ||
@@ -442,6 +444,17 @@ VALUE trainer_bp_layer_rbobject__backprop_from_example( VALUE self, VALUE rv_lay
 
   if ( layer_ff->num_outputs != trainer_bp_layer->num_outputs ) {
     rb_raise( rb_eArgError, "layer has %d outputs, but trainer is expecting %d", layer_ff->num_outputs, trainer_bp_layer->num_outputs );
+  }
+
+  // Validate inputs array is correct size
+  input_narray = na_cast_object(rv_input, NA_SFLOAT);
+  GetNArray( input_narray, narr_input );
+  if ( narr_input->rank != 1 ) {
+    rb_raise( rb_eArgError, "input rank should be 1, but got %d", narr_input->rank );
+  }
+
+  if ( narr_input->shape[0] != trainer_bp_layer->num_inputs ) {
+    rb_raise( rb_eArgError, "input has %d entries, but trainer is expecting %d", narr_input->shape[0], trainer_bp_layer->num_inputs );
   }
 
   // Validate targets array is correct size
@@ -466,7 +479,8 @@ VALUE trainer_bp_layer_rbobject__backprop_from_example( VALUE self, VALUE rv_lay
     rb_raise( rb_eArgError, "output has %d entries, but trainer is expecting %d", narr_output->shape[0], trainer_bp_layer->num_outputs );
   }
 
-  trainer_bp_layer__backprop_from_example( trainer_bp_layer, layer_ff, (float *) narr_output->ptr, (float *) narr_target->ptr, o );
+  trainer_bp_layer__backprop_for_output_layer( trainer_bp_layer, layer_ff,
+      (float *) narr_input->ptr,  (float *) narr_output->ptr, (float *) narr_target->ptr, o );
   return self;
 }
 
@@ -501,5 +515,5 @@ void init_trainer_bp_layer_class( ) {
 
   // TrainerBPLayer methods
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_from_example", trainer_bp_layer_rbobject__backprop_from_example, 4 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_for_output_layer", trainer_bp_layer_rbobject__backprop_for_output_layer, 5 );
 }

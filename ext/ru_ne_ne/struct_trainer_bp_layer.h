@@ -49,6 +49,7 @@ TrainerBPLayer * trainer_bp_layer__clone( TrainerBPLayer *trainer_bp_layer_orig 
 
 void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer );
 
-void trainer_bp_layer__backprop_from_example( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff, float *output, float *target, objective_type o );
+void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
+      float *input, float *output, float *target, objective_type o );
 
 #endif
