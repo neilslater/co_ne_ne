@@ -84,3 +84,24 @@ class TestDemiOutputLayer
     gradients
   end
 end
+
+def measure_output_layer_de_dw layer, objective_calc, inputs, targets, eta = 0.005
+  grad_mult = 1.0/(2* eta)
+  gradients = layer.weights.clone
+
+  (0...gradients.size).each do |i|
+    up_layer = layer.clone
+    up_layer.weights[i] += eta
+    up_outputs = up_layer.run( inputs )
+    up_loss = objective_calc.call( up_outputs, targets )
+
+    down_layer = layer.clone
+    down_layer.weights[i] -= eta
+    down_outputs = down_layer.run( inputs )
+    down_loss = objective_calc.call( down_outputs, targets )
+
+    gradients[i] = grad_mult * ( up_loss - down_loss )
+  end
+
+  gradients
+end

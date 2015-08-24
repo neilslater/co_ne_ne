@@ -73,6 +73,10 @@ describe "Layer Gradients" do
         trainer.calc_de_dz_from_example( layer, @outputs, @targets, objective_type )
         expect( trainer.de_dz ).to be_narray_like expected_de_dz
       end
+
+      it "matches measured de_dw gradients in top layer" do
+        p measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
+      end
     end
   end
 end
