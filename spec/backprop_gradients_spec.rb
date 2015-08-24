@@ -10,12 +10,13 @@ def for_all_valid_layer_builds
           check_compat = RuNeNe::Objective.de_dz( objective_type, transfer_type, NArray[0.5,0.1], NArray[0.2,0.8]) rescue nil
           next if check_compat.nil?
 
-          # For consistency
+          # For consistency, adding here ensures initial weights are set same each time
           RuNeNe.srand( 893 )
           NArray.srand( 903)
 
           layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
           trainer = RuNeNe::Trainer::BPLayer.from_layer( layer )
+          trainer.start_batch
           yield layer, trainer, objective_type
         end
       end
@@ -50,12 +51,14 @@ end
 
 describe "Layer Gradients" do
   for_all_valid_layer_builds do |layer, trainer, objective_type|
-    describe "for FeedForward(#{layer.num_inputs}, #{layer.num_outputs}, #{layer.transfer.label}) and objective #{objective_type}" do
+    transfer_type = layer.transfer.label
+    describe "for FeedForward(#{layer.num_inputs}, #{layer.num_outputs}, #{transfer_type}) and objective #{objective_type}" do
       before :each do
         @inputs = random_inputs( layer.num_inputs )
-        @targets = random_targets( layer.num_outputs, layer.transfer.label )
+        @targets = random_targets( layer.num_outputs, transfer_type )
 
-        # This ensures that there is a gradient worth calculating in mlogloss scenarios
+        # This ensures that there is a gradient worth calculating in mlogloss examples (all zeroes is
+        # otherwise possible for targets, which is always 0 loss and 0 gradient under mlogloss)
         if ( objective_type == :mlogloss )
           @targets = random_targets( layer.num_outputs, :softmax )
         end
@@ -65,9 +68,10 @@ describe "Layer Gradients" do
         @loss_fn = ->(outputs,targets) { o.loss(outputs,targets) }
       end
 
-      it "calculates loss" do
-        loss = @loss_fn.call(@outputs, @targets)
-        expect(loss).to be > 0.0
+      it "calculates same de_dz gradients in top layer as RuNeNe::Objective.de_dz" do
+        expected_de_dz = RuNeNe::Objective.de_dz( objective_type, transfer_type, @outputs, @targets)
+        trainer.calc_de_dz_from_example( layer, @outputs, @targets, objective_type )
+        expect( trainer.de_dz ).to be_narray_like expected_de_dz
       end
     end
   end

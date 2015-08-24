@@ -501,5 +501,5 @@ void init_trainer_bp_layer_class( ) {
 
   // TrainerBPLayer methods
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
-  rb_define_method( RuNeNe_Trainer_BPLayer, "calc_de_dz_from_example", trainer_bp_layer_rbobject__calc_de_dz_from_example, 3 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "calc_de_dz_from_example", trainer_bp_layer_rbobject__calc_de_dz_from_example, 4 );
 }
