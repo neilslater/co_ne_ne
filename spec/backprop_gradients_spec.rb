@@ -70,12 +70,12 @@ describe "Layer Gradients" do
 
       it "calculates same de_dz gradients in top layer as RuNeNe::Objective.de_dz" do
         expected_de_dz = RuNeNe::Objective.de_dz( objective_type, transfer_type, @outputs, @targets)
-        trainer.calc_de_dz_from_example( layer, @outputs, @targets, objective_type )
+        trainer.backprop_from_example( layer, @outputs, @targets, objective_type )
         expect( trainer.de_dz ).to be_narray_like expected_de_dz
       end
 
       it "matches measured de_dw gradients in top layer" do
-        p measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
+        p expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
       end
     end
   end

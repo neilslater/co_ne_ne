@@ -154,7 +154,7 @@ void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer ) {
   return;
 }
 
-void trainer_bp_layer__calc_de_dz_from_example( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff, float *output, float *target, objective_type o ) {
+void trainer_bp_layer__backprop_from_example( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff, float *output, float *target, objective_type o ) {
   de_dz_from_objective_and_transfer( o,
       layer_ff->transfer_fn,
       trainer_bp_layer->num_outputs,
