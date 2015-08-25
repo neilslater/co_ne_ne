@@ -13,7 +13,7 @@ def for_all_valid_layer_builds
           # For consistency, adding here ensures initial weights are set same each time
           RuNeNe.srand( 893 )
           NArray.srand( 903)
-          srand(52)
+          srand(52) # Needed for :softmax target_type
 
           layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
           trainer = RuNeNe::Trainer::BPLayer.from_layer( layer )
@@ -79,7 +79,7 @@ describe "Backprop gradients per layer" do
         expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
         trainer.start_batch
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
-        expect( trainer.de_dw ).to be_narray_like( expected_de_dw, 1e-6 )
+        expect( trainer.de_dw ).to be_narray_like( expected_de_dw, 1e-7 )
       end
 
       it "accumulates de_dw gradients in output layer when called twice" do
@@ -87,7 +87,7 @@ describe "Backprop gradients per layer" do
         trainer.start_batch
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
-        expect( trainer.de_dw ).to be_narray_like( expected_de_dw * 2, 1e-6 )
+        expect( trainer.de_dw ).to be_narray_like( expected_de_dw * 2, 1e-7 )
       end
     end
   end
