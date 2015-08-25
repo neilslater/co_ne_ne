@@ -81,6 +81,14 @@ describe "Backprop gradients per layer" do
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dw ).to be_narray_like( expected_de_dw, 1e-6 )
       end
+
+      it "accumulates de_dw gradients in output layer when called twice" do
+        expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
+        trainer.start_batch
+        trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
+        trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
+        expect( trainer.de_dw ).to be_narray_like( expected_de_dw * 2, 1e-6 )
+      end
     end
   end
 end
