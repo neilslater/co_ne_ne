@@ -154,6 +154,22 @@ void trainer_bp_layer__start_batch( TrainerBPLayer *trainer_bp_layer ) {
   return;
 }
 
+void increment_de_dw_from_de_dz( int in_size, int out_size, float *inputs, float *de_dw, float *de_dz) {
+  int i,j, offset;
+
+  // If j were the inner loop, this might be able to use SIMD
+  for ( j = 0; j < out_size; j++ ) {
+    offset = j * ( in_size + 1 );
+    for ( i = 0; i < in_size; i++ ) {
+      de_dw[ offset + i ] += de_dz[j] * inputs[i];
+    }
+    // For the bias, we have no input value
+    de_dw[ offset + in_size ] += de_dz[j];
+  }
+
+  return;
+}
+
 void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
       float *input, float *output, float *target, objective_type o ) {
   de_dz_from_objective_and_transfer( o,
@@ -161,6 +177,12 @@ void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_lay
       trainer_bp_layer->num_outputs,
       output,
       target,
+      trainer_bp_layer->de_dz );
+
+  increment_de_dw_from_de_dz( trainer_bp_layer->num_inputs,
+      trainer_bp_layer->num_outputs,
+      input,
+      trainer_bp_layer->de_dw,
       trainer_bp_layer->de_dz );
   return;
 }

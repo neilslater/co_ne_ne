@@ -17,7 +17,6 @@ def for_all_valid_layer_builds
 
           layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
           trainer = RuNeNe::Trainer::BPLayer.from_layer( layer )
-          trainer.start_batch
           yield layer, trainer, objective_type
         end
       end
@@ -50,7 +49,7 @@ def objective_module objective_type
   end
 end
 
-describe "Layer Gradients" do
+describe "Backprop gradients per layer" do
   for_all_valid_layer_builds do |layer, trainer, objective_type|
     transfer_type = layer.transfer.label
     describe "for FeedForward(#{layer.num_inputs}, #{layer.num_outputs}, #{transfer_type}) and objective #{objective_type}" do
@@ -69,14 +68,18 @@ describe "Layer Gradients" do
         @loss_fn = ->(outputs,targets) { o.loss(outputs,targets) }
       end
 
-      it "calculates same de_dz gradients in top layer as RuNeNe::Objective.de_dz" do
+      it "calculates same de_dz gradients in output layer as RuNeNe::Objective.de_dz" do
         expected_de_dz = RuNeNe::Objective.de_dz( objective_type, transfer_type, @outputs, @targets)
+        trainer.start_batch
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dz ).to be_narray_like expected_de_dz
       end
 
-      it "matches measured de_dw gradients in top layer" do
+      it "matches measured de_dw gradients in output layer" do
         expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
+        trainer.start_batch
+        trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
+        expect( trainer.de_dw ).to be_narray_like( expected_de_dw, 1e-6 )
       end
     end
   end
