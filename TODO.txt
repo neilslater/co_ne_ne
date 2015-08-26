@@ -2,6 +2,10 @@ RuNeNe TODOs:
 
     Refactoring:
         use vtables and function lookups to build a training routine from components
+        more SIMD in backprop and gradient calculations
+        are there larger SIMD vector sizes available on later Intel chips? https://en.wikipedia.org/wiki/Advanced_Vector_Extensions
+        Windows compatibiliy
+        rubinius compatibility (due to GC moving memory blocks)?
 
     RuNeNe::Trainer::BPLayer
       - start a training batch

@@ -230,7 +230,6 @@ void  de_dz_from_upper_de_da( transfer_type t, int out_size, float *output, floa
 void trainer_bp_layer__backprop_for_mid_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
       float *input, float *output, float *upper_de_da ) {
 
-  // TODO: Implement this:
   de_dz_from_upper_de_da( layer_ff->transfer_fn,
       trainer_bp_layer->num_outputs,
       output,
