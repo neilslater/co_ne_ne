@@ -89,6 +89,13 @@ describe "Backprop gradients per layer" do
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dw ).to be_narray_like( expected_de_dw * 2, 1e-7 )
       end
+
+      it "matches measured de_da gradients from inputs to final layer" do
+        expected_de_da = measure_output_layer_de_da( layer, @loss_fn, @inputs, @targets )
+        trainer.start_batch
+        trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
+        expect( trainer.de_da ).to be_narray_like( expected_de_da, 1e-7 )
+      end
     end
   end
 end

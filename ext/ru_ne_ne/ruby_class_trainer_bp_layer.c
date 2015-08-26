@@ -413,11 +413,12 @@ VALUE trainer_bp_layer_rbobject__start_batch( VALUE self ) {
   return self;
 }
 
-/* @overload backprop_for_output_layer( layer, target, objective_type )
+/* @overload backprop_for_output_layer( layer, input, output, target, objective_type )
  * Calculates the partial derivative of objective function with respect to layer z values, given
  * current layer outputs and the target values it is expected to learn. Sets the value of de_dz
  * internally.
  * @param [RuNeNe::Layer::FeedForward] layer
+ * @param [NArray<sfloat>] input
  * @param [NArray<sfloat>] output
  * @param [NArray<sfloat>] target
  * @param [Symbol] objective
@@ -485,6 +486,78 @@ VALUE trainer_bp_layer_rbobject__backprop_for_output_layer( VALUE self, VALUE rv
 }
 
 
+/* @overload backprop_for_mid_layer( layer, input, output, upper_de_da )
+ * Calculates the partial derivative of objective function with respect to layer z values, given
+ * current layer outputs and the target values it is expected to learn. Sets the value of de_dz
+ * internally.
+ * @param [RuNeNe::Layer::FeedForward] layer
+ * @param [NArray<sfloat>] input
+ * @param [NArray<sfloat>] output
+ * @param [NArray<sfloat>] upper_de_da
+ * @return [RuNeNe::Trainer::BPLayer] self
+ */
+
+VALUE trainer_bp_layer_rbobject__backprop_for_mid_layer( VALUE self, VALUE rv_layer, VALUE rv_input, VALUE rv_output, VALUE rv_upper_de_da, VALUE rv_objective ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  Layer_FF *layer_ff;
+
+  struct NARRAY* narr_upper_de_da;
+  struct NARRAY* narr_output;
+  struct NARRAY* narr_input;
+  volatile VALUE upper_de_da_narray;
+  volatile VALUE output_narray;
+  volatile VALUE input_narray;
+
+  // Check we really have a layer object to fetch output from
+  if ( TYPE(rv_layer) != T_DATA ||
+      RDATA(rv_layer)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
+  }
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
+
+  if ( layer_ff->num_outputs != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "layer has %d outputs, but trainer is expecting %d", layer_ff->num_outputs, trainer_bp_layer->num_outputs );
+  }
+
+  // Validate inputs array is correct size
+  input_narray = na_cast_object(rv_input, NA_SFLOAT);
+  GetNArray( input_narray, narr_input );
+  if ( narr_input->rank != 1 ) {
+    rb_raise( rb_eArgError, "input rank should be 1, but got %d", narr_input->rank );
+  }
+
+  if ( narr_input->shape[0] != trainer_bp_layer->num_inputs ) {
+    rb_raise( rb_eArgError, "input has %d entries, but trainer is expecting %d", narr_input->shape[0], trainer_bp_layer->num_inputs );
+  }
+
+  // Validate upper_de_das array is correct size
+  upper_de_da_narray = na_cast_object(rv_upper_de_da, NA_SFLOAT);
+  GetNArray( upper_de_da_narray, narr_upper_de_da );
+  if ( narr_upper_de_da->rank != 1 ) {
+    rb_raise( rb_eArgError, "upper_de_da rank should be 1, but got %d", narr_upper_de_da->rank );
+  }
+
+  if ( narr_upper_de_da->shape[0] != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "upper_de_da has %d entries, but trainer is expecting %d", narr_upper_de_da->shape[0], trainer_bp_layer->num_outputs );
+  }
+
+  // Validate outputs array is correct size
+  output_narray = na_cast_object(rv_output, NA_SFLOAT);
+  GetNArray( output_narray, narr_output );
+  if ( narr_output->rank != 1 ) {
+    rb_raise( rb_eArgError, "output rank should be 1, but got %d", narr_output->rank );
+  }
+
+  if ( narr_output->shape[0] != trainer_bp_layer->num_outputs ) {
+    rb_raise( rb_eArgError, "output has %d entries, but trainer is expecting %d", narr_output->shape[0], trainer_bp_layer->num_outputs );
+  }
+
+  trainer_bp_layer__backprop_for_mid_layer( trainer_bp_layer, layer_ff,
+      (float *) narr_input->ptr,  (float *) narr_output->ptr, (float *) narr_upper_de_da->ptr );
+
+  return self;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_trainer_bp_layer_class( ) {
@@ -516,4 +589,5 @@ void init_trainer_bp_layer_class( ) {
   // TrainerBPLayer methods
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_for_output_layer", trainer_bp_layer_rbobject__backprop_for_output_layer, 5 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_for_mid_layer", trainer_bp_layer_rbobject__backprop_for_mid_layer, 4 );
 }

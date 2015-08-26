@@ -105,3 +105,25 @@ def measure_output_layer_de_dw layer, objective_calc, inputs, targets, eta = 0.0
 
   gradients
 end
+
+# This de_da is for error grad wrt activations of *inputs* to final layer in the network
+def measure_output_layer_de_da layer, objective_calc, inputs, targets, eta = 0.005
+  grad_mult = 1.0/(2* eta)
+  gradients = inputs.clone
+
+  (0...gradients.size).each do |i|
+    up_inputs = inputs.clone
+    up_inputs[i] += eta
+    up_outputs = layer.run( up_inputs )
+    up_loss = objective_calc.call( up_outputs, targets )
+
+    down_inputs = inputs.clone
+    down_inputs[i] -= eta
+    down_outputs = layer.run( down_inputs )
+    down_loss = objective_calc.call( down_outputs, targets )
+
+    gradients[i] = grad_mult * ( up_loss - down_loss )
+  end
+
+  gradients
+end

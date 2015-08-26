@@ -162,6 +162,8 @@ void increment_de_dw_from_de_dz( int in_size, int out_size, float *inputs, float
     offset = j * ( in_size + 1 );
     for ( i = 0; i < in_size; i++ ) {
       de_dw[ offset + i ] += de_dz[j] * inputs[i];
+      // TODO: We could do de_da[i] += de_dz[j] * weights[ offset + i ]; here?
+      // measure best combination . . .
     }
     // For the bias, we have no input value
     de_dw[ offset + in_size ] += de_dz[j];
@@ -170,8 +172,25 @@ void increment_de_dw_from_de_dz( int in_size, int out_size, float *inputs, float
   return;
 }
 
+// This "drops down" one layer calculating de_da for *inputs* to a layer
+void calc_de_da_from_de_dz( int in_size, int out_size, float *weights, float *de_da, float *de_dz) {
+  int i,j;
+  float t;
+
+  for ( i = 0; i < in_size; i++ ) {
+    t = 0.0;
+    for ( j = 0; j < out_size; j++ ) {
+      t += de_dz[j] * weights[ j * ( in_size + 1 ) + i ];
+    }
+    de_da[i] = t;
+  }
+
+  return;
+}
+
 void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
       float *input, float *output, float *target, objective_type o ) {
+
   de_dz_from_objective_and_transfer( o,
       layer_ff->transfer_fn,
       trainer_bp_layer->num_outputs,
@@ -184,5 +203,52 @@ void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_lay
       input,
       trainer_bp_layer->de_dw,
       trainer_bp_layer->de_dz );
+
+  // TODO: Either combine for speed with incr_de_dw *or* make it optional (not required in first layer)
+  calc_de_da_from_de_dz( trainer_bp_layer->num_inputs,
+      trainer_bp_layer->num_outputs,
+      layer_ff->weights,
+      trainer_bp_layer->de_da,
+      trainer_bp_layer->de_dz );
+
+  return;
+}
+
+void  de_dz_from_upper_de_da( transfer_type t, int out_size, float *output, float *de_da, float *de_dz ) {
+  int i;
+
+  // This stores da_dz . . .
+  transfer_bulk_derivative_at( t, out_size, output, de_dz );
+  // de_dz = de_da * da_dz
+  for ( i = 0; i < out_size; i++ ) {
+    de_dz[i] *= de_da[i];
+  }
+
+  return;
+}
+
+void trainer_bp_layer__backprop_for_mid_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
+      float *input, float *output, float *upper_de_da ) {
+
+  // TODO: Implement this:
+  de_dz_from_upper_de_da( layer_ff->transfer_fn,
+      trainer_bp_layer->num_outputs,
+      output,
+      upper_de_da,
+      trainer_bp_layer->de_dz );
+
+  increment_de_dw_from_de_dz( trainer_bp_layer->num_inputs,
+      trainer_bp_layer->num_outputs,
+      input,
+      trainer_bp_layer->de_dw,
+      trainer_bp_layer->de_dz );
+
+  // TODO: Either combine for speed with incr_de_dw *or* make it optional (not required in first layer)
+  calc_de_da_from_de_dz( trainer_bp_layer->num_inputs,
+      trainer_bp_layer->num_outputs,
+      layer_ff->weights,
+      trainer_bp_layer->de_da,
+      trainer_bp_layer->de_dz );
+
   return;
 }
