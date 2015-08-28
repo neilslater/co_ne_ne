@@ -24,6 +24,40 @@ def for_all_valid_layer_builds
   end
 end
 
+def for_all_test_networks
+  (3..3).each do |input_size|
+    (3..3).each do |hidden_size|
+      [:linear,:relu,:sigmoid,:tanh,:softmax].each do |hidden_transfer_type|
+        (1..2).each do |output_size|
+          [:linear,:sigmoid,:softmax].each do |output_transfer_type|
+            next if ( output_transfer_type == :softmax && output_size < 2)
+
+            objective = case output_transfer_type
+            when :linear then RuNeNe::Objective::MeanSquaredError
+            when :sigmoid then RuNeNe::Objective::LogLoss
+            when :softmax then RuNeNe::Objective::MulticlassLogLoss
+            else raise "Unknown objective type for #{output_transfer_type}"
+            end
+
+            # For consistency, adding here ensures initial weights are set same each time
+            RuNeNe.srand( 2143 )
+            NArray.srand( 9889)
+            srand( 341 ) # Needed for :softmax target_type
+
+            description = "[#{input_size},#{hidden_size}/#{hidden_transfer_type},#{output_size}/#{output_transfer_type}] network"
+
+            nn = TestLayerStack.new( input_size,
+              [ [hidden_size,hidden_transfer_type], [hidden_size,output_transfer_type] ],
+              objective
+              )
+            yield nn, description
+          end
+        end
+      end
+    end
+  end
+end
+
 def random_inputs n
   NArray.sfloat(n).random(2.0) - 1.0
 end
@@ -95,6 +129,23 @@ describe "Backprop gradients per layer" do
         trainer.start_batch
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_da ).to be_narray_like( expected_de_da, 1e-7 )
+      end
+    end
+  end
+
+  for_all_test_networks do |nn,description|
+    describe "for #{description}" do
+      it "matches measured de_dw gradients in all layers" do
+        inputs = random_inputs( nn.layers.first.num_inputs )
+        targets = random_targets( nn.layers.last.num_outputs, nn.layers.last.transfer.label )
+        nn.start_batch
+        nn.process_example(inputs, targets)
+        got_de_dws = nn.training_layers.map { |tl| tl.de_dw }
+        measured_de_dws = nn.measure_de_dw( inputs, targets, 0.001)
+
+        got_de_dws.zip( measured_de_dws ).each do |got_de_dw,expect_de_dw|
+          expect( got_de_dw ).to be_narray_like( expect_de_dw, 1e-7 )
+        end
       end
     end
   end
