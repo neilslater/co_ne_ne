@@ -215,13 +215,31 @@ void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_lay
 }
 
 void  de_dz_from_upper_de_da( transfer_type t, int out_size, float *output, float *de_da, float *de_dz ) {
-  int i;
+  int i,k;
+  float tmp;
 
-  // This stores da_dz . . .
-  transfer_bulk_derivative_at( t, out_size, output, de_dz );
-  // de_dz = de_da * da_dz
-  for ( i = 0; i < out_size; i++ ) {
-    de_dz[i] *= de_da[i];
+  // TODO: Optimise this away if not required (a mid-layer softmax is unusual)
+  if ( t == SOFTMAX ) {
+    // Generic softmax da_dz needs larger storage array
+    float *da_dz = xmalloc( sizeof(float) * out_size * out_size );
+
+    raw_softmax_bulk_derivative_at( out_size, output, da_dz );
+
+    for ( i = 0; i < out_size ; i++ ) {
+      tmp = 0.0;
+      for ( k = 0; k < out_size ; k++ ) {
+        tmp += de_da[k] * da_dz[i * out_size + k];
+      }
+      de_dz[i] = tmp;
+    }
+    xfree( da_dz );
+  } else {
+    // This stores da_dz . . .
+    transfer_bulk_derivative_at( t, out_size, output, de_dz );
+    // de_dz = de_da * da_dz
+    for ( i = 0; i < out_size; i++ ) {
+      de_dz[i] *= de_da[i];
+    }
   }
 
   return;

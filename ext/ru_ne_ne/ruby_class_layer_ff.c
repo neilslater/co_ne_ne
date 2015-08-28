@@ -274,7 +274,9 @@ VALUE layer_ff_object_run( VALUE self, VALUE rv_input ) {
   }
 
   struct NARRAY *na_output;
+
   volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
+
   GetNArray( val_output, na_output );
 
   layer_ff__run( layer_ff, (float*) na_input->ptr, (float*) na_output->ptr );

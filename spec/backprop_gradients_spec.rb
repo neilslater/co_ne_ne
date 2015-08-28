@@ -11,9 +11,9 @@ def for_all_valid_layer_builds
           next if check_compat.nil?
 
           # For consistency, adding here ensures initial weights are set same each time
-          RuNeNe.srand( 893 )
-          NArray.srand( 903)
-          srand(52) # Needed for :softmax target_type
+          RuNeNe.srand( 824 )
+          NArray.srand( 906 )
+          srand(5434) # Needed for :softmax target_type
 
           layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
           trainer = RuNeNe::Trainer::BPLayer.from_layer( layer )
@@ -25,10 +25,10 @@ def for_all_valid_layer_builds
 end
 
 def for_all_test_networks
-  (3..3).each do |input_size|
-    (3..3).each do |hidden_size|
+  (2..5).each do |input_size|
+    (2..4).each do |hidden_size|
       [:linear,:relu,:sigmoid,:tanh,:softmax].each do |hidden_transfer_type|
-        (1..2).each do |output_size|
+        (1..3).each do |output_size|
           [:linear,:sigmoid,:softmax].each do |output_transfer_type|
             next if ( output_transfer_type == :softmax && output_size < 2)
 
@@ -40,14 +40,14 @@ def for_all_test_networks
             end
 
             # For consistency, adding here ensures initial weights are set same each time
-            RuNeNe.srand( 2143 )
-            NArray.srand( 9889)
-            srand( 341 ) # Needed for :softmax target_type
+            RuNeNe.srand( 21143 )
+            NArray.srand( 98189)
+            srand( 3141 ) # Needed for :softmax target_type
 
             description = "[#{input_size},#{hidden_size}/#{hidden_transfer_type},#{output_size}/#{output_transfer_type}] network"
 
             nn = TestLayerStack.new( input_size,
-              [ [hidden_size,hidden_transfer_type], [hidden_size,output_transfer_type] ],
+              [ [hidden_size,hidden_transfer_type], [output_size,output_transfer_type] ],
               objective
               )
             yield nn, description
@@ -141,7 +141,7 @@ describe "Backprop gradients per layer" do
         nn.start_batch
         nn.process_example(inputs, targets)
         got_de_dws = nn.training_layers.map { |tl| tl.de_dw }
-        measured_de_dws = nn.measure_de_dw( inputs, targets, 0.001)
+        measured_de_dws = nn.measure_de_dw( inputs, targets )
 
         got_de_dws.zip( measured_de_dws ).each do |got_de_dw,expect_de_dw|
           expect( got_de_dw ).to be_narray_like( expect_de_dw, 1e-7 )

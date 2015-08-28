@@ -7,6 +7,7 @@ RuNeNe TODOs:
         Windows compatibiliy
         rubinius compatibility (due to GC moving memory blocks)?
         Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
+        Optimise away additions for softmax mid-layer support
 
     Multi-layer test framework for Layer::FeedForward and Trainer::BPLayer
 
