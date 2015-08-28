@@ -127,3 +127,88 @@ def measure_output_layer_de_da layer, objective_calc, inputs, targets, eta = 0.0
 
   gradients
 end
+
+# This is essentially a full, but simple, feed-forward network, using Ruby for the
+# network architecture and the C-backed classes for the individual layers
+class TestLayerStack
+  attr_reader :objective, :transfer, :output, :loss, :layers
+  attr_reader :training_layers, :input_size, :activations
+
+  # Each layer is given by [output_size, transfer_type]
+  def initialize input_size, layers, objective
+    @objective = objective
+    @input_size = input_size
+    @layers = layers.map do |output_size, transfer_type|
+      new_layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
+      input_size = output_size
+      new_layer
+    end
+    @training_layers = @layers.map do |rlayer|
+      RuNeNe::Trainer::BPLayer.from_layer( rlayer )
+    end
+
+    @transfer = transfer
+  end
+
+  def start_batch
+    @training_layers.each do |bplayer|
+      bplayer.start_batch
+    end
+  end
+
+  def process_example inputs, targets
+    @activations = [inputs]
+    @layers.each do |layer|
+      @activations << layer.run( @activations.last )
+    end
+    @output = @activations.last
+
+    @loss = objective.loss( @output, targets )
+
+    @training_layers.last.backprop_for_output_layer( @layers.last,
+        @activations[-2], @activations.last, targets, objective.label )
+
+    layer_ids = [*0..(layers.count-2)]
+    layer_ids.reverse.each do |layer_id|
+      @training_layers[layer_id].backprop_for_mid_layer( @layers[layer_id],
+        @activations[layer_id], @activations[layer_id+1], @training_layers[layer_id+1].de_da )
+    end
+  end
+
+  def measure_de_dw inputs, targets, eta = 0.005
+    de_dw = blank_de_dw
+    @layers.each_with_index do |l,i|
+      gradients = de_dw[i]
+      (0...gradients.size).each do |weight_id|
+        gradients[weight_id] = single_weight_de_dw( i, weight_id, eta, inputs, targets )
+      end
+    end
+    de_dw
+  end
+
+  private
+
+  def cloned_layers
+    @layers.map { |l| l.clone }
+  end
+
+  def blank_de_dw
+    @layers.map { |l| l.weights * 0 }
+  end
+
+  def single_weight_de_dw layer_id, weight_id, eta, inputs, targets
+    up_loss = adjusted_w_loss( layer_id, weight_id, eta, inputs, targets )
+    down_loss = adjusted_w_loss( layer_id, weight_id, -eta, inputs, targets )
+    ( up_loss - down_loss ) / ( 2 * eta )
+  end
+
+  def adjusted_w_loss layer_id, weight_id, eta, inputs, targets
+    tmp_activations = [inputs]
+    tmp_layers = cloned_layers
+    tmp_layers[layer_id].weights[weight_id] += eta
+    tmp_layers.each do |layer|
+      tmp_activations << layer.run( tmp_activations.last )
+    end
+    objective.loss( tmp_activations.last, targets )
+  end
+end

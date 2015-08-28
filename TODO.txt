@@ -6,6 +6,9 @@ RuNeNe TODOs:
         are there larger SIMD vector sizes available on later Intel chips? https://en.wikipedia.org/wiki/Advanced_Vector_Extensions
         Windows compatibiliy
         rubinius compatibility (due to GC moving memory blocks)?
+        Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
+
+    Multi-layer test framework for Layer::FeedForward and Trainer::BPLayer
 
     RuNeNe::Trainer::BPLayer
       - start a training batch
@@ -15,9 +18,6 @@ RuNeNe TODOs:
         - incr_de_dw
         - calc_lower_de_da
       - apply batch changes to weights
-
-    Objective functions
-        Flag to allow optimisation of dE_dz with mlogloss + softmax, only when targets meet simplicity requirements
 
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions
@@ -43,6 +43,12 @@ RuNeNe TODOs:
 
     Easy save/load methods for all major objects
 
+    max norm regularisation
+
+    l2 regularisation?
+
+    rmsprop
+
     transfer issues below to tickets in Github (how to give priorities and dependencies?)
 
 ----- v0.0.1 release ?
@@ -65,12 +71,6 @@ RuNeNe TODOs:
 
     Dropout layer
 
-    max norm regularisation
-
-    l2 regularisation?
-
-    rmsprop
-
     dynamic learning rate?
 
     auto-categorisation and category expansion
@@ -92,61 +92,3 @@ RuNeNe TODOs:
     Maxout layer
 
     Import other NN trained models (cxxnet, caffe)
-
-
-
-
-
-
-
-RuNeNe DONE:
-
-    Training data shuffled inputs/outputs
-
-    Training data Marshal
-
-    Linear neurons
-
-    Lock first layer in network, to prevent adding earlier layers
-
-    Factor training cycle et al to struct_mlp_network
-
-    Clone a network
-
-    Fill starting NArrays with 0.0
-
-    Init network from first layer
-
-    Init network from array of layers (in Ruby)
-
-    Marshalling, for layers and network
-
-    Learning rate and momentum for network
-
-    YARD docs
-
-    Don't return ms_error on normal training
-
-    Add training data class
-
-    Fisher-Yates shuffle
-
-    srand accept arrays
-
-    Layer init weights
-
-    Separate out cost/loss functions
-
-    Log loss cost
-
-    Softmax layer
-
-    Combine cost de_da with da_dz to go direct to de_dz for most/all output deltas . . .
-        Optimised combos for de_dz
-        *  linear & mse
-        *  sigmoid & logloss
-        *  softmax & mlogloss
-        *  relu & mse
-
-        Non-optimised combos:
-        *  everything else (block difficult or impossible combinations, such as logloss for linear?)
