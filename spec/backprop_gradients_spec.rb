@@ -25,8 +25,8 @@ def for_all_valid_layer_builds
 end
 
 def for_all_test_networks
-  (2..5).each do |input_size|
-    (2..4).each do |hidden_size|
+  (3..5).each do |input_size|
+    (3..4).each do |hidden_size|
       [:linear,:relu,:sigmoid,:tanh,:softmax].each do |hidden_transfer_type|
         (1..3).each do |output_size|
           [:linear,:sigmoid,:softmax].each do |output_transfer_type|

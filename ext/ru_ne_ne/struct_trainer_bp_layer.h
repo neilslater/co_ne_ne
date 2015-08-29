@@ -55,4 +55,6 @@ void trainer_bp_layer__backprop_for_output_layer( TrainerBPLayer *trainer_bp_lay
 void trainer_bp_layer__backprop_for_mid_layer( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff,
       float *input, float *output, float *upper_de_da );
 
+void trainer_bp_layer__finish_batch( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff );
+
 #endif

@@ -558,6 +558,28 @@ VALUE trainer_bp_layer_rbobject__backprop_for_mid_layer( VALUE self, VALUE rv_la
   return self;
 }
 
+
+/* @overload finish_batch( layer )
+ * Finishes up current batch by modifying weights in layer
+ * @param [RuNeNe::Layer::FeedForward] layer
+ * @return [RuNeNe::Trainer::BPLayer] self
+ */
+
+VALUE trainer_bp_layer_rbobject__finish_batch( VALUE self, VALUE rv_layer ) {
+  TrainerBPLayer *trainer_bp_layer = get_trainer_bp_layer_struct( self );
+  Layer_FF *layer_ff;
+
+  // Check we really have a layer object to fetch output from
+  if ( TYPE(rv_layer) != T_DATA ||
+      RDATA(rv_layer)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
+  }
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
+  trainer_bp_layer__finish_batch( trainer_bp_layer, layer_ff );
+
+  return self;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_trainer_bp_layer_class( ) {
@@ -590,4 +612,5 @@ void init_trainer_bp_layer_class( ) {
   rb_define_method( RuNeNe_Trainer_BPLayer, "start_batch", trainer_bp_layer_rbobject__start_batch, 0 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_for_output_layer", trainer_bp_layer_rbobject__backprop_for_output_layer, 5 );
   rb_define_method( RuNeNe_Trainer_BPLayer, "backprop_for_mid_layer", trainer_bp_layer_rbobject__backprop_for_mid_layer, 4 );
+  rb_define_method( RuNeNe_Trainer_BPLayer, "finish_batch", trainer_bp_layer_rbobject__finish_batch, 1 );
 }

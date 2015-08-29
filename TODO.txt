@@ -9,15 +9,9 @@ RuNeNe TODOs:
         Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
         Optimise away additions for softmax mid-layer support
 
-    Multi-layer test framework for Layer::FeedForward and Trainer::BPLayer
-
     RuNeNe::Trainer::BPLayer
       - start a training batch
       - backprop algorithm
-        - calc_de_dz_from_example
-        - calc_de_dz_from_de_da
-        - incr_de_dw
-        - calc_lower_de_da
       - apply batch changes to weights
 
     RuNeNe::DataSet

@@ -269,3 +269,17 @@ void trainer_bp_layer__backprop_for_mid_layer( TrainerBPLayer *trainer_bp_layer,
 
   return;
 }
+
+void trainer_bp_layer__finish_batch( TrainerBPLayer *trainer_bp_layer, Layer_FF *layer_ff ) {
+  // Needs momentum and rmsprop adding . . .
+
+  int i, n;
+  n = (trainer_bp_layer->num_inputs + 1) * trainer_bp_layer->num_outputs;
+  float lr = trainer_bp_layer->learning_rate;
+
+  for( i = 0; i < n; i++ ) {
+    layer_ff->weights[i] -= trainer_bp_layer->de_dw[i] * lr;
+  }
+
+  return;
+}
