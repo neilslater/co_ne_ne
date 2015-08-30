@@ -147,6 +147,22 @@ describe "Backprop gradients per layer" do
           expect( got_de_dw ).to be_narray_like( expect_de_dw, 1e-7 )
         end
       end
+
+      it "reduces loss when gradient descent step applied at end of a batch" do
+        inputs = random_inputs( nn.layers.first.num_inputs )
+        targets = random_targets( nn.layers.last.num_outputs, nn.layers.last.transfer.label )
+        nn.start_batch
+        nn.process_example(inputs, targets)
+        before_loss = nn.loss
+
+        nn.finish_batch
+
+        nn.start_batch
+        nn.process_example(inputs, targets)
+        after_loss = nn.loss
+
+        expect( after_loss ).to be < before_loss
+      end
     end
   end
 end

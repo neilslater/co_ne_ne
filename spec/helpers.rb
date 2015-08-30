@@ -156,6 +156,12 @@ class TestLayerStack
     end
   end
 
+  def finish_batch
+    @training_layers.zip(@layers).each do |bplayer, layer|
+      bplayer.finish_batch( layer )
+    end
+  end
+
   def process_example inputs, targets
     @activations = [inputs]
     @layers.each do |layer|
