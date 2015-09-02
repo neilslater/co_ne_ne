@@ -151,14 +151,14 @@ class TestLayerStack
   end
 
   def start_batch
-    @training_layers.each do |bplayer|
-      bplayer.start_batch
+    @training_layers.each do |mbgd_layer|
+      mbgd_layer.start_batch
     end
   end
 
   def finish_batch
-    @training_layers.zip(@layers).each do |bplayer, layer|
-      bplayer.finish_batch( layer )
+    @training_layers.zip(@layers).each do |mbgd_layer, layer|
+      mbgd_layer.finish_batch( layer )
     end
   end
 

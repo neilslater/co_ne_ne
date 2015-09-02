@@ -154,7 +154,7 @@ class RuNeNe::Learn::MBGD::Layer
   end
 
   # @!visibility private
-  # Constructs a BPLayer from hash description. Used internally to support Marshal.
+  # Constructs a MBGD::Layerfrom hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
   # @return [RuNeNe::Learn::MBGD::Layer] new object
   def self.from_h h

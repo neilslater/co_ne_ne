@@ -5,8 +5,8 @@
 //  Definition for MBGDLayer and declarations for its memory management
 //
 
-#ifndef STRUCT_TRAINER_BP_LAYER_H
-#define STRUCT_TRAINER_BP_LAYER_H
+#ifndef STRUCT_MBGD_LAYER_H
+#define STRUCT_MBGD_LAYER_H
 
 #include <ruby.h>
 #include "narray.h"
