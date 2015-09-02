@@ -141,7 +141,7 @@ class RuNeNe::DataSet
   end
 end
 
-class RuNeNe::Trainer::BPLayer
+class RuNeNe::Learn::MBGD::Layer
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
@@ -156,9 +156,9 @@ class RuNeNe::Trainer::BPLayer
   # @!visibility private
   # Constructs a BPLayer from hash description. Used internally to support Marshal.
   # @param [Hash] h Keys are :weights and :transfer
-  # @return [RuNeNe::Trainer::BPLayer] new object
+  # @return [RuNeNe::Learn::MBGD::Layer] new object
   def self.from_h h
-    RuNeNe::Trainer::BPLayer.new( h )
+    RuNeNe::Learn::MBGD::Layer.new( h )
   end
 
   # @!visibility private

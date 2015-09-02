@@ -30,8 +30,9 @@ extern VALUE RuNeNe_Layer_FeedForward;
 extern VALUE RuNeNe_Network;
 extern VALUE RuNeNe_DataSet;
 
-extern VALUE RuNeNe_Trainer;
-extern VALUE RuNeNe_Trainer_BPLayer;
+extern VALUE RuNeNe_Learn;
+extern VALUE RuNeNe_Learn_MBGD;
+extern VALUE RuNeNe_Learn_MBGD_Layer;
 extern VALUE RuNeNe_Trainer_BPNetwork;
 
 #endif

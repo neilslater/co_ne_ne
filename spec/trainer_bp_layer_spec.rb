@@ -1,31 +1,31 @@
 require 'helpers'
 
-describe RuNeNe::Trainer::BPLayer do
+describe RuNeNe::Learn::MBGD::Layer do
   describe "class methods" do
     describe "#new" do
       it "creates a new backprop trainer for a layer" do
-        expect( RuNeNe::Trainer::BPLayer.new( :num_inputs => 5, :num_outputs => 5 ) ).to be_a RuNeNe::Trainer::BPLayer
+        expect( RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 5, :num_outputs => 5 ) ).to be_a RuNeNe::Learn::MBGD::Layer
       end
 
       it "refuses to create new trainers for bad parameters" do
-        expect { RuNeNe::Trainer::BPLayer.new( 0 ) }.to raise_error TypeError
-        expect { RuNeNe::Trainer::BPLayer.new( :num_inputs => 3 ) }.to raise_error ArgumentError
-        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3 ) }.to raise_error ArgumentError
-        expect { RuNeNe::Trainer::BPLayer.new( :num_inputs => "hello", :num_outputs => 3 ) }.to raise_error TypeError
-        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+        expect { RuNeNe::Learn::MBGD::Layer.new( 0 ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3 ) }.to raise_error ArgumentError
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_outputs => 3 ) }.to raise_error ArgumentError
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_inputs => "hello", :num_outputs => 3 ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_outputs => 3, :num_inputs => 3,
             :de_dz => "Fish" ) }.to raise_error TypeError
 
         # :de_dz has wrong number of elements here
-        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 3, :num_inputs => 3,
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_outputs => 3, :num_inputs => 3,
             :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
 
         # :de_dw has wrong rank here
-        expect { RuNeNe::Trainer::BPLayer.new( :num_outputs => 1, :num_inputs => 3,
+        expect { RuNeNe::Learn::MBGD::Layer.new( :num_outputs => 1, :num_inputs => 3,
             :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
       end
 
       it "creates expected sizes and defaults for arrays" do
-        bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1 )
+        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1 )
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.0 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
@@ -34,7 +34,7 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "uses conservative defaults for all learning params" do
-        bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1 )
+        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1 )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.01
         expect( bpl.gd_accel_rate ).to be_within( 1e-6 ).of 0.9
         expect( bpl.gd_accel_type ).to be :none
@@ -43,7 +43,7 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "uses options hash to set learning params" do
-        bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
+        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :learning_rate => 0.005, :gd_accel_rate => 0.99, :weight_decay => 1e-4,
             :max_norm => 2.4, :gd_accel_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
@@ -54,7 +54,7 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "uses options hash to set narrays" do
-        bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 1,
+        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
             :de_dw_stats_a => NArray[ [0.1, -0.01, -0.001] ], :de_dw_stats_b => NArray[ [-0.2, 0.02, 0.002] ]
             )
@@ -72,25 +72,25 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "creates a new backprop trainer for a layer" do
-        expect( RuNeNe::Trainer::BPLayer.from_layer( @layer ) ).to be_a RuNeNe::Trainer::BPLayer
+        expect( RuNeNe::Learn::MBGD::Layer.from_layer( @layer ) ).to be_a RuNeNe::Learn::MBGD::Layer
       end
 
       it "refuses to create new trainers for bad parameters" do
-        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer, 0 ) }.to raise_error TypeError
-        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+        expect { RuNeNe::Learn::MBGD::Layer.from_layer( @layer, 0 ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :de_dz => "Fish" ) }.to raise_error TypeError
 
         # :de_dz has wrong number of elements here
-        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+        expect { RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
 
         # :de_dw has wrong rank here
-        expect { RuNeNe::Trainer::BPLayer.from_layer( @layer,
+        expect { RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
       end
 
       it "creates expected sizes and defaults for arrays" do
-        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer )
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer )
         expect( bpl.de_dz ).to be_narray_like NArray[ 0.0 ]
         expect( bpl.de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
         expect( bpl.de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
@@ -99,7 +99,7 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "uses options hash to set learning params" do
-        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :learning_rate => 0.005, :gd_accel_rate => 0.99, :weight_decay => 1e-4,
             :max_norm => 2.4, :gd_accel_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
@@ -110,7 +110,7 @@ describe RuNeNe::Trainer::BPLayer do
       end
 
       it "uses options hash to set narrays" do
-        bpl = RuNeNe::Trainer::BPLayer.from_layer( @layer,
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :de_dz => NArray[ 0.2 ], :de_da => NArray[ 0.1, 0.1 ], :de_dw => NArray[ [-0.1, 0.01, 0.001] ],
             :de_dw_stats_a => NArray[ [0.1, -0.01, -0.001] ], :de_dw_stats_b => NArray[ [-0.2, 0.02, 0.002] ]
             )
@@ -124,7 +124,7 @@ describe RuNeNe::Trainer::BPLayer do
 
     describe "with Marshal" do
       it "can save and retrieve a training layer, preserving all property values" do
-        orig_bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 2, :num_outputs => 2,
+        orig_bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 2,
             :learning_rate => 0.003, :gd_accel_rate => 0.97, :weight_decay => 2e-3,
             :max_norm => 1.1, :gd_accel_type => :momentum,
             :de_dz => NArray[ 0.25, 0.5 ], :de_da => NArray[ 0.13, 0.14 ],
@@ -155,7 +155,7 @@ describe RuNeNe::Trainer::BPLayer do
 
   describe "instance methods" do
     before :each do
-      @bpl = RuNeNe::Trainer::BPLayer.new( :num_inputs => 3, :num_outputs => 2,
+      @bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
             :learning_rate => 0.007, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
             :max_norm => 1.5, :gd_accel_type => :momentum )
     end

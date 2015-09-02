@@ -144,7 +144,7 @@ class TestLayerStack
       new_layer
     end
     @training_layers = @layers.map do |rlayer|
-      RuNeNe::Trainer::BPLayer.from_layer( rlayer )
+      RuNeNe::Learn::MBGD::Layer.from_layer( rlayer )
     end
 
     @transfer = transfer

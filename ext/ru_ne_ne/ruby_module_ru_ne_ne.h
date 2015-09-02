@@ -17,7 +17,7 @@
 #include "ruby_module_objective.h"
 #include "ruby_class_layer_ff.h"
 #include "ruby_class_dataset.h"
-#include "ruby_class_trainer_bp_layer.h"
+#include "ruby_class_learn_mbgd_layer.h"
 #include "mt.h"
 #include "core_shuffle.h"
 #include "shared_vars.h"

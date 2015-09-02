@@ -1,5 +1,73 @@
 RuNeNe TODOs:
 
+    TL names:
+    R::Transfer
+    R::Objective
+    R::Layer
+    R::Learn ??
+    R::DataSet*
+    R::Network*
+
+
+    Naming: Trainer -> Optimizer ? Separate Layer utilities from optimisers . . .
+    1)
+        Name for main optimiser:  RuNeNe::GradientDescent::Optimiser  (American spelling?)
+        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardBackprop
+    2)
+        Name for main optimiser:  RuNeNe::Learn::GradientDescent
+        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardBackprop
+    3)
+        Name for main optimiser:  RuNeNe::Network::GDBackprop
+        Name for per-layer component:  RuNeNe::Layer::FeedForward::GDBackprop
+    4)
+        Name for main optimiser:  RuNeNe::GradientDescent
+        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardLayer
+
+        Name for main optimiser:  RuNeNe::MBGD
+        Name for per-layer component:  RuNeNe::MBGD::FeedForwardLayer
+    5)
+        Name for main optimiser:  RuNeNe::Learn::MBGD
+        Name for per-layer component:  RuNeNe::Learn::MBGD::Layer
+
+
+
+    RuNeNe::Trainer::BPLayer
+      - Divide by batch size (count examples?)
+      - Momentum
+      - RMSProp
+      - Max norm regularisation
+      - L2 regularisation
+
+    RuNeNe::Trainer::GradientDescent
+
+    RuNeNe::DataSet
+      - Support for no output, maybe generating output for predictions
+      - Allow support for splitting/re-organising data
+      - Rename C and Ruby source files for new name
+      - Support for test and CV sets
+
+    Mini-batch training
+
+    Completely re-architect layer/network
+      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
+      trainer adds data structures for tracking weight deltas etc
+      network adds architecture (initially just a stack of layers)
+
+    Perform batch feed-forward runs
+
+    Perform batch backprop runs
+
+    Bulk predictions
+
+    Tests using MNIST digits
+
+    Easy save/load methods for all major objects
+
+    Transfer issues below to tickets in Github (how to give priorities and dependencies?)
+
+
+----- v0.0.1 release ?
+
     Refactoring:
         use vtables and function lookups to build a training routine from components
         more SIMD in backprop and gradient calculations
@@ -7,46 +75,7 @@ RuNeNe TODOs:
         Windows compatibiliy
         rubinius compatibility (due to GC moving memory blocks)?
         Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
-        Optimise away additions for softmax mid-layer support
-
-    RuNeNe::Trainer::BPLayer
-      - start a training batch
-      - backprop algorithm
-      - apply batch changes to weights
-
-    RuNeNe::DataSet
-      - Support for no output, maybe generating output for predictions
-      - Allow support for splitting/re-organising data
-      - Rename C and Ruby source files for new name
-
-    Completely re-architect layer/network
-      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
-      trainer adds data structures for tracking weight deltas etc
-      network adds architecture (initially just a stack of layers)
-
-    RuNeNe::Trainer::BPNetwork
-
-    Perform batch feed-forward runs
-
-    Perform batch backprop runs
-
-    Gradient-checking tests
-
-    mini-batch training
-
-    Tests using MNIST digits
-
-    Easy save/load methods for all major objects
-
-    max norm regularisation
-
-    l2 regularisation?
-
-    rmsprop
-
-    transfer issues below to tickets in Github (how to give priorities and dependencies?)
-
------ v0.0.1 release ?
+        Optimise away additions for softmax mid-layer support (stop them affecting other mid-layer calcs)
 
     Add Adadelta and.or Adagrad options, see http://imgur.com/a/Hqolp
 
@@ -58,8 +87,6 @@ RuNeNe TODOs:
 
     improved vectorisation
 
-    Bulk predictions
-
     Training set normalisation
 
     Training set split (into CV, Test etc)
@@ -70,17 +97,11 @@ RuNeNe TODOs:
 
     auto-categorisation and category expansion
 
-    training data auto-shuffle
-
     Residual gradients for RELU (& others?)
-
-    Use SIMD for weight updates
 
     Holdout sets for generalisation
 
-    Layer.clear_input (?)
-
-    auto-encoders
+    Auto-encoders
 
     Split/Branch layers
 

@@ -8,7 +8,7 @@
 #include "shared_vars.h"
 #include "core_objective_functions.h"
 #include "core_transfer_functions.h"
-#include "struct_trainer_bp_layer.h"
+#include "struct_mbgd_layer.h"
 
 transfer_type symbol_to_transfer_type( VALUE rv_transfer_type );
 VALUE transfer_type_to_module( transfer_type t );

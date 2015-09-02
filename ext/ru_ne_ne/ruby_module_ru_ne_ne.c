@@ -26,8 +26,9 @@ VALUE RuNeNe_Network = Qnil;
 
 VALUE RuNeNe_DataSet = Qnil;
 
-VALUE RuNeNe_Trainer = Qnil;
-VALUE RuNeNe_Trainer_BPLayer = Qnil;
+VALUE RuNeNe_Learn = Qnil;
+VALUE RuNeNe_Learn_MBGD = Qnil;
+VALUE RuNeNe_Learn_MBGD_Layer = Qnil;
 
 /* @overload convolve( signal, kernel )
  * Calculates convolution of an array of floats representing a signal, with a second array representing
@@ -215,8 +216,9 @@ void init_module_ru_ne_ne() {
 
   RuNeNe_DataSet = rb_define_class_under( RuNeNe, "DataSet", rb_cObject );
 
-  RuNeNe_Trainer = rb_define_class_under( RuNeNe, "Trainer", rb_cObject );
-  RuNeNe_Trainer_BPLayer = rb_define_class_under( RuNeNe_Trainer, "BPLayer", rb_cObject );
+  RuNeNe_Learn = rb_define_class_under( RuNeNe, "Learn", rb_cObject );
+  RuNeNe_Learn_MBGD = rb_define_class_under(  RuNeNe_Learn, "MBGD", rb_cObject );
+  RuNeNe_Learn_MBGD_Layer = rb_define_class_under( RuNeNe_Learn_MBGD, "Layer", rb_cObject );
 
   rb_define_singleton_method( RuNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( RuNeNe, "max_pool", narray_max_pool, 3 );
@@ -228,7 +230,7 @@ void init_module_ru_ne_ne() {
   init_transfer_module();
   init_objective_module();
   init_layer_ff_class();
-  init_trainer_bp_layer_class();
+  init_mbgd_layer_class();
   init_dataset_class();
   init_srand_by_time();
 }

@@ -16,7 +16,7 @@ def for_all_valid_layer_builds
           srand(5434) # Needed for :softmax target_type
 
           layer = RuNeNe::Layer::FeedForward.new( input_size, output_size, transfer_type )
-          trainer = RuNeNe::Trainer::BPLayer.from_layer( layer )
+          trainer = RuNeNe::Learn::MBGD::Layer.from_layer( layer )
           yield layer, trainer, objective_type
         end
       end
