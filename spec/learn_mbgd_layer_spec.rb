@@ -170,6 +170,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.007
         expect( @copy.gd_accel_rate ).to be_within( 1e-6 ).of 0.95
         expect( @copy.gd_accel_type ).to be :momentum
+        expect( @copy.momentum ).to be_within( 1e-6 ).of 0.95
         expect( @copy.weight_decay ).to be_within( 1e-8 ).of 1e-3
         expect( @copy.max_norm ).to be_within( 1e-6 ).of 1.5
       end
@@ -213,6 +214,35 @@ describe RuNeNe::Learn::MBGD::Layer do
         @bpl.start_batch( @ff_layer )
         expect( @bpl.de_dw_stats_b ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
         expect( @bpl.de_dw_stats_b ).to be_narray_like @ff_layer.weights
+        expect( @bpl.weights_backup ).to be @bpl.de_dw_stats_b
+      end
+
+      it "defaults weight_update_velocity to all zeroes (on first batch)" do
+        @bpl.start_batch( @ff_layer )
+        expect( @bpl.de_dw_stats_a ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+        expect( @bpl.weight_update_velocity ).to be @bpl.de_dw_stats_a
+      end
+    end
+
+    describe "#backprop_for_output_layer" do
+      before :each do
+        @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
+        @bpl.start_batch( @ff_layer )
+        @inputs = NArray[0.3,-0.5,0.9]
+        @outputs = @ff_layer.run( @inputs )
+        @targets = NArray[1.0,0.0]
+      end
+
+      it "updates de_dw" do
+        expect( @bpl.de_dw ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+        @bpl.backprop_for_output_layer( @ff_layer, @inputs, @outputs, @targets, :logloss )
+        expect( @bpl.de_dw ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+      end
+
+      it "doesn't change layer weights" do
+        before_weights = @ff_layer.weights.clone
+        @bpl.backprop_for_output_layer( @ff_layer, @inputs, @outputs, @targets, :logloss )
+        expect( @ff_layer.weights ).to be_narray_like( before_weights, 1e-16 )
       end
     end
   end

@@ -36,6 +36,26 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
 
   mbgd_layer->gd_accel_type = symbol_to_gd_accel_type( ValAtSymbol(rv_opts,"gd_accel_type") );
 
+  switch ( mbgd_layer->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
+      break;
+
+    case GDACCEL_TYPE_MOMENTUM:
+      rv_var = ValAtSymbol(rv_opts,"momentum");
+      if ( !NIL_P(rv_var) ) {
+        mbgd_layer->gd_accel_rate = NUM2FLT( rv_var );
+      }
+      break;
+
+    case GDACCEL_TYPE_RMSPROP:
+      rv_var = ValAtSymbol(rv_opts,"rmsprop_adapt_rate");
+      if ( !NIL_P(rv_var) ) {
+        mbgd_layer->gd_accel_rate = NUM2FLT( rv_var );
+      }
+
+      break;
+  }
+
   // Now deal with more complex properties, allow setting of NArrays, provided they fit
 
   rv_var = ValAtSymbol(rv_opts,"de_dz");
@@ -323,6 +343,54 @@ VALUE mbgd_layer_rbobject__set_gd_accel_rate( VALUE self, VALUE rv_gd_accel_rate
   return rv_gd_accel_rate;
 }
 
+/* @!attribute momentum
+ * Description goes here
+ * @return [Float]
+ */
+VALUE mbgd_layer_rbobject__get_momentum( VALUE self ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
+    return FLT2NUM( mbgd_layer->gd_accel_rate );
+  } else {
+    return Qnil;
+  }
+}
+
+VALUE mbgd_layer_rbobject__set_momentum( VALUE self, VALUE rv_momentum ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
+    mbgd_layer->gd_accel_rate = NUM2FLT( rv_momentum );
+  } else {
+    rb_raise( rb_eRuntimeError, "Cannot set momentum value. Gradient descent acceleration type is not set to momentum." );
+  }
+  return rv_momentum;
+}
+
+
+/* @!attribute rmsprop_adapt_rate
+ * Description goes here
+ * @return [Float]
+ */
+VALUE mbgd_layer_rbobject__get_rmsprop_adapt_rate( VALUE self ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_RMSPROP) {
+    return FLT2NUM( mbgd_layer->gd_accel_rate );
+  } else {
+    return Qnil;
+  }
+}
+
+VALUE mbgd_layer_rbobject__set_rmsprop_adapt_rate( VALUE self, VALUE rv_rmsprop_adapt_rate ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_RMSPROP) {
+    mbgd_layer->gd_accel_rate = NUM2FLT( rv_rmsprop_adapt_rate );
+  } else {
+    rb_raise( rb_eRuntimeError, "Cannot set rmsprop_adapt_rate value. Gradient descent acceleration type is not set to rmsprop." );
+  }
+  return rv_rmsprop_adapt_rate;
+}
+
+
 /* @!attribute max_norm
  * Description goes here
  * @return [Float]
@@ -389,6 +457,19 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_a( VALUE self ) {
   return mbgd_layer->narr_de_dw_stats_a;
 }
 
+/* @!attribute  [r] weight_update_velocity
+ * Description goes here
+ * @return [NArray<sfloat>]
+ */
+VALUE mbgd_layer_rbobject__get_weight_update_velocity( VALUE self ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
+    return mbgd_layer->narr_de_dw_stats_a;
+  } else {
+    return Qnil;
+  }
+}
+
 /* @!attribute  [r] de_dw_stats_b
  * Description goes here
  * @return [NArray<sfloat>]
@@ -396,6 +477,19 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_a( VALUE self ) {
 VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_b( VALUE self ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
   return mbgd_layer->narr_de_dw_stats_b;
+}
+
+/* @!attribute  [r] weights_backup
+ * Description goes here
+ * @return [NArray<sfloat>]
+ */
+VALUE mbgd_layer_rbobject__get_weights_backup( VALUE self ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
+    return mbgd_layer->narr_de_dw_stats_b;
+  } else {
+    return Qnil;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -607,13 +701,22 @@ void init_mbgd_layer_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_da", mbgd_layer_rbobject__get_narr_de_da, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw", mbgd_layer_rbobject__get_narr_de_dw, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw_stats_a", mbgd_layer_rbobject__get_narr_de_dw_stats_a, 0 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_update_velocity", mbgd_layer_rbobject__get_weight_update_velocity, 0 );
+
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw_stats_b", mbgd_layer_rbobject__get_narr_de_dw_stats_b, 0 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "weights_backup", mbgd_layer_rbobject__get_weights_backup, 0 );
+
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate", mbgd_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate=", mbgd_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type", mbgd_layer_rbobject__get_gd_accel_type, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type=", mbgd_layer_rbobject__set_gd_accel_type, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_rate", mbgd_layer_rbobject__get_gd_accel_rate, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_rate=", mbgd_layer_rbobject__set_gd_accel_rate, 1 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "momentum", mbgd_layer_rbobject__get_momentum, 0 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "momentum=", mbgd_layer_rbobject__set_momentum, 1 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "rmsprop_adapt_rate", mbgd_layer_rbobject__get_rmsprop_adapt_rate, 0 );
+    rb_define_method( RuNeNe_Learn_MBGD_Layer, "rmsprop_adapt_rate=", mbgd_layer_rbobject__set_rmsprop_adapt_rate, 1 );
+
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm", mbgd_layer_rbobject__get_max_norm, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm=", mbgd_layer_rbobject__set_max_norm, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_decay", mbgd_layer_rbobject__get_weight_decay, 0 );
