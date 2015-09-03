@@ -1,44 +1,14 @@
 RuNeNe TODOs:
 
-    TL names:
-    R::Transfer
-    R::Objective
-    R::Layer
-    R::Learn ??
-    R::DataSet*
-    R::Network*
-
-
-    Naming: Trainer -> Optimizer ? Separate Layer utilities from optimisers . . .
-    1)
-        Name for main optimiser:  RuNeNe::GradientDescent::Optimiser  (American spelling?)
-        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardBackprop
-    2)
-        Name for main optimiser:  RuNeNe::Learn::GradientDescent
-        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardBackprop
-    3)
-        Name for main optimiser:  RuNeNe::Network::GDBackprop
-        Name for per-layer component:  RuNeNe::Layer::FeedForward::GDBackprop
-    4)
-        Name for main optimiser:  RuNeNe::GradientDescent
-        Name for per-layer component:  RuNeNe::GradientDescent::FeedForwardLayer
-
-        Name for main optimiser:  RuNeNe::MBGD
-        Name for per-layer component:  RuNeNe::MBGD::FeedForwardLayer
-    5)
-        Name for main optimiser:  RuNeNe::Learn::MBGD
-        Name for per-layer component:  RuNeNe::Learn::MBGD::Layer
-
-
-
-    RuNeNe::Trainer::BPLayer
-      - Divide by batch size (count examples?)
-      - Momentum
+    RuNeNe::Learn::MBGD::Layer
+      - Momentum (how to do Nesterov momentum, which requires measuring delta at predicted momentum end-point?)
       - RMSProp
       - Max norm regularisation
       - L2 regularisation
 
-    RuNeNe::Trainer::GradientDescent
+    RuNeNe::Network
+
+    RuNeNe::Learn::MBGD
 
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions
