@@ -150,6 +150,10 @@ void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
 
   // Re-set accumulated de_dw for this batch
   float *de_dw = mbgd_layer->de_dw;
+  float *weights = layer_ff->weights;
+  float *weight_vel = mbgd_layer->de_dw_stats_a;
+  float momentum = mbgd_layer->gd_accel_rate;
+
   for( i = 0; i < t; i++ ) {
     de_dw[i] = 0.0;
   }
@@ -162,6 +166,12 @@ void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
     case GDACCEL_TYPE_MOMENTUM:
       // Copy current weights to de_dw_stats_b
       memcpy( mbgd_layer->de_dw_stats_b, layer_ff->weights, t * sizeof(float) );
+
+      // Move layer weights forward so we assess gradient at weights plus momentum * mf
+      for( i = 0; i < t; i++ ) {
+        weight_vel[i] *= momentum;
+        weights[i] += weight_vel[i];
+      }
       break;
 
     case GDACCEL_TYPE_RMSPROP:
@@ -290,12 +300,37 @@ void mbgd_layer__backprop_for_mid_layer( MBGDLayer *mbgd_layer, Layer_FF *layer_
 void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
   // Needs momentum and rmsprop adding . . .
 
-  int i, n;
-  n = (mbgd_layer->num_inputs + 1) * mbgd_layer->num_outputs;
+  int i, t;
+  t = (mbgd_layer->num_inputs + 1) * mbgd_layer->num_outputs;
   float lr = mbgd_layer->learning_rate;
+  float *weights = layer_ff->weights;
+  float *de_dw = mbgd_layer->de_dw;
+  // TODO: Only use these if required
+  float *weight_vel = mbgd_layer->de_dw_stats_a;
+  float *weights_bk = mbgd_layer->de_dw_stats_b;
 
-  for( i = 0; i < n; i++ ) {
-    layer_ff->weights[i] -= mbgd_layer->de_dw[i] * lr;
+  switch ( mbgd_layer->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
+      for( i = 0; i < t; i++ ) {
+          weights[i] -= de_dw[i] * lr;
+      }
+      break;
+
+    case GDACCEL_TYPE_MOMENTUM:
+      // New weighst based on backed up weights plus new velocity
+      for( i = 0; i < t; i++ ) {
+        weight_vel[i] -= lr * de_dw[i];
+        weights[i] = weights_bk[i] + weight_vel[i];
+      }
+      break;
+
+    case GDACCEL_TYPE_RMSPROP:
+      // TODO: Implement RMSPROP
+      for( i = 0; i < t; i++ ) {
+        weights[i] -= de_dw[i] * lr;
+      }
+
+      break;
   }
 
   return;
