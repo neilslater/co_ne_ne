@@ -145,11 +145,28 @@ MBGDLayer * mbgd_layer__clone( MBGDLayer *mbgd_layer_orig ) {
   return mbgd_layer_copy;
 }
 
-void mbgd_layer__start_batch( MBGDLayer *mbgd_layer ) {
+void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
   int i,t = (mbgd_layer->num_inputs + 1 ) * mbgd_layer->num_outputs;
+
+  // Re-set accumulated de_dw for this batch
   float *de_dw = mbgd_layer->de_dw;
   for( i = 0; i < t; i++ ) {
     de_dw[i] = 0.0;
+  }
+
+  switch ( mbgd_layer->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
+
+      break;
+
+    case GDACCEL_TYPE_MOMENTUM:
+      // Copy current weights to de_dw_stats_b
+      memcpy( mbgd_layer->de_dw_stats_b, layer_ff->weights, t * sizeof(float) );
+      break;
+
+    case GDACCEL_TYPE_RMSPROP:
+
+      break;
   }
   return;
 }

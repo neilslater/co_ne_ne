@@ -193,6 +193,10 @@ describe RuNeNe::Learn::MBGD::Layer do
     end
 
     describe "#start_batch" do
+      before :each do
+        @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
+      end
+
       it "resets de_dw" do
         @bpl.de_dw[0,0] = 1.0
         @bpl.de_dw[1,0] = 2.0
@@ -200,9 +204,15 @@ describe RuNeNe::Learn::MBGD::Layer do
         @bpl.de_dw[3,1] = 4.0
         expect( @bpl.de_dw ).to be_narray_like NArray[[1.0,2.0,3.0,0.0],[0.0,0.0,0.0,4.0]]
 
-        @bpl.start_batch
+        @bpl.start_batch( @ff_layer )
 
         expect( @bpl.de_dw ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+      end
+
+      it "copies layer weights as backup for Nesterov momentum" do
+        @bpl.start_batch( @ff_layer )
+        expect( @bpl.de_dw_stats_b ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+        expect( @bpl.de_dw_stats_b ).to be_narray_like @ff_layer.weights
       end
     end
   end

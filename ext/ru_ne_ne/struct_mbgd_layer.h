@@ -47,7 +47,7 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
 
 MBGDLayer * mbgd_layer__clone( MBGDLayer *mbgd_layer_orig );
 
-void mbgd_layer__start_batch( MBGDLayer *mbgd_layer );
+void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff );
 
 void mbgd_layer__backprop_for_output_layer( MBGDLayer *mbgd_layer, Layer_FF *layer_ff,
       float *input, float *output, float *target, objective_type o );

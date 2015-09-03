@@ -403,13 +403,24 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_b( VALUE self ) {
 // Backprop methods
 //
 
-/* @overload start_batch
+/* @overload start_batch( layer )
  * Description goes here
+ * @param [RuNeNe::Layer::FeedForward] layer
  * @return [NArray<sfloat>] self
  */
-VALUE mbgd_layer_rbobject__start_batch( VALUE self ) {
+VALUE mbgd_layer_rbobject__start_batch( VALUE self, VALUE rv_layer ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  mbgd_layer__start_batch( mbgd_layer );
+  Layer_FF *layer_ff;
+
+  // Check we really have a layer object to fetch output from
+  if ( TYPE(rv_layer) != T_DATA ||
+      RDATA(rv_layer)->dfree != (RUBY_DATA_FUNC)layer_ff__destroy) {
+    rb_raise( rb_eTypeError, "Expected a Layer object, but got something else" );
+  }
+  Data_Get_Struct( rv_layer, Layer_FF, layer_ff );
+  // TODO: Check layer is same size as trainer
+
+  mbgd_layer__start_batch( mbgd_layer, layer_ff );
   return self;
 }
 
@@ -609,7 +620,7 @@ void init_mbgd_layer_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_decay=", mbgd_layer_rbobject__set_weight_decay, 1 );
 
   // MBGDLayer methods
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "start_batch", mbgd_layer_rbobject__start_batch, 0 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "start_batch", mbgd_layer_rbobject__start_batch, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "backprop_for_output_layer", mbgd_layer_rbobject__backprop_for_output_layer, 5 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "backprop_for_mid_layer", mbgd_layer_rbobject__backprop_for_mid_layer, 4 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "finish_batch", mbgd_layer_rbobject__finish_batch, 1 );

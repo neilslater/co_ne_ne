@@ -151,8 +151,8 @@ class TestLayerStack
   end
 
   def start_batch
-    @training_layers.each do |mbgd_layer|
-      mbgd_layer.start_batch
+    @training_layers.zip(@layers).each do |mbgd_layer, layer|
+      mbgd_layer.start_batch( layer )
     end
   end
 

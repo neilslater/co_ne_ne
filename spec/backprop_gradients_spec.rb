@@ -104,21 +104,21 @@ describe "Backprop gradients per layer" do
 
       it "calculates same de_dz gradients in output layer as RuNeNe::Objective.de_dz" do
         expected_de_dz = RuNeNe::Objective.de_dz( objective_type, transfer_type, @outputs, @targets)
-        trainer.start_batch
+        trainer.start_batch( layer )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dz ).to be_narray_like expected_de_dz
       end
 
       it "matches measured de_dw gradients in output layer" do
         expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
-        trainer.start_batch
+        trainer.start_batch( layer )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dw ).to be_narray_like( expected_de_dw, 1e-7 )
       end
 
       it "accumulates de_dw gradients in output layer when called twice" do
         expected_de_dw = measure_output_layer_de_dw( layer, @loss_fn, @inputs, @targets )
-        trainer.start_batch
+        trainer.start_batch( layer )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_dw ).to be_narray_like( expected_de_dw * 2, 1e-7 )
@@ -126,7 +126,7 @@ describe "Backprop gradients per layer" do
 
       it "matches measured de_da gradients from inputs to final layer" do
         expected_de_da = measure_output_layer_de_da( layer, @loss_fn, @inputs, @targets )
-        trainer.start_batch
+        trainer.start_batch( layer )
         trainer.backprop_for_output_layer( layer, @inputs, @outputs, @targets, objective_type )
         expect( trainer.de_da ).to be_narray_like( expected_de_da, 1e-7 )
       end
