@@ -155,8 +155,11 @@ describe RuNeNe::Learn::MBGD::Layer do
 
   describe "instance methods" do
     before :each do
+      RuNeNe.srand( 8243 )
+      NArray.srand( 9063 )
+
       @bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
-            :learning_rate => 0.007, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
+            :learning_rate => 0.02, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
             :max_norm => 1.5, :gd_accel_type => :momentum )
     end
 
@@ -167,7 +170,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( @copy.num_inputs ).to be 3
         expect( @copy.num_outputs ).to be 2
 
-        expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.007
+        expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.02
         expect( @copy.gd_accel_rate ).to be_within( 1e-6 ).of 0.95
         expect( @copy.gd_accel_type ).to be :momentum
         expect( @copy.momentum ).to be_within( 1e-6 ).of 0.95
@@ -210,13 +213,6 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( @bpl.de_dw ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
       end
 
-      it "copies layer weights as backup for Nesterov momentum" do
-        @bpl.start_batch( @ff_layer )
-        expect( @bpl.de_dw_stats_b ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
-        expect( @bpl.de_dw_stats_b ).to be_narray_like @ff_layer.weights
-        expect( @bpl.weights_backup ).to be @bpl.de_dw_stats_b
-      end
-
       it "defaults weight_update_velocity to all zeroes (on first batch)" do
         @bpl.start_batch( @ff_layer )
         expect( @bpl.de_dw_stats_a ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
@@ -237,12 +233,55 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( @bpl.de_dw ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
         @bpl.backprop_for_output_layer( @ff_layer, @inputs, @outputs, @targets, :logloss )
         expect( @bpl.de_dw ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+        expect( @bpl.de_dw ).to be_narray_like NArray[
+          [ -0.0720577, 0.120096, -0.216173, -0.240192 ],
+          [ 0.183035, -0.305059, 0.549105, 0.610117 ]
+        ]
       end
 
       it "doesn't change layer weights" do
         before_weights = @ff_layer.weights.clone
         @bpl.backprop_for_output_layer( @ff_layer, @inputs, @outputs, @targets, :logloss )
         expect( @ff_layer.weights ).to be_narray_like( before_weights, 1e-16 )
+      end
+    end
+
+    describe "#finish_batch" do
+      before :each do
+        @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
+        @bpl.start_batch( @ff_layer )
+        @inputs = NArray[0.3,-0.5,0.9]
+        @outputs = @ff_layer.run( @inputs )
+        @targets = NArray[1.0,0.0]
+        @bpl.backprop_for_output_layer( @ff_layer, @inputs, @outputs, @targets, :logloss )
+      end
+
+      it "doesn't change de_dw" do
+        @bpl.finish_batch( @ff_layer )
+        expect( @bpl.de_dw ).to be_narray_like NArray[
+          [ -0.0720577, 0.120096, -0.216173, -0.240192 ],
+          [ 0.183035, -0.305059, 0.549105, 0.610117 ]
+        ]
+      end
+
+      it "changes layer weights" do
+        before_weights = @ff_layer.weights.clone
+        @bpl.finish_batch( @ff_layer )
+        expect( @ff_layer.weights ).to_not be_narray_like before_weights
+        expect( @ff_layer.weights ).to be_narray_like NArray[
+          [ 0.306208, -0.549897, 0.520301, 0.326871 ],
+          [ 0.823996, -0.405873, -0.0354835, 0.00336937 ]
+        ]
+      end
+
+      it "changes weight_update_velocity (with momentum)" do
+        @bpl.finish_batch( @ff_layer )
+        expect( @bpl.de_dw_stats_a ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+        expect( @bpl.weight_update_velocity ).to be_narray_like NArray[
+          [ 0.00144115, -0.00240192, 0.00432346, 0.00480385 ],
+          [ -0.0036607, 0.00610117, -0.0109821, -0.0122023 ]
+        ]
+        expect( @bpl.weight_update_velocity ).to be @bpl.de_dw_stats_a
       end
     end
   end

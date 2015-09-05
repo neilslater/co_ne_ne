@@ -479,19 +479,6 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_b( VALUE self ) {
   return mbgd_layer->narr_de_dw_stats_b;
 }
 
-/* @!attribute  [r] weights_backup
- * Description goes here
- * @return [NArray<sfloat>]
- */
-VALUE mbgd_layer_rbobject__get_weights_backup( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
-    return mbgd_layer->narr_de_dw_stats_b;
-  } else {
-    return Qnil;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Backprop methods
@@ -704,7 +691,6 @@ void init_mbgd_layer_class( ) {
     rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_update_velocity", mbgd_layer_rbobject__get_weight_update_velocity, 0 );
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw_stats_b", mbgd_layer_rbobject__get_narr_de_dw_stats_b, 0 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "weights_backup", mbgd_layer_rbobject__get_weights_backup, 0 );
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate", mbgd_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate=", mbgd_layer_rbobject__set_learning_rate, 1 );

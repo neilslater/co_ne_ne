@@ -164,9 +164,6 @@ void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      // Copy current weights to de_dw_stats_b
-      memcpy( mbgd_layer->de_dw_stats_b, layer_ff->weights, t * sizeof(float) );
-
       // Move layer weights forward so we assess gradient at weights plus momentum * mf
       for( i = 0; i < t; i++ ) {
         weight_vel[i] *= momentum;
@@ -305,9 +302,8 @@ void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
   float lr = mbgd_layer->learning_rate;
   float *weights = layer_ff->weights;
   float *de_dw = mbgd_layer->de_dw;
-  // TODO: Only use these if required
-  float *weight_vel = mbgd_layer->de_dw_stats_a;
-  float *weights_bk = mbgd_layer->de_dw_stats_b;
+
+  float *weight_vel;
 
   switch ( mbgd_layer->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
@@ -317,10 +313,11 @@ void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      // New weighst based on backed up weights plus new velocity
+      weight_vel = mbgd_layer->de_dw_stats_a;
+
       for( i = 0; i < t; i++ ) {
         weight_vel[i] -= lr * de_dw[i];
-        weights[i] = weights_bk[i] + weight_vel[i];
+        weights[i] -= lr * de_dw[i];
       }
       break;
 
