@@ -19,6 +19,11 @@ VALUE RuNeNe_Objective_MeanSquaredError = Qnil;
 VALUE RuNeNe_Objective_LogLoss = Qnil;
 VALUE RuNeNe_Objective_MulticlassLogLoss = Qnil;
 
+VALUE RuNeNe_GradientDescent = Qnil;
+VALUE RuNeNe_GradientDescent_SGD = Qnil;
+VALUE RuNeNe_GradientDescent_NAG = Qnil;
+VALUE RuNeNe_GradientDescent_RMSProp = Qnil;
+
 VALUE RuNeNe_Layer = Qnil;
 VALUE RuNeNe_Layer_FeedForward  = Qnil;
 
@@ -208,6 +213,11 @@ void init_module_ru_ne_ne() {
   RuNeNe_Objective_MeanSquaredError = rb_define_module_under( RuNeNe_Objective, "MeanSquaredError" );
   RuNeNe_Objective_LogLoss = rb_define_module_under( RuNeNe_Objective, "LogLoss" );
   RuNeNe_Objective_MulticlassLogLoss = rb_define_module_under( RuNeNe_Objective, "MulticlassLogLoss" );
+
+  RuNeNe_GradientDescent = rb_define_module_under( RuNeNe, "GradientDescent" );
+  RuNeNe_GradientDescent_SGD = rb_define_class_under( RuNeNe_GradientDescent, "SGD", rb_cObject );
+  RuNeNe_GradientDescent_NAG = rb_define_class_under( RuNeNe_GradientDescent, "NAG", rb_cObject );
+  RuNeNe_GradientDescent_RMSProp = rb_define_class_under( RuNeNe_GradientDescent, "RMSProp", rb_cObject );
 
   RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
   RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );

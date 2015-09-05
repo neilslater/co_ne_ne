@@ -1,5 +1,7 @@
 RuNeNe TODOs:
 
+    Create RuNeNe::GradientDescent and move optimisers to it (SGD, NAG, RMSProp et al)
+
     RuNeNe::Learn::MBGD::Layer
       - Momentum
       - RMSProp
@@ -39,7 +41,6 @@ RuNeNe TODOs:
 ----- v0.0.1 release ?
 
     Refactoring:
-        Create RuNeNe::GradientDescent and move optimisers to it (SGD, NAG, RMSProp et al)
         use vtables and function lookups to build a training routine from components
         more SIMD in backprop and gradient calculations
         are there larger SIMD vector sizes available on later Intel chips? https://en.wikipedia.org/wiki/Advanced_Vector_Extensions

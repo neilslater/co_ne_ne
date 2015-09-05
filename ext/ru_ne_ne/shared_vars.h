@@ -20,10 +20,16 @@ extern VALUE RuNeNe_Transfer_TanH;
 extern VALUE RuNeNe_Transfer_ReLU;
 extern VALUE RuNeNe_Transfer_Linear;
 extern VALUE RuNeNe_Transfer_Softmax;
+
 extern VALUE RuNeNe_Objective;
 extern VALUE RuNeNe_Objective_MeanSquaredError;
 extern VALUE RuNeNe_Objective_LogLoss;
 extern VALUE RuNeNe_Objective_MulticlassLogLoss;
+
+extern VALUE RuNeNe_GradientDescent;
+extern VALUE RuNeNe_GradientDescent_SGD;
+extern VALUE RuNeNe_GradientDescent_NAG;
+extern VALUE RuNeNe_GradientDescent_RMSProp;
 
 extern VALUE RuNeNe_Layer;
 extern VALUE RuNeNe_Layer_FeedForward;
