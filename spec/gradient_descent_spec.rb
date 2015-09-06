@@ -1,5 +1,22 @@
 require 'helpers'
 
+class TestQuadratic
+  attr_reader :roots, :factors
+
+  def initialize nparams
+    @roots = ( NArray.sfloat( nparams ).random  - 0.5 ) * 10
+    @factors = ( NArray.sfloat( nparams ).random + 0.1 ) * 3
+  end
+
+  def value_at params
+    ( (params - @roots) * (params - @roots) * @factors ).sum
+  end
+
+  def gradients_at params
+    2 * @factors * ( params  - @roots )
+  end
+end
+
 describe RuNeNe::GradientDescent::SGD do
   describe "class methods" do
     let(:example_params) { NArray.sfloat(2) }
@@ -32,6 +49,58 @@ describe RuNeNe::GradientDescent::SGD do
       it "can save and retrieve gradient descent settings" do
         expect( @copy_data ).to_not be @orig_data
         expect( @copy_data.num_params ).to be 2
+      end
+    end
+  end
+
+  describe "instance methods" do
+    let :gd do
+       RuNeNe::GradientDescent::SGD.new( NArray.sfloat(2) )
+    end
+
+    before :each do
+      NArray.srand(555)
+      @params = (NArray.sfloat(2).random - 0.5) * 10
+    end
+
+    describe "#clone" do
+      it "should make a simple copy of number of params" do
+        copy = gd.clone
+        expect( copy.num_params ).to eql gd.num_params
+      end
+    end
+
+    describe "#pre_gradient_step" do
+      it "should not alter params" do
+        before_params = @params.clone
+        gd.pre_gradient_step( @params, 1.0 )
+        expect( @params ).to be_narray_like( before_params, 1e-16 )
+      end
+    end
+
+    describe "#gradient_step" do
+      it "should alter params" do
+        before_params = @params.clone
+        gradients = NArray.sfloat(2).random - 0.5
+        gd.gradient_step( @params, gradients, 0.1)
+        expect( @params ).to_not be_narray_like before_params
+      end
+    end
+
+    describe "optimisation" do
+      it "should optimise a simple quadratic" do
+        tq = TestQuadratic.new(2)
+
+        # Pre-optimisation check that there is something to optimise
+        expect( tq.value_at( @params ) ).to_not be_within(0.1).of 0
+        expect( @params ).to_not be_narray_like tq.roots
+
+        20.times do
+          gd.pre_gradient_step( @params, 0.1 )
+          gd.gradient_step( @params, tq.gradients_at(@params), 0.1 )
+        end
+        expect( tq.value_at( @params ) ).to be_within(1e-6).of 0
+        expect( @params ).to be_narray_like tq.roots
       end
     end
   end
