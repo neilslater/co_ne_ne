@@ -38,15 +38,20 @@ void assert_value_wraps_gd_sgd( VALUE obj ) {
 //  Network method definitions
 //
 
-/* @overload initialize( num_params )
+/* @overload initialize( params )
  * Creates a new ...
- * @param [Integer] num_params ...
+ * @param [NArray<sfloat>] params actual or example NArray of params for optimisation
  * @return [RuNeNe::GradientDescent::SGD] new ...
  */
-VALUE gd_sgd_rbobject__initialize( VALUE self, VALUE rv_num_params ) {
+VALUE gd_sgd_rbobject__initialize( VALUE self, VALUE rv_params ) {
   GradientDescent_SGD *gd_sgd = get_gd_sgd_struct( self );
 
-  gd_sgd->num_params = NUM2INT( rv_num_params );
+  volatile VALUE example_params;
+  struct NARRAY *na_params;
+  example_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( example_params, na_params );
+
+  gd_sgd->num_params = na_params->total;
 
   return self;
 }
@@ -77,6 +82,64 @@ VALUE gd_sgd_rbobject__get_num_params( VALUE self ) {
   return INT2NUM( gd_sgd->num_params );
 }
 
+/* @overload pre_gradient_step( params, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
+ */
+VALUE gd_sgd_rbobject__pre_gradient_step( VALUE self, VALUE rv_params, VALUE rv_learning_rate ) {
+  GradientDescent_SGD *gd_sgd = get_gd_sgd_struct( self );
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_sgd->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_sgd->num_params, na_params->total );
+  }
+
+  gd_sgd__pre_gradient_step( gd_sgd, (float *)na_params->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
+}
+
+/* @overload pre_gradient_step( params, gradients, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [NArray<sfloat>] gradients array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
+ */
+VALUE gd_sgd_rbobject__gradient_step( VALUE self, VALUE rv_params, VALUE rv_gradients, VALUE rv_learning_rate ) {
+  GradientDescent_SGD *gd_sgd = get_gd_sgd_struct( self );
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  volatile VALUE gradients;
+  struct NARRAY *na_grads;
+
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_sgd->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_sgd->num_params, na_params->total );
+  }
+
+  gradients = na_cast_object( rv_gradients, NA_SFLOAT );
+  GetNArray( gradients, na_grads );
+
+  if ( gd_sgd->num_params != na_grads->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but gradient has %d params", gd_sgd->num_params, na_grads->total );
+  }
+
+  gd_sgd__gradient_step( gd_sgd, (float *)na_params->ptr, (float *)na_grads->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_gd_sgd_class( ) {
@@ -87,4 +150,8 @@ void init_gd_sgd_class( ) {
 
   // GradientDescent_SGD attributes
   rb_define_method( RuNeNe_GradientDescent_SGD, "num_params", gd_sgd_rbobject__get_num_params, 0 );
+
+  // GradientDescent_SGD instance methods
+  rb_define_method( RuNeNe_GradientDescent_SGD, "pre_gradient_step", gd_sgd_rbobject__pre_gradient_step, 2 );
+  rb_define_method( RuNeNe_GradientDescent_SGD, "gradient_step", gd_sgd_rbobject__gradient_step, 3 );
 }

@@ -25,4 +25,8 @@ void gd_sgd__deep_copy( GradientDescent_SGD *gd_sgd_copy, GradientDescent_SGD *g
 
 GradientDescent_SGD * gd_sgd__clone( GradientDescent_SGD *gd_sgd_orig );
 
+void gd_sgd__pre_gradient_step( GradientDescent_SGD *gd_sgd, float *params, float lr );
+
+void gd_sgd__gradient_step( GradientDescent_SGD *gd_sgd, float *params, float *gradients, float lr );
+
 #endif

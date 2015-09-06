@@ -40,15 +40,20 @@ void assert_value_wraps_gd_rmsprop( VALUE obj ) {
 
 /* @overload initialize( num_params, decay, epsilon )
  * Creates a new ...
- * @param [Integer] num_params ...
+ * @param [NArray<sfloat>] params actual or example NArray of params for optimisation
  * @param [Float] decay ...
  * @param [Float] epsilon ...
  * @return [RuNeNe::GradientDescent::RMSProp] new ...
  */
-VALUE gd_rmsprop_rbobject__initialize( VALUE self, VALUE rv_num_params, VALUE rv_decay, VALUE rv_epsilon ) {
+VALUE gd_rmsprop_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_decay, VALUE rv_epsilon ) {
   GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
 
-  gd_rmsprop__init( gd_rmsprop, NUM2INT( rv_num_params ), NUM2FLT( rv_decay ), NUM2FLT( rv_epsilon ) );
+  volatile VALUE example_params;
+  struct NARRAY *na_params;
+  example_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( example_params, na_params );
+
+  gd_rmsprop__init( gd_rmsprop, na_params->total, NUM2FLT( rv_decay ), NUM2FLT( rv_epsilon ) );
 
   return self;
 }

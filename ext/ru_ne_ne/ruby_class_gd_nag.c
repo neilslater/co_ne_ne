@@ -38,16 +38,21 @@ void assert_value_wraps_gd_nag( VALUE obj ) {
 //  Network method definitions
 //
 
-/* @overload initialize( num_params, momentum )
+/* @overload initialize( params, momentum )
  * Creates a new ...
- * @param [Integer] num_params ...
+ * @param [NArray<sfloat>] params actual or example NArray of params for optimisation
  * @param [Float] momentum ...
  * @return [RuNeNe::GradientDescent::NAG] new ...
  */
-VALUE gd_nag_rbobject__initialize( VALUE self, VALUE rv_num_params, VALUE rv_momentum ) {
+VALUE gd_nag_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_momentum ) {
   GradientDescent_NAG *gd_nag = get_gd_nag_struct( self );
 
-  gd_nag__init( gd_nag, NUM2INT( rv_num_params ), NUM2FLT( rv_momentum ) );
+  volatile VALUE example_params;
+  struct NARRAY *na_params;
+  example_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( example_params, na_params );
+
+  gd_nag__init( gd_nag, na_params->total, NUM2FLT( rv_momentum ) );
 
   return self;
 }

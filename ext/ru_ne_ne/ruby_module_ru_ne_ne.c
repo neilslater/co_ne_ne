@@ -241,6 +241,9 @@ void init_module_ru_ne_ne() {
   init_objective_module();
   init_layer_ff_class();
   init_mbgd_layer_class();
+  init_gd_sgd_class();
+  init_gd_nag_class();
+  init_gd_rmsprop_class();
   init_dataset_class();
   init_srand_by_time();
 }

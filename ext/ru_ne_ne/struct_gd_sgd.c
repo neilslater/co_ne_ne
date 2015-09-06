@@ -34,3 +34,14 @@ GradientDescent_SGD * gd_sgd__clone( GradientDescent_SGD *gd_sgd_orig ) {
   gd_sgd__deep_copy( gd_sgd_copy, gd_sgd_orig );
   return gd_sgd_copy;
 }
+
+void gd_sgd__pre_gradient_step( GradientDescent_SGD *gd_sgd, float *params, float lr ) {
+  return;
+}
+
+void gd_sgd__gradient_step( GradientDescent_SGD *gd_sgd, float *params, float *gradients, float lr ) {
+  int i;
+  for (i=0; i < gd_sgd->num_params; i++) {
+    params[i] -= lr * gradients[i];
+  }
+}

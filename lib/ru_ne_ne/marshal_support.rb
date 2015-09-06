@@ -81,6 +81,41 @@ module RuNeNe::Objective::MulticlassLogLoss
   end
 end
 
+class RuNeNe::GradientDescent::SGD
+  # Short name for SGD optimiser, used as a param for some methods
+  # @return [Symbol] :sgd
+  def self.label
+    :sgd
+  end
+
+  # @!visibility private
+  # Adds support for Marshal, via to_h and from_h methods
+  def to_h
+    Hash[
+      :num_params => self.num_params
+    ]
+  end
+
+  # @!visibility private
+  # Constructs a RuNeNe::GradientDescent::SGD from hash description. Used internally to support Marshal.
+  # @param [Hash] h Keys are :num_params
+  # @return [RuNeNe::GradientDescent::SGD] new object
+  def self.from_h h
+    RuNeNe::GradientDescent::SGD.new( NArray.sfloat(h[:num_params]) )
+  end
+
+  # @!visibility private
+  def _dump *ignored
+    Marshal.dump to_h
+  end
+
+  # @!visibility private
+  def self._load buf
+    h = Marshal.load buf
+    from_h h
+  end
+end
+
 class RuNeNe::Layer::FeedForward
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
