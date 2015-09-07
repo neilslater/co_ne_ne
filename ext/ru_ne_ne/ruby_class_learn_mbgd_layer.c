@@ -241,6 +241,9 @@ VALUE mbgd_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self ) {
 
   if (!NIL_P(rv_opts)) {
     copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer );
+  } else {
+    mbgd_layer__init_gd_optimiser( mbgd_layer, GDACCEL_TYPE_NONE,
+        0.9, 0.9, 1e-6 ); // These last values are ignored for SGD
   }
 
   return rv_new_mbgd_layer;
