@@ -1,10 +1,6 @@
 RuNeNe TODOs:
 
-    Create RuNeNe::GradientDescent and move optimisers to it (SGD, NAG, RMSProp et al)
-
     RuNeNe::Learn::MBGD::Layer
-      - Momentum
-      - RMSProp
       - Max norm regularisation
       - L2 regularisation
 

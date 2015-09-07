@@ -131,3 +131,16 @@ VALUE gradient_descent_type_to_symbol( gradient_descent_type g ) {
       rb_raise( rb_eRuntimeError, "gradient_descent_type not valid, internal error");
   }
 }
+
+VALUE gradient_descent_type_to_class( gradient_descent_type g ) {
+  switch( g ) {
+    case GD_TYPE_SGD:
+      return RuNeNe_GradientDescent_SGD;
+    case GD_TYPE_NAG:
+      return RuNeNe_GradientDescent_NAG;
+    case GD_TYPE_RMSPROP:
+      return RuNeNe_GradientDescent_RMSProp;
+    default:
+      rb_raise( rb_eRuntimeError, "gradient_descent_type not valid, internal error");
+  }
+}
