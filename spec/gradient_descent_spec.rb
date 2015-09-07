@@ -363,14 +363,14 @@ describe RuNeNe::GradientDescent::RMSProp do
         expect( gd.epsilon ).to be_within(1e-12).of 1e-6
       end
 
-      it "should initialize a squared_de_dw array to match params size and shape" do
+      it "should initialize a av_squared_grads array to match params size and shape" do
         gd = RuNeNe::GradientDescent::RMSProp.new( example_params, 0.9, 1e-6 )
-        expect( gd.squared_de_dw  ).to be_narray_like NArray[1.0, 1.0]
+        expect( gd.av_squared_grads  ).to be_narray_like NArray[1.0, 1.0]
 
         gd = RuNeNe::GradientDescent::RMSProp.new( NArray.cast( [ [ [-1.0, -1.0], [1.0, -1.0] ],
             [ [-1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, -1.0], [1.0, -1.0] ],
             [ [ 1.0, -1.0], [1.0, -1.0] ] ], 'sfloat' ), 0.9, 1e-6 )
-        expect( gd.squared_de_dw ).to be_narray_like NArray.cast( [ [ [1.0, 1.0], [1.0, 1.0] ],
+        expect( gd.av_squared_grads ).to be_narray_like NArray.cast( [ [ [1.0, 1.0], [1.0, 1.0] ],
             [ [1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, 1.0], [1.0, 1.0] ],
             [ [ 1.0, 1.0], [1.0, 1.0] ] ], 'sfloat' )
       end
@@ -379,7 +379,7 @@ describe RuNeNe::GradientDescent::RMSProp do
     describe "with Marshal" do
       before do
         @orig_data = RuNeNe::GradientDescent::RMSProp.new( example_params, 0.9, 1e-6 )
-        @orig_data.squared_de_dw[0..1] = NArray[0.3,1.5]
+        @orig_data.av_squared_grads[0..1] = NArray[0.3,1.5]
 
         @saved_data = Marshal.dump( @orig_data )
         @copy_data =  Marshal.load( @saved_data )
@@ -392,10 +392,10 @@ describe RuNeNe::GradientDescent::RMSProp do
         expect( @copy_data.epsilon ).to be_within(1e-12).of 1e-6
       end
 
-      it "can save and retrieve squared_de_dw" do
+      it "can save and retrieve av_squared_grads" do
         expect( @copy_data ).to_not be @orig_data
-        expect( @copy_data.squared_de_dw ).to_not be @orig_data.squared_de_dw
-        expect( @copy_data.squared_de_dw ).to be_narray_like @orig_data.squared_de_dw
+        expect( @copy_data.av_squared_grads ).to_not be @orig_data.av_squared_grads
+        expect( @copy_data.av_squared_grads ).to be_narray_like @orig_data.av_squared_grads
       end
     end
   end
@@ -433,11 +433,11 @@ describe RuNeNe::GradientDescent::RMSProp do
         expect( @params ).to_not be_narray_like before_params
       end
 
-      it "should alter squared_de_dw" do
+      it "should alter av_squared_grads" do
         gradients = NArray.sfloat(2).random - 0.5
-        before_squared_de_dw = gd.squared_de_dw.clone
+        before_av_squared_grads = gd.av_squared_grads.clone
         gd.gradient_step( @params, gradients, 0.1)
-        expect( gd.squared_de_dw ).to_not be_narray_like before_squared_de_dw
+        expect( gd.av_squared_grads ).to_not be_narray_like before_av_squared_grads
       end
     end
 

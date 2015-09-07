@@ -15,8 +15,8 @@ typedef struct _gd_rmsprop_raw {
   int num_params;
   float decay;
   float epsilon;
-  VALUE narr_squared_de_dw;
-  float *squared_de_dw;
+  VALUE narr_av_squared_grads;
+  float *av_squared_grads;
   } GradientDescent_RMSProp;
 
 GradientDescent_RMSProp *gd_rmsprop__create();

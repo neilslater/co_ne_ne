@@ -51,12 +51,12 @@ void copy_hash_to_gd_rmsprop_properties( VALUE rv_opts, GradientDescent_RMSProp 
     gd_rmsprop->epsilon = NUM2FLT( rv_var );
   }
 
-  rv_var = ValAtSymbol(rv_opts,"squared_de_dw");
+  rv_var = ValAtSymbol(rv_opts,"av_squared_grads");
   if ( !NIL_P(rv_var) ) {
     new_narray = na_cast_object(rv_var, NA_SFLOAT);
     GetNArray( new_narray, narr );
-    gd_rmsprop->narr_squared_de_dw = new_narray;
-    gd_rmsprop->squared_de_dw = (float *) narr->ptr;
+    gd_rmsprop->narr_av_squared_grads = new_narray;
+    gd_rmsprop->av_squared_grads = (float *) narr->ptr;
     gd_rmsprop->num_params = narr->total;
   }
 
@@ -167,13 +167,13 @@ VALUE gd_rmsprop_rbobject__set_epsilon( VALUE self, VALUE rv_epsilon ) {
   return rv_epsilon;
 }
 
-/* @!attribute [r] squared_de_dw
+/* @!attribute [r] av_squared_grads
  * Description goes here
  * @return [NArray<sfloat>]
  */
-VALUE gd_rmsprop_rbobject__get_narr_squared_de_dw( VALUE self ) {
+VALUE gd_rmsprop_rbobject__get_narr_av_squared_grads( VALUE self ) {
   GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
-  return gd_rmsprop->narr_squared_de_dw;
+  return gd_rmsprop->narr_av_squared_grads;
 }
 
 /* @overload pre_gradient_step( params, learning_rate )
@@ -248,7 +248,7 @@ void init_gd_rmsprop_class( ) {
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "decay=", gd_rmsprop_rbobject__set_decay, 1 );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "epsilon", gd_rmsprop_rbobject__get_epsilon, 0 );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "epsilon=", gd_rmsprop_rbobject__set_epsilon, 1 );
-  rb_define_method( RuNeNe_GradientDescent_RMSProp, "squared_de_dw", gd_rmsprop_rbobject__get_narr_squared_de_dw, 0 );
+  rb_define_method( RuNeNe_GradientDescent_RMSProp, "av_squared_grads", gd_rmsprop_rbobject__get_narr_av_squared_grads, 0 );
 
   // GradientDescent_RMSProp instance methods
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "pre_gradient_step", gd_rmsprop_rbobject__pre_gradient_step, 2 );

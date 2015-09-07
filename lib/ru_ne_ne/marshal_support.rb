@@ -157,7 +157,7 @@ class RuNeNe::GradientDescent::RMSProp
   def to_h
     Hash[
       :num_params => self.num_params,
-      :squared_de_dw => self.squared_de_dw,
+      :av_squared_grads => self.av_squared_grads,
       :decay => self.decay,
       :epsilon => self.epsilon
     ]

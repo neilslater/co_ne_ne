@@ -105,6 +105,9 @@ void mbgd_layer__gc_mark( MBGDLayer *mbgd_layer ) {
   rb_gc_mark( mbgd_layer->narr_de_dz );
   rb_gc_mark( mbgd_layer->narr_de_da );
   rb_gc_mark( mbgd_layer->narr_de_dw );
+  rb_gc_mark( mbgd_layer->gd_optimiser );
+
+  // TODO: Remove these stats
   rb_gc_mark( mbgd_layer->narr_de_dw_stats_a );
   rb_gc_mark( mbgd_layer->narr_de_dw_stats_b );
   return;
@@ -117,7 +120,6 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
   mbgd_layer_copy->num_outputs = mbgd_layer_orig->num_outputs;
   mbgd_layer_copy->learning_rate = mbgd_layer_orig->learning_rate;
   mbgd_layer_copy->gd_accel_type = mbgd_layer_orig->gd_accel_type;
-  mbgd_layer_copy->gd_accel_rate = mbgd_layer_orig->gd_accel_rate;
   mbgd_layer_copy->max_norm = mbgd_layer_orig->max_norm;
   mbgd_layer_copy->weight_decay = mbgd_layer_orig->weight_decay;
 
@@ -133,6 +135,10 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
   GetNArray( mbgd_layer_copy->narr_de_dw, narr );
   mbgd_layer_copy->de_dw = (float *) narr->ptr;
 
+  // TODO: clone mbgd_layer->gd_optimiser
+
+
+  // TODO: Remove these stats
   mbgd_layer_copy->narr_de_dw_stats_a = na_clone( mbgd_layer_orig->narr_de_dw_stats_a );
   GetNArray( mbgd_layer_copy->narr_de_dw_stats_a, narr );
   mbgd_layer_copy->de_dw_stats_a = (float *) narr->ptr;
@@ -140,6 +146,8 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
   mbgd_layer_copy->narr_de_dw_stats_b = na_clone( mbgd_layer_orig->narr_de_dw_stats_b );
   GetNArray( mbgd_layer_copy->narr_de_dw_stats_b, narr );
   mbgd_layer_copy->de_dw_stats_b = (float *) narr->ptr;
+
+  mbgd_layer_copy->gd_accel_rate = mbgd_layer_orig->gd_accel_rate;
 
   return;
 }
