@@ -79,12 +79,12 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
     mbgd_layer->de_dw = (float *) narr->ptr;
   }
 
-  rv_var = ValAtSymbol(rv_opts,"gd_optimiser");
+  rv_var = ValAtSymbol(rv_opts,"gradient_descent");
   if ( !NIL_P(rv_var) ) {
     int t = ( 1 + mbgd_layer->num_inputs ) * mbgd_layer->num_outputs;
 
     if ( TYPE(rv_var) != T_DATA ) {
-      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
+      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
     }
 
     if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_sgd__destroy ) {
@@ -106,9 +106,9 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
       }
       mbgd_layer->gd_accel_type = GDACCEL_TYPE_RMSPROP;
     } else {
-      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
+      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
     }
-    mbgd_layer->gd_optimiser = rv_var;
+    mbgd_layer->gradient_descent = rv_var;
   } else {
     rv_var = ValAtSymbol(rv_opts,"momentum");
     if ( !NIL_P(rv_var) ) {
@@ -125,7 +125,7 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
       epsilon = NUM2FLT( rv_var );
     }
 
-    mbgd_layer__init_gd_optimiser( mbgd_layer,
+    mbgd_layer__init_gradient_descent( mbgd_layer,
         symbol_to_gd_accel_type( ValAtSymbol(rv_opts, "gd_accel_type") ),
         momentum, decay, epsilon );
   }
@@ -242,7 +242,7 @@ VALUE mbgd_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self ) {
   if (!NIL_P(rv_opts)) {
     copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer );
   } else {
-    mbgd_layer__init_gd_optimiser( mbgd_layer, GDACCEL_TYPE_NONE,
+    mbgd_layer__init_gradient_descent( mbgd_layer, GDACCEL_TYPE_NONE,
         0.9, 0.9, 1e-6 ); // These last values are ignored for SGD
   }
 
@@ -313,7 +313,7 @@ VALUE mbgd_layer_rbobject__set_gd_accel_type( VALUE self, VALUE rv_gd_accel_type
 
   mbgd_layer->gd_accel_type = symbol_to_gd_accel_type( rv_gd_accel_type );
 
-  mbgd_layer__init_gd_optimiser( mbgd_layer,
+  mbgd_layer__init_gradient_descent( mbgd_layer,
       mbgd_layer->gd_accel_type, 0.9, 0.9, 1e-6 );
 
   return rv_gd_accel_type;
@@ -376,16 +376,16 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw( VALUE self ) {
   return mbgd_layer->narr_de_dw;
 }
 
-/* @!attribute gd_optimiser
+/* @!attribute gradient_descent
  * Description goes here
  * @return [RuNeNe::GradientDescent::SGD,RuNeNe::GradientDescent::NAG,RuNeNe::GradientDescent::RMSProp]
  */
-VALUE mbgd_layer_rbobject__get_gd_optimiser( VALUE self ) {
+VALUE mbgd_layer_rbobject__get_gradient_descent( VALUE self ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  return mbgd_layer->gd_optimiser;
+  return mbgd_layer->gradient_descent;
 }
 
-VALUE mbgd_layer_rbobject__set_gd_optimiser( VALUE self, VALUE rv_var ) {
+VALUE mbgd_layer_rbobject__set_gradient_descent( VALUE self, VALUE rv_var ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
   GradientDescent_SGD * gd_sgd;
   GradientDescent_NAG * gd_nag;
@@ -394,7 +394,7 @@ VALUE mbgd_layer_rbobject__set_gd_optimiser( VALUE self, VALUE rv_var ) {
   int t = ( 1 + mbgd_layer->num_inputs ) * mbgd_layer->num_outputs;
 
   if ( TYPE(rv_var) != T_DATA ) {
-   rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
+   rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
   }
 
   if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_sgd__destroy ) {
@@ -416,11 +416,11 @@ VALUE mbgd_layer_rbobject__set_gd_optimiser( VALUE self, VALUE rv_var ) {
     }
     mbgd_layer->gd_accel_type = GDACCEL_TYPE_RMSPROP;
   } else {
-    rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
+    rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
   }
-  mbgd_layer->gd_optimiser = rv_var;
+  mbgd_layer->gradient_descent = rv_var;
 
-  return mbgd_layer->gd_optimiser;
+  return mbgd_layer->gradient_descent;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -636,8 +636,8 @@ void init_mbgd_layer_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate=", mbgd_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type", mbgd_layer_rbobject__get_gd_accel_type, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type=", mbgd_layer_rbobject__set_gd_accel_type, 1 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_optimiser", mbgd_layer_rbobject__get_gd_optimiser, 0 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_optimiser=", mbgd_layer_rbobject__set_gd_optimiser, 1 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent", mbgd_layer_rbobject__get_gradient_descent, 0 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent=", mbgd_layer_rbobject__set_gradient_descent, 1 );
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm", mbgd_layer_rbobject__get_max_norm, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm=", mbgd_layer_rbobject__set_max_norm, 1 );

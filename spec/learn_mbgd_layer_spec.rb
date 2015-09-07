@@ -61,74 +61,74 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "creates a new optimiser object by default" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1 )
         expect( bpl.gd_accel_type ).to be :none
-        expect( bpl.gd_optimiser ).to be_a RuNeNe::GradientDescent::SGD
-        expect( bpl.gd_optimiser.num_params ).to be 3
+        expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::SGD
+        expect( bpl.gradient_descent.num_params ).to be 3
       end
 
       it "creates SGD optimiser when :gd_accel_type => :none" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1, :gd_accel_type => :none )
         expect( bpl.gd_accel_type ).to be :none
-        expect( bpl.gd_optimiser ).to be_a RuNeNe::GradientDescent::SGD
-        expect( bpl.gd_optimiser.num_params ).to be 3
+        expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::SGD
+        expect( bpl.gradient_descent.num_params ).to be 3
       end
 
       it "creates NAG optimiser when :gd_accel_type => :momentum" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :gd_accel_type => :momentum, :momentum => 0.75 )
         expect( bpl.gd_accel_type ).to be :momentum
-        expect( bpl.gd_optimiser ).to be_a RuNeNe::GradientDescent::NAG
-        expect( bpl.gd_optimiser.num_params ).to be 3
-        expect( bpl.gd_optimiser.momentum ).to be_within(1e-6).of 0.75
-        expect( bpl.gd_optimiser.param_update_velocity ).to be_narray_like NArray[ [ 0.0, 0.0, 0.0 ] ]
+        expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::NAG
+        expect( bpl.gradient_descent.num_params ).to be 3
+        expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.75
+        expect( bpl.gradient_descent.param_update_velocity ).to be_narray_like NArray[ [ 0.0, 0.0, 0.0 ] ]
       end
 
       it "creates RMSProp optimiser when :gd_accel_type => :rmsprop" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :gd_accel_type => :rmsprop, :decay => 0.95, :epsilon => 1e-7 )
         expect( bpl.gd_accel_type ).to be :rmsprop
-        expect( bpl.gd_optimiser ).to be_a RuNeNe::GradientDescent::RMSProp
-        expect( bpl.gd_optimiser.num_params ).to be 3
-        expect( bpl.gd_optimiser.decay ).to be_within(1e-6).of 0.95
-        expect( bpl.gd_optimiser.epsilon ).to be_within(1e-12).of 1e-7
-        expect( bpl.gd_optimiser.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ] ]
+        expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
+        expect( bpl.gradient_descent.num_params ).to be 3
+        expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.95
+        expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 1e-7
+        expect( bpl.gradient_descent.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ] ]
       end
 
-      it "accepts setting :gd_optimiser directly to SGD instance" do
+      it "accepts setting :gradient_descent directly to SGD instance" do
         opt = RuNeNe::GradientDescent::SGD.new( NArray[ [-0.1, 0.01, 0.001] ] )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_optimiser => opt )
+            :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :none
-        expect( bpl.gd_optimiser ).to be opt
+        expect( bpl.gradient_descent ).to be opt
       end
 
-      it "accepts setting :gd_optimiser directly to NAG instance" do
+      it "accepts setting :gradient_descent directly to NAG instance" do
         opt = RuNeNe::GradientDescent::NAG.new( NArray[ [-0.1, 0.01, 0.001] ], 0.67 )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_optimiser => opt )
+            :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :momentum
-        expect( bpl.gd_optimiser ).to be opt
-        expect( bpl.gd_optimiser.momentum ).to be_within(1e-6).of 0.67
+        expect( bpl.gradient_descent ).to be opt
+        expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.67
       end
 
-      it "accepts setting :gd_optimiser directly to RMSProp instance" do
+      it "accepts setting :gradient_descent directly to RMSProp instance" do
         opt = RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01, 0.001] ], 0.8, 3e-7 )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_optimiser => opt )
+            :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :rmsprop
-        expect( bpl.gd_optimiser ).to be opt
-        expect( bpl.gd_optimiser.decay ).to be_within(1e-6).of 0.8
-        expect( bpl.gd_optimiser.epsilon ).to be_within(1e-12).of 3e-7
+        expect( bpl.gradient_descent ).to be opt
+        expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.8
+        expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 3e-7
       end
 
-      it "doesn't accept a :gd_optimiser with wrong size" do
+      it "doesn't accept a :gradient_descent with wrong size" do
         opt = RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01] ], 0.8, 3e-7 )
         expect { RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_optimiser => opt ) }.to raise_error ArgumentError
+            :gradient_descent => opt ) }.to raise_error ArgumentError
       end
 
-      it "doesn't accept a :gd_optimiser with wrong type" do
+      it "doesn't accept a :gradient_descent with wrong type" do
         expect { RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_optimiser => "RMSProp" ) }.to raise_error TypeError
+            :gradient_descent => "RMSProp" ) }.to raise_error TypeError
       end
     end
 
@@ -171,11 +171,11 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
 
-        expect( bpl.gd_optimiser ).to be_a RuNeNe::GradientDescent::RMSProp
-        expect( bpl.gd_optimiser.num_params ).to be 3
-        expect( bpl.gd_optimiser.decay ).to be_within(1e-6).of 0.99
-        expect( bpl.gd_optimiser.epsilon ).to be_within(1e-12).of 1e-6
-        expect( bpl.gd_optimiser.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ] ]
+        expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
+        expect( bpl.gradient_descent.num_params ).to be 3
+        expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.99
+        expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 1e-6
+        expect( bpl.gradient_descent.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ] ]
       end
 
       it "uses options hash to set narrays" do
@@ -187,28 +187,28 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( bpl.de_dw ).to be_narray_like NArray[ [-0.1, 0.01, 0.001] ]
       end
 
-      it "accepts setting :gd_optimiser directly to SGD instance" do
+      it "accepts setting :gradient_descent directly to SGD instance" do
         opt = RuNeNe::GradientDescent::SGD.new( NArray[ [-0.1, 0.01, 0.001] ] )
-        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gd_optimiser => opt )
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :none
-        expect( bpl.gd_optimiser ).to be opt
+        expect( bpl.gradient_descent ).to be opt
       end
 
-      it "accepts setting :gd_optimiser directly to NAG instance" do
+      it "accepts setting :gradient_descent directly to NAG instance" do
         opt = RuNeNe::GradientDescent::NAG.new( NArray[ [-0.1, 0.01, 0.001] ], 0.67 )
-        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gd_optimiser => opt )
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :momentum
-        expect( bpl.gd_optimiser ).to be opt
-        expect( bpl.gd_optimiser.momentum ).to be_within(1e-6).of 0.67
+        expect( bpl.gradient_descent ).to be opt
+        expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.67
       end
 
-      it "accepts setting :gd_optimiser directly to RMSProp instance" do
+      it "accepts setting :gradient_descent directly to RMSProp instance" do
         opt = RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01, 0.001] ], 0.8, 3e-7 )
-        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gd_optimiser => opt )
+        bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
         expect( bpl.gd_accel_type ).to be :rmsprop
-        expect( bpl.gd_optimiser ).to be opt
-        expect( bpl.gd_optimiser.decay ).to be_within(1e-6).of 0.8
-        expect( bpl.gd_optimiser.epsilon ).to be_within(1e-12).of 3e-7
+        expect( bpl.gradient_descent ).to be opt
+        expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.8
+        expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 3e-7
       end
     end
 
@@ -218,7 +218,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         opt.av_squared_grads[0] = 50;
         orig_bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 2,
             :learning_rate => 0.003, :weight_decay => 2e-3,
-            :max_norm => 1.1, :gd_optimiser => opt,
+            :max_norm => 1.1, :gradient_descent => opt,
             :de_dz => NArray[ 0.25, 0.5 ], :de_da => NArray[ 0.13, 0.14 ],
             :de_dw => NArray[ [-0.1, 0.01, 0.001], [0.6, 0.5, 0.4] ]
         )
@@ -237,11 +237,11 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( copy_bpl.de_da ).to be_narray_like orig_bpl.de_da
         expect( copy_bpl.de_dw ).to be_narray_like orig_bpl.de_dw
 
-        expect( copy_bpl.gd_optimiser ).to_not be opt
-        expect( copy_bpl.gd_optimiser.num_params ).to be 6
-        expect( copy_bpl.gd_optimiser.decay ).to be_within(1e-6).of 0.8
-        expect( copy_bpl.gd_optimiser.epsilon ).to be_within(1e-12).of 3e-7
-        expect( copy_bpl.gd_optimiser.av_squared_grads ).to be_narray_like opt.av_squared_grads
+        expect( copy_bpl.gradient_descent ).to_not be opt
+        expect( copy_bpl.gradient_descent.num_params ).to be 6
+        expect( copy_bpl.gradient_descent.decay ).to be_within(1e-6).of 0.8
+        expect( copy_bpl.gradient_descent.epsilon ).to be_within(1e-12).of 3e-7
+        expect( copy_bpl.gradient_descent.av_squared_grads ).to be_narray_like opt.av_squared_grads
       end
     end
   end
@@ -283,11 +283,11 @@ describe RuNeNe::Learn::MBGD::Layer do
       end
 
       it "makes deep copy of the optimiser" do
-        opt_orig = @bpl_momentum.gd_optimiser
+        opt_orig = @bpl_momentum.gradient_descent
         opt_orig.param_update_velocity[3] = 500;
 
         @copy = @bpl_momentum.clone
-        opt_copy = @copy.gd_optimiser
+        opt_copy = @copy.gradient_descent
 
         expect( opt_copy ).to_not be opt_orig
 
@@ -327,12 +327,12 @@ describe RuNeNe::Learn::MBGD::Layer do
           when :momentum
             it "defaults param_update_velocity to all zeroes for first batch" do
               @bpl_subject.start_batch( @ff_layer )
-              expect( @bpl_subject.gd_optimiser.param_update_velocity ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+              expect( @bpl_subject.gradient_descent.param_update_velocity ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
             end
           when :rmsprop
             it "defaults av_squared_grads to all ones for first batch" do
               @bpl_subject.start_batch( @ff_layer )
-              expect( @bpl_subject.gd_optimiser.av_squared_grads ).to be_narray_like NArray[[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]]
+              expect( @bpl_subject.gradient_descent.av_squared_grads ).to be_narray_like NArray[[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]]
             end
           end
         end
@@ -413,7 +413,7 @@ describe RuNeNe::Learn::MBGD::Layer do
             when :momentum
             it "changes weight_update_velocity" do
               @bpl_subject.finish_batch( @ff_layer )
-              expect( @bpl_subject.gd_optimiser.param_update_velocity ).to be_narray_like NArray[
+              expect( @bpl_subject.gradient_descent.param_update_velocity ).to be_narray_like NArray[
                 [ 0.00144115, -0.00240192, 0.00432346, 0.00480385 ],
                 [ -0.0036607, 0.00610117, -0.0109821, -0.0122023 ]
               ]

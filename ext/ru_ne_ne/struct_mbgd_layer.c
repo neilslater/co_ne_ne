@@ -19,7 +19,7 @@ MBGDLayer *mbgd_layer__create() {
   mbgd_layer->narr_de_dw = Qnil;
   mbgd_layer->de_dw = NULL;
   mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
-  mbgd_layer->gd_optimiser = Qnil;
+  mbgd_layer->gradient_descent = Qnil;
 
   mbgd_layer->learning_rate = 0.01;
   mbgd_layer->max_norm = 0.0;
@@ -70,7 +70,7 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   return;
 }
 
-void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at, float momentum, float decay, float epsilon ) {
+void mbgd_layer__init_gradient_descent( MBGDLayer *mbgd_layer, gd_accel_type gd_at, float momentum, float decay, float epsilon ) {
   mbgd_layer->gd_accel_type = gd_at;
   GradientDescent_SGD * gd_sgd;
   GradientDescent_NAG * gd_nag;
@@ -80,19 +80,19 @@ void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at, 
     case GDACCEL_TYPE_NONE:
       gd_sgd = gd_sgd__create();
       gd_sgd->num_params = ( mbgd_layer->num_inputs + 1 ) * mbgd_layer->num_outputs;
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD, gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd );
+      mbgd_layer->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD, gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd );
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
       gd_nag = gd_nag__create();
       gd_nag__init( gd_nag, mbgd_layer->narr_de_dw, momentum );
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG, gd_nag__gc_mark, gd_nag__destroy, gd_nag );
+      mbgd_layer->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG, gd_nag__gc_mark, gd_nag__destroy, gd_nag );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
       gd_rmsprop = gd_rmsprop__create();
       gd_rmsprop__init( gd_rmsprop, mbgd_layer->narr_de_dw, decay, epsilon );
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp, gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop );
+      mbgd_layer->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp, gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop );
       break;
   }
   return;
@@ -107,7 +107,7 @@ void mbgd_layer__gc_mark( MBGDLayer *mbgd_layer ) {
   rb_gc_mark( mbgd_layer->narr_de_dz );
   rb_gc_mark( mbgd_layer->narr_de_da );
   rb_gc_mark( mbgd_layer->narr_de_dw );
-  rb_gc_mark( mbgd_layer->gd_optimiser );
+  rb_gc_mark( mbgd_layer->gradient_descent );
   return;
 }
 
@@ -124,20 +124,20 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
 
   switch ( mbgd_layer_copy->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
-      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_SGD, gd_sgd );
-      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD,
+      Data_Get_Struct( mbgd_layer_orig->gradient_descent, GradientDescent_SGD, gd_sgd );
+      mbgd_layer_copy->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD,
           gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd__clone( gd_sgd ) );
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_NAG, gd_nag );
-      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG,
+      Data_Get_Struct( mbgd_layer_orig->gradient_descent, GradientDescent_NAG, gd_nag );
+      mbgd_layer_copy->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG,
           gd_nag__gc_mark, gd_nag__destroy, gd_nag__clone( gd_nag ) );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
-      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_RMSProp, gd_rmsprop );
-      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp,
+      Data_Get_Struct( mbgd_layer_orig->gradient_descent, GradientDescent_RMSProp, gd_rmsprop );
+      mbgd_layer_copy->gradient_descent = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp,
           gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop__clone( gd_rmsprop ) );
       break;
   }
@@ -181,7 +181,7 @@ void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_NAG, gd_nag );
+      Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_NAG, gd_nag );
       gd_nag__pre_gradient_step( gd_nag, layer_ff->weights, mbgd_layer->learning_rate );
       break;
 
@@ -314,17 +314,17 @@ void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
 
   switch ( mbgd_layer->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
-      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_SGD, gd_sgd );
+      Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_SGD, gd_sgd );
       gd_sgd__gradient_step( gd_sgd, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_NAG, gd_nag );
+      Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_NAG, gd_nag );
       gd_nag__gradient_step( gd_nag, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
-      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_RMSProp, gd_rmsprop );
+      Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_RMSProp, gd_rmsprop );
       gd_rmsprop__gradient_step( gd_rmsprop, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
   }
