@@ -18,7 +18,7 @@ objective_type symbol_to_objective_type( VALUE rv_objective_type );
 VALUE objective_type_to_module( objective_type o );
 VALUE objective_type_to_symbol( objective_type o );
 
-gd_accel_type symbol_to_gd_accel_type( VALUE rv_gdaccel_symbol );
-VALUE gd_accel_type_to_symbol( gd_accel_type g );
+gradient_descent_type symbol_to_gradient_descent_type( VALUE rv_gdaccel_symbol );
+VALUE gradient_descent_type_to_symbol( gradient_descent_type g );
 
 #endif

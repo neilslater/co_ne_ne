@@ -34,7 +34,7 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "uses conservative defaults for all learning params" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1 )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.01
-        expect( bpl.gd_accel_type ).to be :none
+        expect( bpl.gradient_descent_type ).to be :sgd
         expect( bpl.weight_decay ).to eql 0.0
         expect( bpl.max_norm ).to eql 0.0
       end
@@ -42,9 +42,9 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "uses options hash to set learning params" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :learning_rate => 0.005, :weight_decay => 1e-4,
-            :max_norm => 2.4, :gd_accel_type => :rmsprop )
+            :max_norm => 2.4, :gradient_descent_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
-        expect( bpl.gd_accel_type ).to be :rmsprop
+        expect( bpl.gradient_descent_type ).to be :rmsprop
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
       end
@@ -60,32 +60,32 @@ describe RuNeNe::Learn::MBGD::Layer do
 
       it "creates a new optimiser object by default" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1 )
-        expect( bpl.gd_accel_type ).to be :none
+        expect( bpl.gradient_descent_type ).to be :sgd
         expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::SGD
         expect( bpl.gradient_descent.num_params ).to be 3
       end
 
-      it "creates SGD optimiser when :gd_accel_type => :none" do
-        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1, :gd_accel_type => :none )
-        expect( bpl.gd_accel_type ).to be :none
+      it "creates SGD optimiser when :gradient_descent_type => :sgd" do
+        bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1, :gradient_descent_type => :sgd )
+        expect( bpl.gradient_descent_type ).to be :sgd
         expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::SGD
         expect( bpl.gradient_descent.num_params ).to be 3
       end
 
-      it "creates NAG optimiser when :gd_accel_type => :momentum" do
+      it "creates NAG optimiser when :gradient_descent_type => :nag" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_accel_type => :momentum, :momentum => 0.75 )
-        expect( bpl.gd_accel_type ).to be :momentum
+            :gradient_descent_type => :nag, :momentum => 0.75 )
+        expect( bpl.gradient_descent_type ).to be :nag
         expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::NAG
         expect( bpl.gradient_descent.num_params ).to be 3
         expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.75
         expect( bpl.gradient_descent.param_update_velocity ).to be_narray_like NArray[ [ 0.0, 0.0, 0.0 ] ]
       end
 
-      it "creates RMSProp optimiser when :gd_accel_type => :rmsprop" do
+      it "creates RMSProp optimiser when :gradient_descent_type => :rmsprop" do
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
-            :gd_accel_type => :rmsprop, :decay => 0.95, :epsilon => 1e-7 )
-        expect( bpl.gd_accel_type ).to be :rmsprop
+            :gradient_descent_type => :rmsprop, :decay => 0.95, :epsilon => 1e-7 )
+        expect( bpl.gradient_descent_type ).to be :rmsprop
         expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
         expect( bpl.gradient_descent.num_params ).to be 3
         expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.95
@@ -97,7 +97,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         opt = RuNeNe::GradientDescent::SGD.new( NArray[ [-0.1, 0.01, 0.001] ] )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :none
+        expect( bpl.gradient_descent_type ).to be :sgd
         expect( bpl.gradient_descent ).to be opt
       end
 
@@ -105,7 +105,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         opt = RuNeNe::GradientDescent::NAG.new( NArray[ [-0.1, 0.01, 0.001] ], 0.67 )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :momentum
+        expect( bpl.gradient_descent_type ).to be :nag
         expect( bpl.gradient_descent ).to be opt
         expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.67
       end
@@ -114,7 +114,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         opt = RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01, 0.001] ], 0.8, 3e-7 )
         bpl = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 2, :num_outputs => 1,
             :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :rmsprop
+        expect( bpl.gradient_descent_type ).to be :rmsprop
         expect( bpl.gradient_descent ).to be opt
         expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.8
         expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 3e-7
@@ -165,9 +165,9 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "uses options hash to set learning params" do
         bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer,
             :learning_rate => 0.005, :decay => 0.99, :weight_decay => 1e-4,
-            :max_norm => 2.4, :gd_accel_type => :rmsprop )
+            :max_norm => 2.4, :gradient_descent_type => :rmsprop )
         expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
-        expect( bpl.gd_accel_type ).to be :rmsprop
+        expect( bpl.gradient_descent_type ).to be :rmsprop
         expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
         expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
 
@@ -190,14 +190,14 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "accepts setting :gradient_descent directly to SGD instance" do
         opt = RuNeNe::GradientDescent::SGD.new( NArray[ [-0.1, 0.01, 0.001] ] )
         bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :none
+        expect( bpl.gradient_descent_type ).to be :sgd
         expect( bpl.gradient_descent ).to be opt
       end
 
       it "accepts setting :gradient_descent directly to NAG instance" do
         opt = RuNeNe::GradientDescent::NAG.new( NArray[ [-0.1, 0.01, 0.001] ], 0.67 )
         bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :momentum
+        expect( bpl.gradient_descent_type ).to be :nag
         expect( bpl.gradient_descent ).to be opt
         expect( bpl.gradient_descent.momentum ).to be_within(1e-6).of 0.67
       end
@@ -205,7 +205,7 @@ describe RuNeNe::Learn::MBGD::Layer do
       it "accepts setting :gradient_descent directly to RMSProp instance" do
         opt = RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01, 0.001] ], 0.8, 3e-7 )
         bpl = RuNeNe::Learn::MBGD::Layer.from_layer( @layer, :gradient_descent => opt )
-        expect( bpl.gd_accel_type ).to be :rmsprop
+        expect( bpl.gradient_descent_type ).to be :rmsprop
         expect( bpl.gradient_descent ).to be opt
         expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.8
         expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 3e-7
@@ -229,7 +229,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( copy_bpl.num_inputs ).to be 2
         expect( copy_bpl.num_outputs ).to be 2
         expect( copy_bpl.learning_rate ).to be_within( 1e-6 ).of 0.003
-        expect( copy_bpl.gd_accel_type ).to be :rmsprop
+        expect( copy_bpl.gradient_descent_type ).to be :rmsprop
         expect( copy_bpl.weight_decay ).to be_within( 1e-8 ).of 2e-3
         expect( copy_bpl.max_norm ).to be_within( 1e-6 ).of 1.1
 
@@ -253,7 +253,7 @@ describe RuNeNe::Learn::MBGD::Layer do
 
       @bpl_momentum = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
             :learning_rate => 0.02, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
-            :max_norm => 1.5, :gd_accel_type => :momentum )
+            :max_norm => 1.5, :gradient_descent_type => :nag )
     end
 
     describe "#clone" do
@@ -264,7 +264,7 @@ describe RuNeNe::Learn::MBGD::Layer do
         expect( @copy.num_outputs ).to be 2
 
         expect( @copy.learning_rate ).to be_within( 1e-6 ).of 0.02
-        expect( @copy.gd_accel_type ).to be :momentum
+        expect( @copy.gradient_descent_type ).to be :nag
         expect( @copy.weight_decay ).to be_within( 1e-8 ).of 1e-3
         expect( @copy.max_norm ).to be_within( 1e-6 ).of 1.5
       end
@@ -303,12 +303,12 @@ describe RuNeNe::Learn::MBGD::Layer do
         @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
       end
 
-      [:none, :momentum, :rmsprop].each do |accel_type|
-        context "with gd_accel_type '#{accel_type}'" do
+      [:sgd, :nag, :rmsprop].each do |accel_type|
+        context "with gradient_descent_type '#{accel_type}'" do
           before :each do
             @bpl_subject = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
                   :learning_rate => 0.02, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
-                  :max_norm => 1.5, :gd_accel_type => accel_type )
+                  :max_norm => 1.5, :gradient_descent_type => accel_type )
           end
 
           it "resets de_dw" do
@@ -324,7 +324,7 @@ describe RuNeNe::Learn::MBGD::Layer do
           end
 
           case accel_type
-          when :momentum
+          when :nag
             it "defaults param_update_velocity to all zeroes for first batch" do
               @bpl_subject.start_batch( @ff_layer )
               expect( @bpl_subject.gradient_descent.param_update_velocity ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
@@ -366,12 +366,12 @@ describe RuNeNe::Learn::MBGD::Layer do
     end
 
     describe "#finish_batch" do
-      [:none, :momentum, :rmsprop].each do |accel_type|
-        context "with gd_accel_type '#{accel_type}'" do
+      [:sgd, :nag, :rmsprop].each do |accel_type|
+        context "with gradient_descent_type '#{accel_type}'" do
           before :each do
             @bpl_subject = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
                 :learning_rate => 0.02, :weight_decay => 1e-3,
-                :max_norm => 1.5, :gd_accel_type => accel_type )
+                :max_norm => 1.5, :gradient_descent_type => accel_type )
           end
 
           before :each do
@@ -410,7 +410,7 @@ describe RuNeNe::Learn::MBGD::Layer do
           end
 
           case accel_type
-            when :momentum
+            when :nag
             it "changes weight_update_velocity" do
               @bpl_subject.finish_batch( @ff_layer )
               expect( @bpl_subject.gradient_descent.param_update_velocity ).to be_narray_like NArray[

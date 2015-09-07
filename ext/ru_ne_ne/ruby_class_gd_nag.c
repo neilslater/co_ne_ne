@@ -87,7 +87,7 @@ VALUE gd_nag_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_momentu
 
 /* @overload initialize( h )
  * Creates a new ...
- * keys are h[:param_update_velocity], h[:momentum]
+ * keys are h[:param_update_velocity], h[:nag]
  * @return [RuNeNe::GradientDescent::NAG] new ...
  */
 

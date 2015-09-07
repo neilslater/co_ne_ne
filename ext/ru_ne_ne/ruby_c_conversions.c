@@ -97,10 +97,10 @@ VALUE objective_type_to_symbol( objective_type o ) {
   }
 }
 
-gd_accel_type symbol_to_gd_accel_type( VALUE rv_gdaccel_symbol ) {
+gradient_descent_type symbol_to_gradient_descent_type( VALUE rv_gdaccel_symbol ) {
   ID accel_id;
 
-  accel_id = rb_intern("none");
+  accel_id = rb_intern("sgd");
   if ( ! NIL_P(rv_gdaccel_symbol) ) {
     if ( TYPE(rv_gdaccel_symbol) != T_SYMBOL ) {
       rb_raise( rb_eTypeError, "Gradient descent acceleration type must be a Symbol" );
@@ -108,26 +108,26 @@ gd_accel_type symbol_to_gd_accel_type( VALUE rv_gdaccel_symbol ) {
     accel_id = SYM2ID(rv_gdaccel_symbol);
   }
 
-  if ( rb_intern("none") == accel_id ) {
-    return GDACCEL_TYPE_NONE;
-  } else if ( rb_intern("momentum") == accel_id ) {
-    return GDACCEL_TYPE_MOMENTUM;
+  if ( rb_intern("sgd") == accel_id ) {
+    return GD_TYPE_SGD;
+  } else if ( rb_intern("nag") == accel_id ) {
+    return GD_TYPE_NAG;
   } else if ( rb_intern("rmsprop") == accel_id ) {
-    return GDACCEL_TYPE_RMSPROP;
+    return GD_TYPE_RMSPROP;
   } else {
-    rb_raise( rb_eArgError, "gd_accel_type %s not recognised", rb_id2name(accel_id) );
+    rb_raise( rb_eArgError, "gradient_descent_type %s not recognised", rb_id2name(accel_id) );
   }
 }
 
-VALUE gd_accel_type_to_symbol( gd_accel_type g ) {
+VALUE gradient_descent_type_to_symbol( gradient_descent_type g ) {
   switch( g ) {
-    case GDACCEL_TYPE_NONE:
-      return ID2SYM( rb_intern("none") );
-    case GDACCEL_TYPE_MOMENTUM:
-      return ID2SYM( rb_intern("momentum") );
-    case GDACCEL_TYPE_RMSPROP:
+    case GD_TYPE_SGD:
+      return ID2SYM( rb_intern("sgd") );
+    case GD_TYPE_NAG:
+      return ID2SYM( rb_intern("nag") );
+    case GD_TYPE_RMSPROP:
       return ID2SYM( rb_intern("rmsprop") );
     default:
-      rb_raise( rb_eRuntimeError, "gd_accel_type not valid, internal error");
+      rb_raise( rb_eRuntimeError, "gradient_descent_type not valid, internal error");
   }
 }

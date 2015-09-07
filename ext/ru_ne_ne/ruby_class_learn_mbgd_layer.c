@@ -92,19 +92,19 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
       if ( gd_sgd->num_params != t ) {
         rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_sgd->num_params, t  );
       }
-      mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
+      mbgd_layer->gradient_descent_type = GD_TYPE_SGD;
     } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_nag__destroy ) {
       Data_Get_Struct( rv_var, GradientDescent_NAG, gd_nag );
       if ( gd_nag->num_params != t ) {
         rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_nag->num_params, t  );
       }
-      mbgd_layer->gd_accel_type = GDACCEL_TYPE_MOMENTUM;
+      mbgd_layer->gradient_descent_type = GD_TYPE_NAG;
     } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_rmsprop__destroy ) {
       Data_Get_Struct( rv_var, GradientDescent_RMSProp, gd_rmsprop );
       if ( gd_rmsprop->num_params != t ) {
         rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_rmsprop->num_params, t  );
       }
-      mbgd_layer->gd_accel_type = GDACCEL_TYPE_RMSPROP;
+      mbgd_layer->gradient_descent_type = GD_TYPE_RMSPROP;
     } else {
       rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
     }
@@ -126,7 +126,7 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
     }
 
     mbgd_layer__init_gradient_descent( mbgd_layer,
-        symbol_to_gd_accel_type( ValAtSymbol(rv_opts, "gd_accel_type") ),
+        symbol_to_gradient_descent_type( ValAtSymbol(rv_opts, "gradient_descent_type") ),
         momentum, decay, epsilon );
   }
 
@@ -242,7 +242,7 @@ VALUE mbgd_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self ) {
   if (!NIL_P(rv_opts)) {
     copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer );
   } else {
-    mbgd_layer__init_gradient_descent( mbgd_layer, GDACCEL_TYPE_NONE,
+    mbgd_layer__init_gradient_descent( mbgd_layer, GD_TYPE_SGD,
         0.9, 0.9, 1e-6 ); // These last values are ignored for SGD
   }
 
@@ -299,24 +299,24 @@ VALUE mbgd_layer_rbobject__set_learning_rate( VALUE self, VALUE rv_learning_rate
   return rv_learning_rate;
 }
 
-/* @!attribute [r] gd_accel_type
+/* @!attribute [r] gradient_descent_type
  * Description goes here
  * @return [Integer]
  */
-VALUE mbgd_layer_rbobject__get_gd_accel_type( VALUE self ) {
+VALUE mbgd_layer_rbobject__get_gradient_descent_type( VALUE self ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  return gd_accel_type_to_symbol( mbgd_layer->gd_accel_type );
+  return gradient_descent_type_to_symbol( mbgd_layer->gradient_descent_type );
 }
 
-VALUE mbgd_layer_rbobject__set_gd_accel_type( VALUE self, VALUE rv_gd_accel_type, VALUE rv_opt ) {
+VALUE mbgd_layer_rbobject__set_gradient_descent_type( VALUE self, VALUE rv_gradient_descent_type, VALUE rv_opt ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
 
-  mbgd_layer->gd_accel_type = symbol_to_gd_accel_type( rv_gd_accel_type );
+  mbgd_layer->gradient_descent_type = symbol_to_gradient_descent_type( rv_gradient_descent_type );
 
   mbgd_layer__init_gradient_descent( mbgd_layer,
-      mbgd_layer->gd_accel_type, 0.9, 0.9, 1e-6 );
+      mbgd_layer->gradient_descent_type, 0.9, 0.9, 1e-6 );
 
-  return rv_gd_accel_type;
+  return rv_gradient_descent_type;
 }
 
 /* @!attribute max_norm
@@ -402,19 +402,19 @@ VALUE mbgd_layer_rbobject__set_gradient_descent( VALUE self, VALUE rv_var ) {
     if ( gd_sgd->num_params != t ) {
       rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_sgd->num_params, t  );
     }
-    mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
+    mbgd_layer->gradient_descent_type = GD_TYPE_SGD;
   } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_nag__destroy ) {
     Data_Get_Struct( rv_var, GradientDescent_NAG, gd_nag );
     if ( gd_nag->num_params != t ) {
       rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_nag->num_params, t  );
     }
-    mbgd_layer->gd_accel_type = GDACCEL_TYPE_MOMENTUM;
+    mbgd_layer->gradient_descent_type = GD_TYPE_NAG;
   } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_rmsprop__destroy ) {
     Data_Get_Struct( rv_var, GradientDescent_RMSProp, gd_rmsprop );
     if ( gd_rmsprop->num_params != t ) {
       rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_rmsprop->num_params, t  );
     }
-    mbgd_layer->gd_accel_type = GDACCEL_TYPE_RMSPROP;
+    mbgd_layer->gradient_descent_type = GD_TYPE_RMSPROP;
   } else {
     rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
   }
@@ -634,8 +634,8 @@ void init_mbgd_layer_class( ) {
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate", mbgd_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate=", mbgd_layer_rbobject__set_learning_rate, 1 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type", mbgd_layer_rbobject__get_gd_accel_type, 0 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type=", mbgd_layer_rbobject__set_gd_accel_type, 1 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent_type", mbgd_layer_rbobject__get_gradient_descent_type, 0 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent_type=", mbgd_layer_rbobject__set_gradient_descent_type, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent", mbgd_layer_rbobject__get_gradient_descent, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gradient_descent=", mbgd_layer_rbobject__set_gradient_descent, 1 );
 

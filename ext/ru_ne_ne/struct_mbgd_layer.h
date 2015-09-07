@@ -16,7 +16,7 @@
 #include "struct_gd_nag.h"
 #include "struct_gd_rmsprop.h"
 
-typedef enum {GDACCEL_TYPE_NONE, GDACCEL_TYPE_MOMENTUM, GDACCEL_TYPE_RMSPROP} gd_accel_type;
+typedef enum {GD_TYPE_SGD, GD_TYPE_NAG, GD_TYPE_RMSPROP} gradient_descent_type;
 
 typedef struct _mbgd_layer_raw {
   int num_inputs;
@@ -27,7 +27,7 @@ typedef struct _mbgd_layer_raw {
   float *de_da;
   VALUE narr_de_dw;
   float *de_dw;
-  gd_accel_type gd_accel_type;
+  gradient_descent_type gradient_descent_type;
   VALUE gradient_descent;
 
   float learning_rate;
@@ -39,7 +39,7 @@ MBGDLayer *mbgd_layer__create();
 
 void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs );
 
-void mbgd_layer__init_gradient_descent( MBGDLayer *mbgd_layer, gd_accel_type gd_at, float momentum, float decay, float epsilon );
+void mbgd_layer__init_gradient_descent( MBGDLayer *mbgd_layer, gradient_descent_type gd_at, float momentum, float decay, float epsilon );
 
 void mbgd_layer__destroy( MBGDLayer *mbgd_layer );
 
