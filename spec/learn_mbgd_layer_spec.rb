@@ -325,13 +325,14 @@ describe RuNeNe::Learn::MBGD::Layer do
 
           case accel_type
           when :momentum
-            it "defaults de_dw_stats_a to all zeroes for first batch" do
+            it "defaults param_update_velocity to all zeroes for first batch" do
               @bpl_subject.start_batch( @ff_layer )
-              expect( @bpl_subject.de_dw_stats_a ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
+              expect( @bpl_subject.gd_optimiser.param_update_velocity ).to be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
             end
-
-            it "represents de_dw_stats_a as weight_update_velocity" do
-              expect( @bpl_subject.weight_update_velocity ).to be @bpl_subject.de_dw_stats_a
+          when :rmsprop
+            it "defaults av_squared_grads to all ones for first batch" do
+              @bpl_subject.start_batch( @ff_layer )
+              expect( @bpl_subject.gd_optimiser.av_squared_grads ).to be_narray_like NArray[[1.0,1.0,1.0,1.0],[1.0,1.0,1.0,1.0]]
             end
           end
         end
@@ -369,8 +370,8 @@ describe RuNeNe::Learn::MBGD::Layer do
         context "with gd_accel_type '#{accel_type}'" do
           before :each do
             @bpl_subject = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
-                  :learning_rate => 0.02, :gd_accel_rate => 0.95, :weight_decay => 1e-3,
-                  :max_norm => 1.5, :gd_accel_type => accel_type )
+                :learning_rate => 0.02, :weight_decay => 1e-3,
+                :max_norm => 1.5, :gd_accel_type => accel_type )
           end
 
           before :each do
@@ -394,22 +395,28 @@ describe RuNeNe::Learn::MBGD::Layer do
             before_weights = @ff_layer.weights.clone
             @bpl_subject.finish_batch( @ff_layer )
             expect( @ff_layer.weights ).to_not be_narray_like before_weights
-            expect( @ff_layer.weights ).to be_narray_like NArray[
+
+            expected_weights = NArray[
               [ 0.306208, -0.549897, 0.520301, 0.326871 ],
-              [ 0.823996, -0.405873, -0.0354835, 0.00336937 ]
-            ]
+              [ 0.823996, -0.405873, -0.0354835, 0.00336937 ] ]
+
+            if accel_type == :rmsprop
+              expected_weights = NArray[
+              [ 0.306285, -0.550025, 0.520523, 0.327114 ],
+              [ 0.823805, -0.405576, -0.0358884, 0.00296734 ] ]
+            end
+
+            expect( @ff_layer.weights ).to be_narray_like expected_weights
           end
 
           case accel_type
             when :momentum
             it "changes weight_update_velocity" do
               @bpl_subject.finish_batch( @ff_layer )
-              expect( @bpl_subject.de_dw_stats_a ).to_not be_narray_like NArray[[0.0,0.0,0.0,0.0],[0.0,0.0,0.0,0.0]]
-              expect( @bpl_subject.weight_update_velocity ).to be_narray_like NArray[
+              expect( @bpl_subject.gd_optimiser.param_update_velocity ).to be_narray_like NArray[
                 [ 0.00144115, -0.00240192, 0.00432346, 0.00480385 ],
                 [ -0.0036607, 0.00610117, -0.0109821, -0.0122023 ]
               ]
-              expect( @bpl_subject.weight_update_velocity ).to be @bpl_subject.de_dw_stats_a
             end
           end
         end
