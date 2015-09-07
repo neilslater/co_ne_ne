@@ -418,6 +418,14 @@ describe RuNeNe::Learn::MBGD::Layer do
                 [ -0.0036607, 0.00610117, -0.0109821, -0.0122023 ]
               ]
             end
+            when :rmsprop
+            it "changes av_squared_grads" do
+              @bpl_subject.finish_batch( @ff_layer )
+              expect( @bpl_subject.gradient_descent.av_squared_grads ).to be_narray_like NArray[
+                [ 0.900519, 0.901442, 0.904673, 0.905769 ],
+                [ 0.90335, 0.909306, 0.930152, 0.937224 ]
+              ]
+            end
           end
         end
       end
