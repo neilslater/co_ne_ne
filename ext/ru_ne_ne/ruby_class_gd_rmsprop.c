@@ -112,7 +112,7 @@ VALUE gd_rmsprop_rbobject__initialize_copy( VALUE copy, VALUE orig ) {
 
 /* @overload initialize( h )
  * Creates a new ...
- * keys are h[:weight_velocity], h[:momentum]
+ * keys are h[:param_update_velocity], h[:momentum]
  * @return [RuNeNe::GradientDescent::RMSProp] new ...
  */
 

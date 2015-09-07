@@ -132,14 +132,14 @@ describe RuNeNe::GradientDescent::NAG do
         expect( gd.momentum ).to be_within(1e-6).of 0.9
       end
 
-      it "should initialize a weight_velocity array to match params size and shape" do
+      it "should initialize a param_update_velocity array to match params size and shape" do
         gd = RuNeNe::GradientDescent::NAG.new( example_params, 0.9 )
-        expect( gd.weight_velocity ).to be_narray_like NArray[0.0, 0.0]
+        expect( gd.param_update_velocity ).to be_narray_like NArray[0.0, 0.0]
 
         gd = RuNeNe::GradientDescent::NAG.new( NArray.cast( [ [ [-1.0, -1.0], [1.0, -1.0] ],
             [ [-1.0, 1.0], [1.0, 1.0] ], [ [ 1.0, -1.0], [1.0, -1.0] ],
             [ [ 1.0, -1.0], [1.0, -1.0] ] ], 'sfloat' ), 0.9 )
-        expect( gd.weight_velocity ).to be_narray_like NArray.cast( [ [ [0.0, 0.0], [0.0, 0.0] ],
+        expect( gd.param_update_velocity ).to be_narray_like NArray.cast( [ [ [0.0, 0.0], [0.0, 0.0] ],
             [ [0.0, 0.0], [0.0, 0.0] ], [ [ 0.0, 0.0], [0.0, 0.0] ],
             [ [ 0.0, 0.0], [0.0, 0.0] ] ], 'sfloat' )
       end
@@ -148,7 +148,7 @@ describe RuNeNe::GradientDescent::NAG do
     describe "with Marshal" do
       before do
         @orig_data = RuNeNe::GradientDescent::NAG.new( example_params, 0.9 )
-        @orig_data.weight_velocity[0..1] = NArray[0.3,-0.3]
+        @orig_data.param_update_velocity[0..1] = NArray[0.3,-0.3]
 
         @saved_data = Marshal.dump( @orig_data )
         @copy_data =  Marshal.load( @saved_data )
@@ -162,8 +162,8 @@ describe RuNeNe::GradientDescent::NAG do
 
       it "can save and retrieve weight_velocities" do
         expect( @copy_data ).to_not be @orig_data
-        expect( @copy_data.weight_velocity ).to_not be @orig_data.weight_velocity
-        expect( @copy_data.weight_velocity ).to be_narray_like @orig_data.weight_velocity
+        expect( @copy_data.param_update_velocity ).to_not be @orig_data.param_update_velocity
+        expect( @copy_data.param_update_velocity ).to be_narray_like @orig_data.param_update_velocity
       end
     end
   end
@@ -214,10 +214,10 @@ describe RuNeNe::GradientDescent::NAG do
         expect( @params ).to_not be_narray_like before_params
       end
 
-      it "should alter weight_velocity" do
+      it "should alter param_update_velocity" do
         gradients = NArray.sfloat(2).random - 0.5
         gd.gradient_step( @params, gradients, 0.1)
-        expect( gd.weight_velocity ).to_not be_narray_like NArray[0.0,0.0]
+        expect( gd.param_update_velocity ).to_not be_narray_like NArray[0.0,0.0]
       end
     end
 

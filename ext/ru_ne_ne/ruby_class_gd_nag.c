@@ -26,12 +26,12 @@ void copy_hash_to_gd_nag_properties( VALUE rv_opts, GradientDescent_NAG *gd_nag 
     gd_nag->num_params = NUM2INT( rv_var );
   }
 
-  rv_var = ValAtSymbol(rv_opts,"weight_velocity");
+  rv_var = ValAtSymbol(rv_opts,"param_update_velocity");
   if ( !NIL_P(rv_var) ) {
     new_narray = na_cast_object(rv_var, NA_SFLOAT);
     GetNArray( new_narray, narr );
-    gd_nag->narr_weight_velocity = new_narray;
-    gd_nag->weight_velocity = (float *) narr->ptr;
+    gd_nag->narr_param_update_velocity = new_narray;
+    gd_nag->param_update_velocity = (float *) narr->ptr;
     gd_nag->num_params = narr->total;
   }
 
@@ -87,7 +87,7 @@ VALUE gd_nag_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_momentu
 
 /* @overload initialize( h )
  * Creates a new ...
- * keys are h[:weight_velocity], h[:momentum]
+ * keys are h[:param_update_velocity], h[:momentum]
  * @return [RuNeNe::GradientDescent::NAG] new ...
  */
 
@@ -144,13 +144,13 @@ VALUE gd_nag_rbobject__set_momentum( VALUE self, VALUE rv_momentum ) {
   return rv_momentum;
 }
 
-/* @!attribute [r] weight_velocity
+/* @!attribute [r] param_update_velocity
  * Description goes here
  * @return [NArray<sfloat>]
  */
-VALUE gd_nag_rbobject__get_narr_weight_velocity( VALUE self ) {
+VALUE gd_nag_rbobject__get_narr_param_update_velocity( VALUE self ) {
   GradientDescent_NAG *gd_nag = get_gd_nag_struct( self );
-  return gd_nag->narr_weight_velocity;
+  return gd_nag->narr_param_update_velocity;
 }
 
 /* @overload pre_gradient_step( params, learning_rate )
@@ -224,7 +224,7 @@ void init_gd_nag_class( ) {
   rb_define_method( RuNeNe_GradientDescent_NAG, "num_params", gd_nag_rbobject__get_num_params, 0 );
   rb_define_method( RuNeNe_GradientDescent_NAG, "momentum", gd_nag_rbobject__get_momentum, 0 );
   rb_define_method( RuNeNe_GradientDescent_NAG, "momentum=", gd_nag_rbobject__set_momentum, 1 );
-  rb_define_method( RuNeNe_GradientDescent_NAG, "weight_velocity", gd_nag_rbobject__get_narr_weight_velocity, 0 );
+  rb_define_method( RuNeNe_GradientDescent_NAG, "param_update_velocity", gd_nag_rbobject__get_narr_param_update_velocity, 0 );
 
   // GradientDescent_NAG instance methods
   rb_define_method( RuNeNe_GradientDescent_NAG, "pre_gradient_step", gd_nag_rbobject__pre_gradient_step, 2 );

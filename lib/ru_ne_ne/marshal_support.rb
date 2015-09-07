@@ -128,7 +128,7 @@ class RuNeNe::GradientDescent::NAG
   def to_h
     Hash[
       :num_params => self.num_params,
-      :weight_velocity => self.weight_velocity,
+      :param_update_velocity => self.param_update_velocity,
       :momentum => self.momentum
     ]
   end

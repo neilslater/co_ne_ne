@@ -14,8 +14,8 @@
 typedef struct _gd_nag_raw {
   int num_params;
   float momentum;
-  VALUE narr_weight_velocity;
-  float *weight_velocity;
+  VALUE narr_param_update_velocity;
+  float *param_update_velocity;
   } GradientDescent_NAG;
 
 GradientDescent_NAG *gd_nag__create();
