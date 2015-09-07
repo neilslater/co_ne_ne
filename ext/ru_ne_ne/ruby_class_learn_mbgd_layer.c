@@ -2,10 +2,6 @@
 
 #include "ruby_class_learn_mbgd_layer.h"
 
-// Hash lookup helper
-VALUE ValAtSymbol(VALUE hash, const char* key) { return rb_hash_lookup(hash, ID2SYM( rb_intern(key) ) ); }
-
-
 // Helper for converting hash to C properties
 void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) {
   volatile VALUE rv_var;

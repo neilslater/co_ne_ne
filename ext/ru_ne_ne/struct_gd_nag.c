@@ -17,24 +17,21 @@ GradientDescent_NAG *gd_nag__create() {
   return gd_nag;
 }
 
-void gd_nag__init( GradientDescent_NAG *gd_nag, int num_params, float momentum ) {
+void gd_nag__init( GradientDescent_NAG *gd_nag, VALUE params, float momentum ) {
   int i;
   struct NARRAY *narr;
   float *narr_weight_velocity_ptr;
-  int *shape = &num_params;
-
-  gd_nag->num_params = num_params;
-
 
   gd_nag->momentum = momentum;
 
-  gd_nag->narr_weight_velocity = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  gd_nag->narr_weight_velocity = na_clone( params );
   GetNArray( gd_nag->narr_weight_velocity, narr );
   narr_weight_velocity_ptr = (float*) narr->ptr;
   for( i = 0; i < narr->total; i++ ) {
     narr_weight_velocity_ptr[i] = 0.0;
   }
   gd_nag->weight_velocity = (float *) narr->ptr;
+  gd_nag->num_params = narr->total;
 
   return;
 }
@@ -66,4 +63,12 @@ GradientDescent_NAG * gd_nag__clone( GradientDescent_NAG *gd_nag_orig ) {
   GradientDescent_NAG * gd_nag_copy = gd_nag__create();
   gd_nag__deep_copy( gd_nag_copy, gd_nag_orig );
   return gd_nag_copy;
+}
+
+void gd_nag__pre_gradient_step( GradientDescent_NAG *gd_nag, float *params, float lr ) {
+
+}
+
+void gd_nag__gradient_step( GradientDescent_NAG *gd_nag, float *params, float *gradients, float lr ) {
+
 }

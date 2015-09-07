@@ -8,6 +8,36 @@
 //  struct_gd_nag.c
 //
 
+// Helper for converting hash to C properties
+void copy_hash_to_gd_nag_properties( VALUE rv_opts, GradientDescent_NAG *gd_nag ) {
+  volatile VALUE rv_var;
+  volatile VALUE new_narray;
+  struct NARRAY* narr;
+
+  // Start with simple properties
+
+  rv_var = ValAtSymbol(rv_opts,"momentum");
+  if ( !NIL_P(rv_var) ) {
+    gd_nag->momentum = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"num_params");
+  if ( !NIL_P(rv_var) ) {
+    gd_nag->num_params = NUM2INT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"weight_velocity");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    gd_nag->narr_weight_velocity = new_narray;
+    gd_nag->weight_velocity = (float *) narr->ptr;
+    gd_nag->num_params = narr->total;
+  }
+
+  return;
+}
+
 inline VALUE gd_nag_as_ruby_class( GradientDescent_NAG *gd_nag , VALUE klass ) {
   return Data_Wrap_Struct( klass, gd_nag__gc_mark, gd_nag__destroy, gd_nag );
 }
@@ -48,13 +78,29 @@ VALUE gd_nag_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_momentu
   GradientDescent_NAG *gd_nag = get_gd_nag_struct( self );
 
   volatile VALUE example_params;
-  struct NARRAY *na_params;
   example_params = na_cast_object( rv_params, NA_SFLOAT );
-  GetNArray( example_params, na_params );
 
-  gd_nag__init( gd_nag, na_params->total, NUM2FLT( rv_momentum ) );
+  gd_nag__init( gd_nag, example_params, NUM2FLT( rv_momentum ) );
 
   return self;
+}
+
+/* @overload initialize( h )
+ * Creates a new ...
+ * keys are h[:weight_velocity], h[:momentum]
+ * @return [RuNeNe::GradientDescent::NAG] new ...
+ */
+
+VALUE gd_nag_rbclass__from_h( VALUE self, VALUE rv_h ) {
+  GradientDescent_NAG *gd_nag;
+  Check_Type( rv_h, T_HASH );
+
+  VALUE rv_gd_nag = gd_nag_alloc( RuNeNe_GradientDescent_NAG );
+  gd_nag = get_gd_nag_struct( rv_gd_nag );
+
+  copy_hash_to_gd_nag_properties( rv_h, gd_nag );
+
+  return rv_gd_nag;
 }
 
 /* @overload clone
@@ -113,6 +159,7 @@ void init_gd_nag_class( ) {
   // GradientDescent_NAG instantiation and class methods
   rb_define_alloc_func( RuNeNe_GradientDescent_NAG, gd_nag_alloc );
   rb_define_method( RuNeNe_GradientDescent_NAG, "initialize", gd_nag_rbobject__initialize, 2 );
+  rb_define_singleton_method( RuNeNe_GradientDescent_NAG, "from_h", gd_nag_rbclass__from_h, 1 );
   rb_define_method( RuNeNe_GradientDescent_NAG, "initialize_copy", gd_nag_rbobject__initialize_copy, 1 );
 
   // GradientDescent_NAG attributes

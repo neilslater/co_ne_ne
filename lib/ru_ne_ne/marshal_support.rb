@@ -116,6 +116,36 @@ class RuNeNe::GradientDescent::SGD
   end
 end
 
+class RuNeNe::GradientDescent::NAG
+  # Short name for NAG optimiser, used as a param for some methods
+  # @return [Symbol] :nag
+  def self.label
+    :nag
+  end
+
+  # @!visibility private
+  # Adds support for Marshal, via to_h and from_h methods
+  def to_h
+    Hash[
+      :num_params => self.num_params,
+      :weight_velocity => self.weight_velocity,
+      :momentum => self.momentum
+    ]
+  end
+
+  # @!visibility private
+  def _dump *ignored
+    Marshal.dump to_h
+  end
+
+  # @!visibility private
+  def self._load buf
+    h = Marshal.load buf
+    from_h h
+  end
+end
+
+
 class RuNeNe::Layer::FeedForward
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods

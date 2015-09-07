@@ -20,7 +20,7 @@ typedef struct _gd_nag_raw {
 
 GradientDescent_NAG *gd_nag__create();
 
-void gd_nag__init( GradientDescent_NAG *gd_nag, int num_params, float momentum );
+void gd_nag__init( GradientDescent_NAG *gd_nag, VALUE params, float momentum );
 
 void gd_nag__destroy( GradientDescent_NAG *gd_nag );
 
@@ -29,5 +29,9 @@ void gd_nag__gc_mark( GradientDescent_NAG *gd_nag );
 void gd_nag__deep_copy( GradientDescent_NAG *gd_nag_copy, GradientDescent_NAG *gd_nag_orig );
 
 GradientDescent_NAG * gd_nag__clone( GradientDescent_NAG *gd_nag_orig );
+
+void gd_nag__pre_gradient_step( GradientDescent_NAG *gd_nag, float *params, float lr );
+
+void gd_nag__gradient_step( GradientDescent_NAG *gd_nag, float *params, float *gradients, float lr );
 
 #endif
