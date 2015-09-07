@@ -15,39 +15,26 @@ GradientDescent_RMSProp *gd_rmsprop__create() {
   gd_rmsprop->epsilon = 1.0e-6;
   gd_rmsprop->narr_squared_de_dw = Qnil;
   gd_rmsprop->squared_de_dw = NULL;
-  gd_rmsprop->narr_average_squared_de_dw = Qnil;
-  gd_rmsprop->average_squared_de_dw = NULL;
   return gd_rmsprop;
 }
 
-void gd_rmsprop__init( GradientDescent_RMSProp *gd_rmsprop, int num_params, float decay, float epsilon ) {
+void gd_rmsprop__init( GradientDescent_RMSProp *gd_rmsprop, VALUE example_params, float decay, float epsilon ) {
   int i;
   struct NARRAY *narr;
   float *narr_squared_de_dw_ptr;
-  float *narr_average_squared_de_dw_ptr;
-  int *shape = &num_params;
-
-  gd_rmsprop->num_params = num_params;
 
   gd_rmsprop->decay = decay;
 
   gd_rmsprop->epsilon = epsilon;
 
-  gd_rmsprop->narr_squared_de_dw = na_make_object( NA_SFLOAT, 1, shape, cNArray );
+  gd_rmsprop->narr_squared_de_dw = na_clone( example_params );
   GetNArray( gd_rmsprop->narr_squared_de_dw, narr );
   narr_squared_de_dw_ptr = (float*) narr->ptr;
   for( i = 0; i < narr->total; i++ ) {
-    narr_squared_de_dw_ptr[i] = 0.0;
+    narr_squared_de_dw_ptr[i] = 1.0;
   }
   gd_rmsprop->squared_de_dw = (float *) narr->ptr;
-
-  gd_rmsprop->narr_average_squared_de_dw = na_make_object( NA_SFLOAT, 1, shape, cNArray );
-  GetNArray( gd_rmsprop->narr_average_squared_de_dw, narr );
-  narr_average_squared_de_dw_ptr = (float*) narr->ptr;
-  for( i = 0; i < narr->total; i++ ) {
-    narr_average_squared_de_dw_ptr[i] = 0.0;
-  }
-  gd_rmsprop->average_squared_de_dw = (float *) narr->ptr;
+  gd_rmsprop->num_params = narr->total;
 
   return;
 }
@@ -59,7 +46,6 @@ void gd_rmsprop__destroy( GradientDescent_RMSProp *gd_rmsprop ) {
 
 void gd_rmsprop__gc_mark( GradientDescent_RMSProp *gd_rmsprop ) {
   rb_gc_mark( gd_rmsprop->narr_squared_de_dw );
-  rb_gc_mark( gd_rmsprop->narr_average_squared_de_dw );
   return;
 }
 
@@ -74,10 +60,6 @@ void gd_rmsprop__deep_copy( GradientDescent_RMSProp *gd_rmsprop_copy, GradientDe
   GetNArray( gd_rmsprop_copy->narr_squared_de_dw, narr );
   gd_rmsprop_copy->squared_de_dw = (float *) narr->ptr;
 
-  gd_rmsprop_copy->narr_average_squared_de_dw = na_clone( gd_rmsprop_orig->narr_average_squared_de_dw );
-  GetNArray( gd_rmsprop_copy->narr_average_squared_de_dw, narr );
-  gd_rmsprop_copy->average_squared_de_dw = (float *) narr->ptr;
-
   return;
 }
 
@@ -85,4 +67,18 @@ GradientDescent_RMSProp * gd_rmsprop__clone( GradientDescent_RMSProp *gd_rmsprop
   GradientDescent_RMSProp * gd_rmsprop_copy = gd_rmsprop__create();
   gd_rmsprop__deep_copy( gd_rmsprop_copy, gd_rmsprop_orig );
   return gd_rmsprop_copy;
+}
+
+void gd_rmsprop__pre_gradient_step( GradientDescent_RMSProp *gd_rmsprop, float *params, float lr ) {
+  return;
+}
+
+void gd_rmsprop__gradient_step( GradientDescent_RMSProp *gd_rmsprop, float *params, float *gradients, float lr ) {
+  int i;
+  float u = 1.0 - gd_rmsprop->decay;
+  for( i = 0; i < gd_rmsprop->num_params; i++ ) {
+    gd_rmsprop->squared_de_dw[i] = ( gd_rmsprop->decay * gd_rmsprop->squared_de_dw[i] ) + u * gradients[i] * gradients[i];
+    params[i] -= lr * gradients[i]/(sqrt( gd_rmsprop->squared_de_dw[i] + gd_rmsprop->epsilon ));
+  }
+  return;
 }

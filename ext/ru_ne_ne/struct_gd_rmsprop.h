@@ -17,13 +17,11 @@ typedef struct _gd_rmsprop_raw {
   float epsilon;
   VALUE narr_squared_de_dw;
   float *squared_de_dw;
-  VALUE narr_average_squared_de_dw;
-  float *average_squared_de_dw;
   } GradientDescent_RMSProp;
 
 GradientDescent_RMSProp *gd_rmsprop__create();
 
-void gd_rmsprop__init( GradientDescent_RMSProp *gd_rmsprop, int num_params, float decay, float epsilon );
+void gd_rmsprop__init( GradientDescent_RMSProp *gd_rmsprop, VALUE example_params, float decay, float epsilon );
 
 void gd_rmsprop__destroy( GradientDescent_RMSProp *gd_rmsprop );
 
@@ -32,5 +30,9 @@ void gd_rmsprop__gc_mark( GradientDescent_RMSProp *gd_rmsprop );
 void gd_rmsprop__deep_copy( GradientDescent_RMSProp *gd_rmsprop_copy, GradientDescent_RMSProp *gd_rmsprop_orig );
 
 GradientDescent_RMSProp * gd_rmsprop__clone( GradientDescent_RMSProp *gd_rmsprop_orig );
+
+void gd_rmsprop__pre_gradient_step( GradientDescent_RMSProp *gd_rmsprop, float *params, float lr );
+
+void gd_rmsprop__gradient_step( GradientDescent_RMSProp *gd_rmsprop, float *params, float *gradients, float lr );
 
 #endif

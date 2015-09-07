@@ -29,6 +29,43 @@ void assert_value_wraps_gd_rmsprop( VALUE obj ) {
   }
 }
 
+// Helper for converting hash to C properties
+void copy_hash_to_gd_rmsprop_properties( VALUE rv_opts, GradientDescent_RMSProp *gd_rmsprop ) {
+  volatile VALUE rv_var;
+  volatile VALUE new_narray;
+  struct NARRAY* narr;
+
+  // Start with simple properties
+  rv_var = ValAtSymbol(rv_opts,"num_params");
+  if ( !NIL_P(rv_var) ) {
+    gd_rmsprop->num_params = NUM2INT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"decay");
+  if ( !NIL_P(rv_var) ) {
+    gd_rmsprop->decay = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"epsilon");
+  if ( !NIL_P(rv_var) ) {
+    gd_rmsprop->epsilon = NUM2FLT( rv_var );
+  }
+
+  rv_var = ValAtSymbol(rv_opts,"squared_de_dw");
+  if ( !NIL_P(rv_var) ) {
+    new_narray = na_cast_object(rv_var, NA_SFLOAT);
+    GetNArray( new_narray, narr );
+    gd_rmsprop->narr_squared_de_dw = new_narray;
+    gd_rmsprop->squared_de_dw = (float *) narr->ptr;
+    gd_rmsprop->num_params = narr->total;
+  }
+
+  // TODO: Deal with partially-complete object here, and detect
+  // inconsistent params
+
+  return;
+}
+
 /* Document-class: RuNeNe::GradientDescent::RMSProp
  *
  */
@@ -45,15 +82,15 @@ void assert_value_wraps_gd_rmsprop( VALUE obj ) {
  * @param [Float] epsilon ...
  * @return [RuNeNe::GradientDescent::RMSProp] new ...
  */
+
 VALUE gd_rmsprop_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_decay, VALUE rv_epsilon ) {
   GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
 
   volatile VALUE example_params;
   struct NARRAY *na_params;
   example_params = na_cast_object( rv_params, NA_SFLOAT );
-  GetNArray( example_params, na_params );
 
-  gd_rmsprop__init( gd_rmsprop, na_params->total, NUM2FLT( rv_decay ), NUM2FLT( rv_epsilon ) );
+  gd_rmsprop__init( gd_rmsprop, example_params, NUM2FLT( rv_decay ), NUM2FLT( rv_epsilon ) );
 
   return self;
 }
@@ -73,6 +110,24 @@ VALUE gd_rmsprop_rbobject__initialize_copy( VALUE copy, VALUE orig ) {
   gd_rmsprop__deep_copy( gd_rmsprop_copy, gd_rmsprop_orig );
 
   return copy;
+}
+
+/* @overload initialize( h )
+ * Creates a new ...
+ * keys are h[:weight_velocity], h[:momentum]
+ * @return [RuNeNe::GradientDescent::RMSProp] new ...
+ */
+
+VALUE gd_rmsprop_rbclass__from_h( VALUE self, VALUE rv_h ) {
+  GradientDescent_RMSProp *gd_rmsprop;
+  Check_Type( rv_h, T_HASH );
+
+  VALUE rv_gd_rmsprop = gd_rmsprop_alloc( RuNeNe_GradientDescent_RMSProp );
+  gd_rmsprop = get_gd_rmsprop_struct( rv_gd_rmsprop );
+
+  copy_hash_to_gd_rmsprop_properties( rv_h, gd_rmsprop );
+
+  return rv_gd_rmsprop;
 }
 
 /* @!attribute [r] num_params
@@ -123,13 +178,61 @@ VALUE gd_rmsprop_rbobject__get_narr_squared_de_dw( VALUE self ) {
   return gd_rmsprop->narr_squared_de_dw;
 }
 
-/* @!attribute [r] average_squared_de_dw
- * Description goes here
- * @return [NArray<sfloat>]
+/* @overload pre_gradient_step( params, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
  */
-VALUE gd_rmsprop_rbobject__get_narr_average_squared_de_dw( VALUE self ) {
+VALUE gd_rmsprop_rbobject__pre_gradient_step( VALUE self, VALUE rv_params, VALUE rv_learning_rate ) {
   GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
-  return gd_rmsprop->narr_average_squared_de_dw;
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_rmsprop->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_rmsprop->num_params, na_params->total );
+  }
+
+  gd_rmsprop__pre_gradient_step( gd_rmsprop, (float *)na_params->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
+}
+
+/* @overload pre_gradient_step( params, gradients, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [NArray<sfloat>] gradients array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
+ */
+VALUE gd_rmsprop_rbobject__gradient_step( VALUE self, VALUE rv_params, VALUE rv_gradients, VALUE rv_learning_rate ) {
+  GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  volatile VALUE gradients;
+  struct NARRAY *na_grads;
+
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_rmsprop->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_rmsprop->num_params, na_params->total );
+  }
+
+  gradients = na_cast_object( rv_gradients, NA_SFLOAT );
+  GetNArray( gradients, na_grads );
+
+  if ( gd_rmsprop->num_params != na_grads->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but gradient has %d params", gd_rmsprop->num_params, na_grads->total );
+  }
+
+  gd_rmsprop__gradient_step( gd_rmsprop, (float *)na_params->ptr, (float *)na_grads->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +241,7 @@ void init_gd_rmsprop_class( ) {
   // GradientDescent_RMSProp instantiation and class methods
   rb_define_alloc_func( RuNeNe_GradientDescent_RMSProp, gd_rmsprop_alloc );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "initialize", gd_rmsprop_rbobject__initialize, 3 );
+  rb_define_singleton_method( RuNeNe_GradientDescent_RMSProp, "from_h", gd_rmsprop_rbclass__from_h, 1 );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "initialize_copy", gd_rmsprop_rbobject__initialize_copy, 1 );
 
   // GradientDescent_RMSProp attributes
@@ -147,5 +251,8 @@ void init_gd_rmsprop_class( ) {
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "epsilon", gd_rmsprop_rbobject__get_epsilon, 0 );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "epsilon=", gd_rmsprop_rbobject__set_epsilon, 1 );
   rb_define_method( RuNeNe_GradientDescent_RMSProp, "squared_de_dw", gd_rmsprop_rbobject__get_narr_squared_de_dw, 0 );
-  rb_define_method( RuNeNe_GradientDescent_RMSProp, "average_squared_de_dw", gd_rmsprop_rbobject__get_narr_average_squared_de_dw, 0 );
+
+  // GradientDescent_RMSProp instance methods
+  rb_define_method( RuNeNe_GradientDescent_RMSProp, "pre_gradient_step", gd_rmsprop_rbobject__pre_gradient_step, 2 );
+  rb_define_method( RuNeNe_GradientDescent_RMSProp, "gradient_step", gd_rmsprop_rbobject__gradient_step, 3 );
 }
