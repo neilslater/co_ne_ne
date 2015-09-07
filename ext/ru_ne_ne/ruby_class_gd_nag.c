@@ -153,6 +153,64 @@ VALUE gd_nag_rbobject__get_narr_weight_velocity( VALUE self ) {
   return gd_nag->narr_weight_velocity;
 }
 
+/* @overload pre_gradient_step( params, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
+ */
+VALUE gd_nag_rbobject__pre_gradient_step( VALUE self, VALUE rv_params, VALUE rv_learning_rate ) {
+  GradientDescent_NAG *gd_nag = get_gd_nag_struct( self );
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_nag->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_nag->num_params, na_params->total );
+  }
+
+  gd_nag__pre_gradient_step( gd_nag, (float *)na_params->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
+}
+
+/* @overload pre_gradient_step( params, gradients, learning_rate )
+ * Prepares object for a gradient step. Some optimisers alter params
+ * @param [NArray<sfloat>] params array of same size as initial example
+ * @param [NArray<sfloat>] gradients array of same size as initial example
+ * @param [Float] learning_rate size of
+ * @return [NArray<sfloat>] the params array that willbe optimised (may be cast to NArray<sfloat> from supplied params)
+ */
+VALUE gd_nag_rbobject__gradient_step( VALUE self, VALUE rv_params, VALUE rv_gradients, VALUE rv_learning_rate ) {
+  GradientDescent_NAG *gd_nag = get_gd_nag_struct( self );
+
+  volatile VALUE opt_params;
+  struct NARRAY *na_params;
+  volatile VALUE gradients;
+  struct NARRAY *na_grads;
+
+  opt_params = na_cast_object( rv_params, NA_SFLOAT );
+  GetNArray( opt_params, na_params );
+
+  if ( gd_nag->num_params != na_params->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but input has %d params", gd_nag->num_params, na_params->total );
+  }
+
+  gradients = na_cast_object( rv_gradients, NA_SFLOAT );
+  GetNArray( gradients, na_grads );
+
+  if ( gd_nag->num_params != na_grads->total ) {
+    rb_raise( rb_eArgError, "Expecting NArray with %d params, but gradient has %d params", gd_nag->num_params, na_grads->total );
+  }
+
+  gd_nag__gradient_step( gd_nag, (float *)na_params->ptr, (float *)na_grads->ptr, NUM2FLT(rv_learning_rate) );
+
+  return opt_params;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_gd_nag_class( ) {
@@ -167,4 +225,8 @@ void init_gd_nag_class( ) {
   rb_define_method( RuNeNe_GradientDescent_NAG, "momentum", gd_nag_rbobject__get_momentum, 0 );
   rb_define_method( RuNeNe_GradientDescent_NAG, "momentum=", gd_nag_rbobject__set_momentum, 1 );
   rb_define_method( RuNeNe_GradientDescent_NAG, "weight_velocity", gd_nag_rbobject__get_narr_weight_velocity, 0 );
+
+  // GradientDescent_NAG instance methods
+  rb_define_method( RuNeNe_GradientDescent_NAG, "pre_gradient_step", gd_nag_rbobject__pre_gradient_step, 2 );
+  rb_define_method( RuNeNe_GradientDescent_NAG, "gradient_step", gd_nag_rbobject__gradient_step, 3 );
 }

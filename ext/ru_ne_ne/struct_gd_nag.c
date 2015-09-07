@@ -66,9 +66,23 @@ GradientDescent_NAG * gd_nag__clone( GradientDescent_NAG *gd_nag_orig ) {
 }
 
 void gd_nag__pre_gradient_step( GradientDescent_NAG *gd_nag, float *params, float lr ) {
+  // For Nesterov momentum, we take a step here
+  int i;
 
+  for( i = 0; i < gd_nag->num_params; i++ ) {
+    gd_nag->weight_velocity[i] *= gd_nag->momentum;
+    params[i] += gd_nag->weight_velocity[i];
+  }
+  return;
 }
 
 void gd_nag__gradient_step( GradientDescent_NAG *gd_nag, float *params, float *gradients, float lr ) {
-
+  int i;
+  float u;
+  for( i = 0; i < gd_nag->num_params; i++ ) {
+    u = lr * gradients[i];
+    gd_nag->weight_velocity[i] -= u;
+    params[i] -= u;
+  }
+  return;
 }

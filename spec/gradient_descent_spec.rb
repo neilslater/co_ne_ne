@@ -170,7 +170,8 @@ describe RuNeNe::GradientDescent::NAG do
 
   describe "instance methods" do
     let :gd do
-       RuNeNe::GradientDescent::NAG.new( NArray.sfloat(2), 0.9 )
+       # Low momentum here, otherwise on this very smooth test surface, the optimiser oscillates
+       RuNeNe::GradientDescent::NAG.new( NArray.sfloat(2), 0.5 )
     end
 
     before :each do
@@ -210,9 +211,11 @@ describe RuNeNe::GradientDescent::NAG do
         expect( tq.value_at( @params ) ).to_not be_within(0.1).of 0
         expect( @params ).to_not be_narray_like tq.roots
 
-        20.times do
-          gd.pre_gradient_step( @params, 0.1 )
-          gd.gradient_step( @params, tq.gradients_at(@params), 0.1 )
+        # On the simple quadratic surface, Nesterov momentum is almost a liability
+        # Hence additonal 10 iterations required compared to plan SGD
+        30.times do
+          gd.pre_gradient_step( @params, 0.03 )
+          gd.gradient_step( @params, tq.gradients_at(@params), 0.03 )
         end
         expect( tq.value_at( @params ) ).to be_within(1e-6).of 0
         expect( @params ).to be_narray_like tq.roots
