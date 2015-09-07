@@ -18,13 +18,16 @@ MBGDLayer *mbgd_layer__create() {
   mbgd_layer->de_da = NULL;
   mbgd_layer->narr_de_dw = Qnil;
   mbgd_layer->de_dw = NULL;
+  mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
+  mbgd_layer->gd_optimiser = Qnil;
+
   mbgd_layer->narr_de_dw_stats_a = Qnil;
   mbgd_layer->de_dw_stats_a = NULL;
   mbgd_layer->narr_de_dw_stats_b = Qnil;
   mbgd_layer->de_dw_stats_b = NULL;
-  mbgd_layer->learning_rate = 0.01;
-  mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
   mbgd_layer->gd_accel_rate = 0.9;
+
+  mbgd_layer->learning_rate = 0.01;
   mbgd_layer->max_norm = 0.0;
   mbgd_layer->weight_decay = 0.0;
   return mbgd_layer;
@@ -37,6 +40,7 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   float *narr_de_dz_ptr;
   float *narr_de_da_ptr;
   float *narr_de_dw_ptr;
+
   float *narr_de_dw_stats_a_ptr;
   float *narr_de_dw_stats_b_ptr;
 
@@ -72,6 +76,7 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   }
   mbgd_layer->de_dw = (float *) narr->ptr;
 
+  // TODO: Remove these stats
   mbgd_layer->narr_de_dw_stats_a = na_make_object( NA_SFLOAT, 2, shape, cNArray );
   GetNArray( mbgd_layer->narr_de_dw_stats_a, narr );
   narr_de_dw_stats_a_ptr = (float*) narr->ptr;

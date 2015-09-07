@@ -24,13 +24,16 @@ typedef struct _mbgd_layer_raw {
   float *de_da;
   VALUE narr_de_dw;
   float *de_dw;
+  gd_accel_type gd_accel_type;
+  VALUE gd_optimiser;
+
   VALUE narr_de_dw_stats_a;
   float *de_dw_stats_a;
   VALUE narr_de_dw_stats_b;
   float *de_dw_stats_b;
-  float learning_rate;
-  gd_accel_type gd_accel_type;
   float gd_accel_rate;
+
+  float learning_rate;
   float max_norm;
   float weight_decay;
   } MBGDLayer;

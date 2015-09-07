@@ -86,9 +86,7 @@ void copy_hash_to_gd_rmsprop_properties( VALUE rv_opts, GradientDescent_RMSProp 
 VALUE gd_rmsprop_rbobject__initialize( VALUE self, VALUE rv_params, VALUE rv_decay, VALUE rv_epsilon ) {
   GradientDescent_RMSProp *gd_rmsprop = get_gd_rmsprop_struct( self );
 
-  volatile VALUE example_params;
-  struct NARRAY *na_params;
-  example_params = na_cast_object( rv_params, NA_SFLOAT );
+  volatile VALUE example_params = na_cast_object( rv_params, NA_SFLOAT );
 
   gd_rmsprop__init( gd_rmsprop, example_params, NUM2FLT( rv_decay ), NUM2FLT( rv_epsilon ) );
 
