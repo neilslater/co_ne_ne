@@ -187,10 +187,22 @@ describe RuNeNe::GradientDescent::NAG do
     end
 
     describe "#pre_gradient_step" do
-      it "should not alter params" do
+      it "should not alter params on first ever step" do
         before_params = @params.clone
         gd.pre_gradient_step( @params, 1.0 )
         expect( @params ).to be_narray_like( before_params, 1e-16 )
+      end
+
+      it "should alter params on second step due to momentum" do
+        before_params = @params.clone
+        gd.pre_gradient_step( @params, 1.0 )
+        gradients = NArray.sfloat(2).random - 0.5
+        gd.gradient_step( @params, gradients, 0.1)
+
+        after_first_step_params = @params.clone
+
+        gd.pre_gradient_step( @params, 1.0 )
+        expect( @params ).to_not be_narray_like after_first_step_params
       end
     end
 
@@ -200,6 +212,12 @@ describe RuNeNe::GradientDescent::NAG do
         gradients = NArray.sfloat(2).random - 0.5
         gd.gradient_step( @params, gradients, 0.1)
         expect( @params ).to_not be_narray_like before_params
+      end
+
+      it "should alter weight_velocity" do
+        gradients = NArray.sfloat(2).random - 0.5
+        gd.gradient_step( @params, gradients, 0.1)
+        expect( gd.weight_velocity ).to_not be_narray_like NArray[0.0,0.0]
       end
     end
 
