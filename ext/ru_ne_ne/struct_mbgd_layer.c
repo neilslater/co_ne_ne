@@ -96,6 +96,31 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   return;
 }
 
+void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at ) {
+  mbgd_layer->gd_accel_type = gd_at;
+
+  switch ( mbgd_layer->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD, gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd__create() );
+      // TODO: Set property values from hash keys?
+
+      break;
+
+    case GDACCEL_TYPE_MOMENTUM:
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG, gd_nag__gc_mark, gd_nag__destroy, gd_nag__create() );
+      // TODO: Init arrays, set property values from hash keys?
+
+      break;
+
+    case GDACCEL_TYPE_RMSPROP:
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp, gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop__create() );
+      // TODO: Init arrays, set property values from hash keys?
+
+      break;
+  }
+  return;
+}
+
 void mbgd_layer__destroy( MBGDLayer *mbgd_layer ) {
   xfree( mbgd_layer );
   return;
@@ -308,8 +333,6 @@ void mbgd_layer__backprop_for_mid_layer( MBGDLayer *mbgd_layer, Layer_FF *layer_
 }
 
 void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
-  // Needs momentum and rmsprop adding . . .
-
   int i, t;
   t = (mbgd_layer->num_inputs + 1) * mbgd_layer->num_outputs;
   float lr = mbgd_layer->learning_rate;

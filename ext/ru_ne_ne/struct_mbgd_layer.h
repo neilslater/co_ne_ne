@@ -12,6 +12,9 @@
 #include "narray.h"
 #include "struct_layer_ff.h"
 #include "core_objective_functions.h"
+#include "struct_gd_sgd.h"
+#include "struct_gd_nag.h"
+#include "struct_gd_rmsprop.h"
 
 typedef enum {GDACCEL_TYPE_NONE, GDACCEL_TYPE_MOMENTUM, GDACCEL_TYPE_RMSPROP} gd_accel_type;
 

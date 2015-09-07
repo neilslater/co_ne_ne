@@ -210,7 +210,6 @@ VALUE gd_nag_rbobject__gradient_step( VALUE self, VALUE rv_params, VALUE rv_grad
   return opt_params;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_gd_nag_class( ) {
