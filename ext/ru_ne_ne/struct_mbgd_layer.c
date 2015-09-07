@@ -21,12 +21,6 @@ MBGDLayer *mbgd_layer__create() {
   mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
   mbgd_layer->gd_optimiser = Qnil;
 
-  mbgd_layer->narr_de_dw_stats_a = Qnil;
-  mbgd_layer->de_dw_stats_a = NULL;
-  mbgd_layer->narr_de_dw_stats_b = Qnil;
-  mbgd_layer->de_dw_stats_b = NULL;
-  mbgd_layer->gd_accel_rate = 0.9;
-
   mbgd_layer->learning_rate = 0.01;
   mbgd_layer->max_norm = 0.0;
   mbgd_layer->weight_decay = 0.0;
@@ -40,9 +34,6 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   float *narr_de_dz_ptr;
   float *narr_de_da_ptr;
   float *narr_de_dw_ptr;
-
-  float *narr_de_dw_stats_a_ptr;
-  float *narr_de_dw_stats_b_ptr;
 
   mbgd_layer->num_inputs = num_inputs;
 
@@ -76,46 +67,32 @@ void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs ) 
   }
   mbgd_layer->de_dw = (float *) narr->ptr;
 
-  // TODO: Remove these stats
-  mbgd_layer->narr_de_dw_stats_a = na_make_object( NA_SFLOAT, 2, shape, cNArray );
-  GetNArray( mbgd_layer->narr_de_dw_stats_a, narr );
-  narr_de_dw_stats_a_ptr = (float*) narr->ptr;
-  for( i = 0; i < narr->total; i++ ) {
-    narr_de_dw_stats_a_ptr[i] = 0.0;
-  }
-  mbgd_layer->de_dw_stats_a = (float *) narr->ptr;
-
-  mbgd_layer->narr_de_dw_stats_b = na_make_object( NA_SFLOAT, 2, shape, cNArray );
-  GetNArray( mbgd_layer->narr_de_dw_stats_b, narr );
-  narr_de_dw_stats_b_ptr = (float*) narr->ptr;
-  for( i = 0; i < narr->total; i++ ) {
-    narr_de_dw_stats_b_ptr[i] = 0.0;
-  }
-  mbgd_layer->de_dw_stats_b = (float *) narr->ptr;
-
   return;
 }
 
-void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at ) {
+void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at, float momentum, float decay, float epsilon ) {
   mbgd_layer->gd_accel_type = gd_at;
+  GradientDescent_SGD * gd_sgd;
+  GradientDescent_NAG * gd_nag;
+  GradientDescent_RMSProp * gd_rmsprop;
 
   switch ( mbgd_layer->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD, gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd__create() );
-      // TODO: Set property values from hash keys?
-
+      gd_sgd = gd_sgd__create();
+      gd_sgd->num_params = ( mbgd_layer->num_inputs + 1 ) * mbgd_layer->num_outputs;
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD, gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd );
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG, gd_nag__gc_mark, gd_nag__destroy, gd_nag__create() );
-      // TODO: Init arrays, set property values from hash keys?
-
+      gd_nag = gd_nag__create();
+      gd_nag__init( gd_nag, mbgd_layer->narr_de_dw, momentum );
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG, gd_nag__gc_mark, gd_nag__destroy, gd_nag );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
-      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp, gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop__create() );
-      // TODO: Init arrays, set property values from hash keys?
-
+      gd_rmsprop = gd_rmsprop__create();
+      gd_rmsprop__init( gd_rmsprop, mbgd_layer->narr_de_dw, decay, epsilon );
+      mbgd_layer->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp, gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop );
       break;
   }
   return;
@@ -131,20 +108,40 @@ void mbgd_layer__gc_mark( MBGDLayer *mbgd_layer ) {
   rb_gc_mark( mbgd_layer->narr_de_da );
   rb_gc_mark( mbgd_layer->narr_de_dw );
   rb_gc_mark( mbgd_layer->gd_optimiser );
-
-  // TODO: Remove these stats
-  rb_gc_mark( mbgd_layer->narr_de_dw_stats_a );
-  rb_gc_mark( mbgd_layer->narr_de_dw_stats_b );
   return;
 }
 
 void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_orig ) {
   struct NARRAY *narr;
+  GradientDescent_SGD * gd_sgd;
+  GradientDescent_NAG * gd_nag;
+  GradientDescent_RMSProp * gd_rmsprop;
 
   mbgd_layer_copy->num_inputs = mbgd_layer_orig->num_inputs;
   mbgd_layer_copy->num_outputs = mbgd_layer_orig->num_outputs;
   mbgd_layer_copy->learning_rate = mbgd_layer_orig->learning_rate;
   mbgd_layer_copy->gd_accel_type = mbgd_layer_orig->gd_accel_type;
+
+  switch ( mbgd_layer_copy->gd_accel_type ) {
+    case GDACCEL_TYPE_NONE:
+      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_SGD, gd_sgd );
+      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_SGD,
+          gd_sgd__gc_mark, gd_sgd__destroy, gd_sgd__clone( gd_sgd ) );
+      break;
+
+    case GDACCEL_TYPE_MOMENTUM:
+      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_NAG, gd_nag );
+      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_NAG,
+          gd_nag__gc_mark, gd_nag__destroy, gd_nag__clone( gd_nag ) );
+      break;
+
+    case GDACCEL_TYPE_RMSPROP:
+      Data_Get_Struct( mbgd_layer_orig->gd_optimiser, GradientDescent_RMSProp, gd_rmsprop );
+      mbgd_layer_copy->gd_optimiser = Data_Wrap_Struct( RuNeNe_GradientDescent_RMSProp,
+          gd_rmsprop__gc_mark, gd_rmsprop__destroy, gd_rmsprop__clone( gd_rmsprop ) );
+      break;
+  }
+
   mbgd_layer_copy->max_norm = mbgd_layer_orig->max_norm;
   mbgd_layer_copy->weight_decay = mbgd_layer_orig->weight_decay;
 
@@ -160,20 +157,6 @@ void mbgd_layer__deep_copy( MBGDLayer *mbgd_layer_copy, MBGDLayer *mbgd_layer_or
   GetNArray( mbgd_layer_copy->narr_de_dw, narr );
   mbgd_layer_copy->de_dw = (float *) narr->ptr;
 
-  // TODO: clone mbgd_layer->gd_optimiser
-
-
-  // TODO: Remove these stats
-  mbgd_layer_copy->narr_de_dw_stats_a = na_clone( mbgd_layer_orig->narr_de_dw_stats_a );
-  GetNArray( mbgd_layer_copy->narr_de_dw_stats_a, narr );
-  mbgd_layer_copy->de_dw_stats_a = (float *) narr->ptr;
-
-  mbgd_layer_copy->narr_de_dw_stats_b = na_clone( mbgd_layer_orig->narr_de_dw_stats_b );
-  GetNArray( mbgd_layer_copy->narr_de_dw_stats_b, narr );
-  mbgd_layer_copy->de_dw_stats_b = (float *) narr->ptr;
-
-  mbgd_layer_copy->gd_accel_rate = mbgd_layer_orig->gd_accel_rate;
-
   return;
 }
 
@@ -185,32 +168,24 @@ MBGDLayer * mbgd_layer__clone( MBGDLayer *mbgd_layer_orig ) {
 
 void mbgd_layer__start_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
   int i,t = (mbgd_layer->num_inputs + 1 ) * mbgd_layer->num_outputs;
+  GradientDescent_NAG * gd_nag;
 
   // Re-set accumulated de_dw for this batch
   float *de_dw = mbgd_layer->de_dw;
-  float *weights = layer_ff->weights;
-  float *weight_vel = mbgd_layer->de_dw_stats_a;
-  float momentum = mbgd_layer->gd_accel_rate;
-
   for( i = 0; i < t; i++ ) {
     de_dw[i] = 0.0;
   }
 
   switch ( mbgd_layer->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
-
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      // Move layer weights forward so we assess gradient at weights plus momentum * mf
-      for( i = 0; i < t; i++ ) {
-        weight_vel[i] *= momentum;
-        weights[i] += weight_vel[i];
-      }
+      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_NAG, gd_nag );
+      gd_nag__pre_gradient_step( gd_nag, layer_ff->weights, mbgd_layer->learning_rate );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
-
       break;
   }
   return;
@@ -333,36 +308,24 @@ void mbgd_layer__backprop_for_mid_layer( MBGDLayer *mbgd_layer, Layer_FF *layer_
 }
 
 void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
-  int i, t;
-  t = (mbgd_layer->num_inputs + 1) * mbgd_layer->num_outputs;
-  float lr = mbgd_layer->learning_rate;
-  float *weights = layer_ff->weights;
-  float *de_dw = mbgd_layer->de_dw;
-
-  float *weight_vel;
+  GradientDescent_SGD * gd_sgd;
+  GradientDescent_NAG * gd_nag;
+  GradientDescent_RMSProp * gd_rmsprop;
 
   switch ( mbgd_layer->gd_accel_type ) {
     case GDACCEL_TYPE_NONE:
-      for( i = 0; i < t; i++ ) {
-          weights[i] -= de_dw[i] * lr;
-      }
+      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_SGD, gd_sgd );
+      gd_sgd__gradient_step( gd_sgd, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
 
     case GDACCEL_TYPE_MOMENTUM:
-      weight_vel = mbgd_layer->de_dw_stats_a;
-
-      for( i = 0; i < t; i++ ) {
-        weight_vel[i] -= lr * de_dw[i];
-        weights[i] -= lr * de_dw[i];
-      }
+      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_NAG, gd_nag );
+      gd_nag__gradient_step( gd_nag, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
 
     case GDACCEL_TYPE_RMSPROP:
-      // TODO: Implement RMSPROP
-      for( i = 0; i < t; i++ ) {
-        weights[i] -= de_dw[i] * lr;
-      }
-
+      Data_Get_Struct( mbgd_layer->gd_optimiser, GradientDescent_RMSProp, gd_rmsprop );
+      gd_rmsprop__gradient_step( gd_rmsprop, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
   }
 

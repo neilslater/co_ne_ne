@@ -7,17 +7,15 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
   volatile VALUE rv_var;
   volatile VALUE new_narray;
   struct NARRAY* narr;
+  float momentum = 0.9, decay = 0.9, epsilon = 1e-6;
+  GradientDescent_SGD * gd_sgd;
+  GradientDescent_NAG * gd_nag;
+  GradientDescent_RMSProp * gd_rmsprop;
 
   // Start with simple properties
-
   rv_var = ValAtSymbol(rv_opts,"learning_rate");
   if ( !NIL_P(rv_var) ) {
     mbgd_layer->learning_rate = NUM2FLT( rv_var );
-  }
-
-  rv_var = ValAtSymbol(rv_opts,"gd_accel_rate");
-  if ( !NIL_P(rv_var) ) {
-    mbgd_layer->gd_accel_rate = NUM2FLT( rv_var );
   }
 
   rv_var = ValAtSymbol(rv_opts,"weight_decay");
@@ -28,28 +26,6 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
   rv_var = ValAtSymbol(rv_opts,"max_norm");
   if ( !NIL_P(rv_var) ) {
     mbgd_layer->max_norm = NUM2FLT( rv_var );
-  }
-
-  mbgd_layer->gd_accel_type = symbol_to_gd_accel_type( ValAtSymbol(rv_opts,"gd_accel_type") );
-
-  switch ( mbgd_layer->gd_accel_type ) {
-    case GDACCEL_TYPE_NONE:
-      break;
-
-    case GDACCEL_TYPE_MOMENTUM:
-      rv_var = ValAtSymbol(rv_opts,"momentum");
-      if ( !NIL_P(rv_var) ) {
-        mbgd_layer->gd_accel_rate = NUM2FLT( rv_var );
-      }
-      break;
-
-    case GDACCEL_TYPE_RMSPROP:
-      rv_var = ValAtSymbol(rv_opts,"rmsprop_adapt_rate");
-      if ( !NIL_P(rv_var) ) {
-        mbgd_layer->gd_accel_rate = NUM2FLT( rv_var );
-      }
-
-      break;
   }
 
   // Now deal with more complex properties, allow setting of NArrays, provided they fit
@@ -103,42 +79,55 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
     mbgd_layer->de_dw = (float *) narr->ptr;
   }
 
-  rv_var = ValAtSymbol(rv_opts,"de_dw_stats_a");
+  rv_var = ValAtSymbol(rv_opts,"gd_optimiser");
   if ( !NIL_P(rv_var) ) {
-    new_narray = na_cast_object(rv_var, NA_SFLOAT);
-    GetNArray( new_narray, narr );
-    if ( narr->rank != 2 ) {
-      rb_raise( rb_eArgError, "de_dw_stats_a rank should be 2, but got %d", narr->rank );
+    int t = ( 1 + mbgd_layer->num_inputs ) * mbgd_layer->num_outputs;
+
+    if ( TYPE(rv_var) != T_DATA ) {
+      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
     }
 
-    if ( narr->shape[0] != ( 1 + mbgd_layer->num_inputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_stats_a num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], mbgd_layer->num_inputs + 1 );
+    if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_sgd__destroy ) {
+      Data_Get_Struct( rv_var, GradientDescent_SGD, gd_sgd );
+      if ( gd_sgd->num_params != t ) {
+        rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_sgd->num_params, t  );
+      }
+      mbgd_layer->gd_accel_type = GDACCEL_TYPE_NONE;
+    } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_nag__destroy ) {
+      Data_Get_Struct( rv_var, GradientDescent_NAG, gd_nag );
+      if ( gd_nag->num_params != t ) {
+        rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_nag->num_params, t  );
+      }
+      mbgd_layer->gd_accel_type = GDACCEL_TYPE_MOMENTUM;
+    } else if ( RDATA(rv_var)->dfree == (RUBY_DATA_FUNC)gd_rmsprop__destroy ) {
+      Data_Get_Struct( rv_var, GradientDescent_RMSProp, gd_rmsprop );
+      if ( gd_rmsprop->num_params != t ) {
+        rb_raise( rb_eArgError, "Supplied GradientDescent object is set for %d params, but need %d", gd_rmsprop->num_params, t  );
+      }
+      mbgd_layer->gd_accel_type = GDACCEL_TYPE_RMSPROP;
+    } else {
+      rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gd_optimiser, but got something else" );
+    }
+    mbgd_layer->gd_optimiser = rv_var;
+  } else {
+    rv_var = ValAtSymbol(rv_opts,"momentum");
+    if ( !NIL_P(rv_var) ) {
+      momentum = NUM2FLT( rv_var );
     }
 
-    if ( narr->shape[1] != ( mbgd_layer->num_outputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_stats_a num rows %d is not same as num_outputs %d",narr->shape[0], mbgd_layer->num_outputs );
-    }
-    mbgd_layer->narr_de_dw_stats_a = new_narray;
-    mbgd_layer->de_dw_stats_a = (float *) narr->ptr;
-  }
-
-  rv_var = ValAtSymbol(rv_opts,"de_dw_stats_b");
-  if ( !NIL_P(rv_var) ) {
-    new_narray = na_cast_object(rv_var, NA_SFLOAT);
-    GetNArray( new_narray, narr );
-    if ( narr->rank != 2 ) {
-      rb_raise( rb_eArgError, "de_dw_stats_b rank should be 2, but got %d", narr->rank );
+    rv_var = ValAtSymbol(rv_opts,"decay");
+    if ( !NIL_P(rv_var) ) {
+      decay = NUM2FLT( rv_var );
     }
 
-    if ( narr->shape[0] != ( 1 + mbgd_layer->num_inputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_stats_b num columns %d is not same as (num_inputs+1) = %d",narr->shape[0], mbgd_layer->num_inputs + 1 );
+    rv_var = ValAtSymbol(rv_opts,"epsilon");
+    if ( !NIL_P(rv_var) ) {
+      epsilon = NUM2FLT( rv_var );
     }
 
-    if ( narr->shape[1] != ( mbgd_layer->num_outputs ) ) {
-      rb_raise( rb_eArgError, "de_dw_stats_b num rows %d is not same as num_outputs %d",narr->shape[0], mbgd_layer->num_outputs );
-    }
-    mbgd_layer->narr_de_dw_stats_b = new_narray;
-    mbgd_layer->de_dw_stats_b = (float *) narr->ptr;
+    mbgd_layer__init_gd_optimiser( mbgd_layer,
+        symbol_to_gd_accel_type( ValAtSymbol(rv_opts, "gd_accel_type") ),
+        momentum, decay, epsilon );
   }
 
   return;
@@ -324,69 +313,6 @@ VALUE mbgd_layer_rbobject__set_gd_accel_type( VALUE self, VALUE rv_gd_accel_type
   return rv_gd_accel_type;
 }
 
-/* @!attribute gd_accel_rate
- * Description goes here
- * @return [Float]
- */
-VALUE mbgd_layer_rbobject__get_gd_accel_rate( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  return FLT2NUM( mbgd_layer->gd_accel_rate );
-}
-
-VALUE mbgd_layer_rbobject__set_gd_accel_rate( VALUE self, VALUE rv_gd_accel_rate ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  mbgd_layer->gd_accel_rate = NUM2FLT( rv_gd_accel_rate );
-  return rv_gd_accel_rate;
-}
-
-/* @!attribute momentum
- * Description goes here
- * @return [Float]
- */
-VALUE mbgd_layer_rbobject__get_momentum( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
-    return FLT2NUM( mbgd_layer->gd_accel_rate );
-  } else {
-    return Qnil;
-  }
-}
-
-VALUE mbgd_layer_rbobject__set_momentum( VALUE self, VALUE rv_momentum ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
-    mbgd_layer->gd_accel_rate = NUM2FLT( rv_momentum );
-  } else {
-    rb_raise( rb_eRuntimeError, "Cannot set momentum value. Gradient descent acceleration type is not set to momentum." );
-  }
-  return rv_momentum;
-}
-
-
-/* @!attribute rmsprop_adapt_rate
- * Description goes here
- * @return [Float]
- */
-VALUE mbgd_layer_rbobject__get_rmsprop_adapt_rate( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_RMSPROP) {
-    return FLT2NUM( mbgd_layer->gd_accel_rate );
-  } else {
-    return Qnil;
-  }
-}
-
-VALUE mbgd_layer_rbobject__set_rmsprop_adapt_rate( VALUE self, VALUE rv_rmsprop_adapt_rate ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_RMSPROP) {
-    mbgd_layer->gd_accel_rate = NUM2FLT( rv_rmsprop_adapt_rate );
-  } else {
-    rb_raise( rb_eRuntimeError, "Cannot set rmsprop_adapt_rate value. Gradient descent acceleration type is not set to rmsprop." );
-  }
-  return rv_rmsprop_adapt_rate;
-}
-
-
 /* @!attribute max_norm
  * Description goes here
  * @return [Float]
@@ -444,35 +370,13 @@ VALUE mbgd_layer_rbobject__get_narr_de_dw( VALUE self ) {
   return mbgd_layer->narr_de_dw;
 }
 
-/* @!attribute  [r] de_dw_stats_a
+/* @!attribute gd_optimiser
  * Description goes here
- * @return [NArray<sfloat>]
+ * @return [RuNeNe::GradientDescent::SGD,RuNeNe::GradientDescent::NAG,RuNeNe::GradientDescent::RMSProp]
  */
-VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_a( VALUE self ) {
+VALUE mbgd_layer_rbobject__get_gd_optimiser( VALUE self ) {
   MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  return mbgd_layer->narr_de_dw_stats_a;
-}
-
-/* @!attribute  [r] weight_update_velocity
- * Description goes here
- * @return [NArray<sfloat>]
- */
-VALUE mbgd_layer_rbobject__get_weight_update_velocity( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  if (mbgd_layer->gd_accel_type == GDACCEL_TYPE_MOMENTUM) {
-    return mbgd_layer->narr_de_dw_stats_a;
-  } else {
-    return Qnil;
-  }
-}
-
-/* @!attribute  [r] de_dw_stats_b
- * Description goes here
- * @return [NArray<sfloat>]
- */
-VALUE mbgd_layer_rbobject__get_narr_de_dw_stats_b( VALUE self ) {
-  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
-  return mbgd_layer->narr_de_dw_stats_b;
+  return mbgd_layer->gd_optimiser;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -683,21 +587,12 @@ void init_mbgd_layer_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dz", mbgd_layer_rbobject__get_narr_de_dz, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_da", mbgd_layer_rbobject__get_narr_de_da, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw", mbgd_layer_rbobject__get_narr_de_dw, 0 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw_stats_a", mbgd_layer_rbobject__get_narr_de_dw_stats_a, 0 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_update_velocity", mbgd_layer_rbobject__get_weight_update_velocity, 0 );
-
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "de_dw_stats_b", mbgd_layer_rbobject__get_narr_de_dw_stats_b, 0 );
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate", mbgd_layer_rbobject__get_learning_rate, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "learning_rate=", mbgd_layer_rbobject__set_learning_rate, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type", mbgd_layer_rbobject__get_gd_accel_type, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_type=", mbgd_layer_rbobject__set_gd_accel_type, 1 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_rate", mbgd_layer_rbobject__get_gd_accel_rate, 0 );
-  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_accel_rate=", mbgd_layer_rbobject__set_gd_accel_rate, 1 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "momentum", mbgd_layer_rbobject__get_momentum, 0 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "momentum=", mbgd_layer_rbobject__set_momentum, 1 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "rmsprop_adapt_rate", mbgd_layer_rbobject__get_rmsprop_adapt_rate, 0 );
-    rb_define_method( RuNeNe_Learn_MBGD_Layer, "rmsprop_adapt_rate=", mbgd_layer_rbobject__set_rmsprop_adapt_rate, 1 );
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "gd_optimiser", mbgd_layer_rbobject__get_gd_optimiser, 0 );
 
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm", mbgd_layer_rbobject__get_max_norm, 0 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "max_norm=", mbgd_layer_rbobject__set_max_norm, 1 );

@@ -30,12 +30,6 @@ typedef struct _mbgd_layer_raw {
   gd_accel_type gd_accel_type;
   VALUE gd_optimiser;
 
-  VALUE narr_de_dw_stats_a;
-  float *de_dw_stats_a;
-  VALUE narr_de_dw_stats_b;
-  float *de_dw_stats_b;
-  float gd_accel_rate;
-
   float learning_rate;
   float max_norm;
   float weight_decay;
@@ -44,6 +38,8 @@ typedef struct _mbgd_layer_raw {
 MBGDLayer *mbgd_layer__create();
 
 void mbgd_layer__init( MBGDLayer *mbgd_layer, int num_inputs, int num_outputs );
+
+void mbgd_layer__init_gd_optimiser( MBGDLayer *mbgd_layer, gd_accel_type gd_at, float momentum, float decay, float epsilon );
 
 void mbgd_layer__destroy( MBGDLayer *mbgd_layer );
 

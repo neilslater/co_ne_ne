@@ -240,8 +240,8 @@ class RuNeNe::Learn::MBGD::Layer
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
     Hash[
-      [:num_inputs, :num_outputs, :learning_rate, :gd_accel_rate, :weight_decay, :max_norm,
-       :gd_accel_type, :de_dz, :de_da, :de_dw, :de_dw_stats_a, :de_dw_stats_b].map do |prop|
+      [:num_inputs, :num_outputs, :learning_rate, :gd_optimiser, :weight_decay, :max_norm,
+       :de_dz, :de_da, :de_dw].map do |prop|
         [ prop, self.send(prop) ]
       end
     ]
