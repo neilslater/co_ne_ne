@@ -370,8 +370,8 @@ describe RuNeNe::Learn::MBGD::Layer do
         context "with gradient_descent_type '#{accel_type}'" do
           before :each do
             @bpl_subject = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
-                :learning_rate => 0.02, :weight_decay => 1e-3,
-                :max_norm => 1.5, :gradient_descent_type => accel_type )
+                :learning_rate => 0.02, :weight_decay => 0.0,
+                :max_norm => 0.0, :gradient_descent_type => accel_type )
           end
 
           before :each do

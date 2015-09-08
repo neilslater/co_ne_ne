@@ -312,6 +312,11 @@ void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
   GradientDescent_NAG * gd_nag;
   GradientDescent_RMSProp * gd_rmsprop;
 
+  if ( mbgd_layer->weight_decay > 0.0 ) {
+    apply_weight_decay( mbgd_layer->num_inputs, mbgd_layer->num_outputs,
+        layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->weight_decay );
+  }
+
   switch ( mbgd_layer->gradient_descent_type ) {
     case GD_TYPE_SGD:
       Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_SGD, gd_sgd );
@@ -327,6 +332,11 @@ void mbgd_layer__finish_batch( MBGDLayer *mbgd_layer, Layer_FF *layer_ff ) {
       Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_RMSProp, gd_rmsprop );
       gd_rmsprop__gradient_step( gd_rmsprop, layer_ff->weights, mbgd_layer->de_dw, mbgd_layer->learning_rate );
       break;
+  }
+
+  if ( mbgd_layer->max_norm > 0.0 ) {
+    apply_max_norm( mbgd_layer->num_inputs, mbgd_layer->num_outputs,
+        layer_ff->weights, mbgd_layer->max_norm );
   }
 
   return;
