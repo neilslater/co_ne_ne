@@ -199,6 +199,69 @@ static VALUE runene_shuffled_integers( VALUE self, VALUE rv_n ) {
   return arr;
 }
 
+
+/* @overload weight_decay( weights, de_dw, decay )
+ * @param [NArray<sfloat>] weights
+ * @param [NArray<sfloat>] de_dw
+ * @param [Float] decay
+ * @return [NArray<sfloat>]
+ */
+static VALUE runene_rb_module__weight_decay( VALUE self, VALUE rv_weights, VALUE rv_de_dw, VALUE rv_decay ) {
+  struct NARRAY *na_weights, *na_de_dw;
+  volatile VALUE val_weights, val_de_dw;
+
+  val_weights = na_cast_object( rv_weights, NA_SFLOAT);
+  GetNArray( val_weights, na_weights );
+  if ( na_weights->rank != 2 ) {
+    rb_raise( rb_eArgError, "weights array must be rank 2, got rank %d", na_weights->rank );
+  }
+  if ( na_weights->shape[0] < 2 ) {
+    rb_raise( rb_eArgError, "weights array have at least two input fields, got %d", na_weights->shape[0] );
+  }
+
+  val_de_dw = na_cast_object( rv_de_dw, NA_SFLOAT);
+  GetNArray( val_de_dw, na_de_dw );
+  if ( na_de_dw->rank != 2 ) {
+    rb_raise( rb_eArgError, "de_dw array must be rank 2, got rank %d", na_de_dw->rank );
+  }
+  if ( na_de_dw->shape[0] < 2 ) {
+    rb_raise( rb_eArgError, "de_dw array have at least two input fields, got %d", na_de_dw->shape[0] );
+  }
+
+  if ( na_de_dw->shape[0] != na_weights->shape[0] || na_de_dw->shape[1] != na_weights->shape[1] ) {
+    rb_raise( rb_eArgError, "weights and " );
+  }
+
+  apply_weight_decay( na_weights->shape[0] - 1, na_weights->shape[1], (float*) na_weights->ptr, (float*) na_de_dw->ptr, NUM2FLT(rv_decay) );
+
+  return val_de_dw;
+}
+
+
+/* @overload max_norm( weights, max_norm )
+ * @param [NArray<sfloat>] weights
+ * @param [Float] max_norm
+ * @return [NArray<sfloat>]
+ */
+static VALUE runene_rb_module__max_norm( VALUE self, VALUE rv_weights, VALUE rv_max_norm ) {
+  struct NARRAY *na_weights;
+  volatile VALUE val_weights;
+
+  val_weights = na_cast_object( rv_weights, NA_SFLOAT);
+  GetNArray( val_weights, na_weights );
+  if ( na_weights->rank != 2 ) {
+    rb_raise( rb_eArgError, "weights array must be rank 2, got rank %d", na_weights->rank );
+  }
+  if ( na_weights->shape[0] < 2 ) {
+    rb_raise( rb_eArgError, "weights array have at least two input fields, got %d", na_weights->shape[0] );
+  }
+
+  apply_max_norm( na_weights->shape[0] - 1, na_weights->shape[1], (float*) na_weights->ptr, NUM2FLT(rv_max_norm) );
+
+  return val_weights;
+}
+
+
 void init_module_ru_ne_ne() {
   RuNeNe = rb_define_module( "RuNeNe" );
 
@@ -236,6 +299,9 @@ void init_module_ru_ne_ne() {
   rb_define_singleton_method( RuNeNe, "srand_array", mt_srand_array, 1 );
   rb_define_singleton_method( RuNeNe, "rand", mt_rand_float, 0 );
   rb_define_singleton_method( RuNeNe, "shuffled_integers", runene_shuffled_integers, 1 );
+  rb_define_singleton_method( RuNeNe, "weight_decay", runene_rb_module__weight_decay, 3 );
+  rb_define_singleton_method( RuNeNe, "max_norm", runene_rb_module__max_norm, 2 );
+
 
   init_transfer_module();
   init_objective_module();

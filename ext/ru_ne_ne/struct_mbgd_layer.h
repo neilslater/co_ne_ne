@@ -15,6 +15,7 @@
 #include "struct_gd_sgd.h"
 #include "struct_gd_nag.h"
 #include "struct_gd_rmsprop.h"
+#include "core_regularise.h"
 
 typedef enum {GD_TYPE_SGD, GD_TYPE_NAG, GD_TYPE_RMSPROP} gradient_descent_type;
 

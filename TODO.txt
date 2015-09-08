@@ -37,6 +37,7 @@ RuNeNe TODOs:
 ----- v0.0.1 release ?
 
     Refactoring:
+        move all array-walking/maths functions into same place for ease of later optimisations
         use vtables and function lookups to build a training routine from components
         more SIMD in backprop and gradient calculations
         are there larger SIMD vector sizes available on later Intel chips? https://en.wikipedia.org/wiki/Advanced_Vector_Extensions
