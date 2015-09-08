@@ -409,6 +409,52 @@ describe RuNeNe::Learn::MBGD::Layer do
             expect( @ff_layer.weights ).to be_narray_like expected_weights
           end
 
+          context "with weight decay (L2 regularisation)" do
+            before :each do
+              @bpl_subject.weight_decay = 0.01
+            end
+
+            it "changes layer weights with slightly lower end magnitude" do
+              before_weights = @ff_layer.weights.clone
+              @bpl_subject.finish_batch( @ff_layer )
+              expect( @ff_layer.weights ).to_not be_narray_like before_weights
+
+              # These are only slightly lower. Notice bias terms at end unchanged
+              expected_weights = NArray[ [ 0.306147, -0.549788, 0.520198, 0.326871 ],
+                  [ 0.823831, -0.405791, -0.0354786, 0.00336937 ] ]
+
+              if accel_type == :rmsprop
+                expected_weights = NArray[ [ 0.306221, -0.54991, 0.520415, 0.327114 ],
+                    [ 0.823632, -0.405491, -0.0358835, 0.00296734 ] ]
+              end
+
+              expect( @ff_layer.weights ).to be_narray_like expected_weights
+            end
+          end
+
+          context "with max norm regularisation" do
+            before :each do
+              @bpl_subject.max_norm = 0.5
+            end
+
+            it "changes layer weights to match fixed norm" do
+              before_weights = @ff_layer.weights.clone
+              @bpl_subject.finish_batch( @ff_layer )
+              expect( @ff_layer.weights ).to_not be_narray_like before_weights
+
+              # These are are a lot lower to to target norm. Notice bias terms at end still unchanged
+              expected_weights = NArray[ [ 0.187485, -0.336692, 0.318571, 0.326871 ],
+                  [ 0.448205, -0.220771, -0.0193009, 0.00336937 ] ]
+
+              if accel_type == :rmsprop
+                expected_weights = NArray[ [ 0.187474, -0.336665, 0.318607, 0.327114 ],
+                    [ 0.448241, -0.220678, -0.0195272, 0.00296734 ] ]
+              end
+
+              expect( @ff_layer.weights ).to be_narray_like expected_weights
+            end
+          end
+
           case accel_type
             when :nag
             it "changes weight_update_velocity" do
