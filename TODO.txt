@@ -1,9 +1,5 @@
 RuNeNe TODOs:
 
-    RuNeNe::Learn::MBGD::Layer
-      - Max norm regularisation
-      - L2 regularisation
-
     RuNeNe::Network
 
     RuNeNe::Learn::MBGD
@@ -21,6 +17,8 @@ RuNeNe TODOs:
       trainer adds data structures for tracking weight deltas etc
       network adds architecture (initially just a stack of layers)
 
+    Some container object for Network + Learn::MBGD that trains it?
+
     Perform batch feed-forward runs
 
     Perform batch backprop runs
@@ -32,7 +30,6 @@ RuNeNe TODOs:
     Easy save/load methods for all major objects
 
     Transfer issues below to tickets in Github (how to give priorities and dependencies?)
-
 
 ----- v0.0.1 release ?
 
