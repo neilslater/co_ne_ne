@@ -1,5 +1,7 @@
 RuNeNe TODOs:
 
+    Tests for gradient descent involving Rosenbrock function et al: https://en.wikipedia.org/wiki/Gradient_descent
+
     RuNeNe::Network
 
     RuNeNe::Learn::MBGD
