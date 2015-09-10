@@ -20,6 +20,13 @@ end
 # The Rosenbrock function is very hard for SGD to optimise, so it is a good test of
 # robustness in gradient descent modifiers.
 class TestRosenbrock
+  attr_reader :noise_factor, :noise_offset
+
+  def initialize noise_factor = 0.0, noise_offset = 0.0
+    @noise_factor = noise_factor
+    @noise_offset = noise_offset
+  end
+
   def value_at params
     x = params[0]
     y = params[1]
@@ -31,7 +38,10 @@ class TestRosenbrock
     y = params[1]
     df_dx = -2.0 + 2.0 * x + 400.0 * (x**3 - y * x)
     df_dy = 200.0 * (y - x**2)
-    NArray.cast( [df_dx,df_dy], 'sfloat' )
+    actual_grads = NArray.cast( [df_dx,df_dy], 'sfloat' )
+    grad_factor_noise = ( NArray.sfloat(2).random * @noise_factor * 2 ) + 1.0 - @noise_factor
+    grad_offset_noise = ( NArray.sfloat(2).random * @noise_offset * 2 ) - @noise_offset
+    actual_grads * grad_factor_noise + grad_offset_noise
   end
 end
 
@@ -274,6 +284,25 @@ describe RuNeNe::GradientDescent::NAG do
         expect( tq.value_at( @params ) ).to be_within(1e-6).of 0
         expect( @params ).to be_narray_like NArray[1.0,1.0]
       end
+
+      it "should optimise noisy rosenbrock with a bit of help" do
+        # NAG is less robust to absolute noise than RMSProp, but more robust to factors.
+        tq = TestRosenbrock.new(2.0, 0.002)
+        @params = NArray.cast( [ -0.5, 0.5 ], 'sfloat' )
+        gd.momentum = 0.9
+
+        # Pre-optimisation check that there is something to optimise
+        expect( tq.value_at( @params ) ).to_not be_within(0.1).of 0
+        expect( @params ).to_not be_narray_like NArray[1.0,1.0]
+
+        8000.times do |t|
+          lr = 0.0005 * 0.9999**t
+          gd.pre_gradient_step( @params, lr )
+          gd.gradient_step( @params, tq.gradients_at(@params), lr )
+        end
+        expect( tq.value_at( @params ) ).to be_within(1e-6).of 0
+        expect( @params ).to be_narray_like NArray[1.0,1.0]
+      end
     end
   end
 end
@@ -406,6 +435,26 @@ describe RuNeNe::GradientDescent::RMSProp do
 
       it "should optimise rosenbrock with a bit of help" do
         tq = TestRosenbrock.new
+        @params = NArray.cast( [ -0.5, 0.5 ], 'sfloat' )
+
+        # Pre-optimisation check that there is something to optimise
+        expect( tq.value_at( @params ) ).to_not be_within(0.1).of 0
+        expect( @params ).to_not be_narray_like NArray[1.0,1.0]
+
+        9000.times do |t|
+          lr = 0.02 * 0.999**t
+          gd.pre_gradient_step( @params, lr )
+          gd.gradient_step( @params, tq.gradients_at(@params), lr )
+        end
+        expect( tq.value_at( @params ) ).to be_within(1e-6).of 0
+        expect( @params ).to be_narray_like NArray[1.0,1.0]
+      end
+
+      it "should optimise noisy rosenbrock with a bit of help" do
+        # RMSProp varies somewhat with different noise factors (e.g. 0.4 will fail), but
+        # can cope with larger offset. In general it meets the tight tolerances in the tests less
+        # well than NAG, but seems a little more robust to absolute noise.
+        tq = TestRosenbrock.new( 0.5, 0.02 )
         @params = NArray.cast( [ -0.5, 0.5 ], 'sfloat' )
 
         # Pre-optimisation check that there is something to optimise
