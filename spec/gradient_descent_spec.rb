@@ -38,10 +38,10 @@ class TestRosenbrock
     y = params[1]
     df_dx = -2.0 + 2.0 * x + 400.0 * (x**3 - y * x)
     df_dy = 200.0 * (y - x**2)
-    actual_grads = NArray.cast( [df_dx,df_dy], 'sfloat' )
-    grad_factor_noise = ( NArray.sfloat(2).random * @noise_factor * 2 ) + 1.0 - @noise_factor
-    grad_offset_noise = ( NArray.sfloat(2).random * @noise_offset * 2 ) - @noise_offset
-    actual_grads * grad_factor_noise + grad_offset_noise
+    @actual_grads = NArray.cast( [df_dx,df_dy], 'sfloat' )
+    @grad_factor_noise = ( NArray.sfloat(2).random * @noise_factor * 2 ) + 1.0 - @noise_factor
+    @grad_offset_noise = ( NArray.sfloat(2).random * @noise_offset * 2 ) - @noise_offset
+    @actual_grads * @grad_factor_noise + @grad_offset_noise
   end
 end
 
