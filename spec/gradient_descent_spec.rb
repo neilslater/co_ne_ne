@@ -39,8 +39,8 @@ class TestRosenbrock
     df_dx = -2.0 + 2.0 * x + 400.0 * (x**3 - y * x)
     df_dy = 200.0 * (y - x**2)
     @actual_grads = NArray.cast( [df_dx,df_dy], 'sfloat' )
-    @grad_factor_noise = ( NArray.sfloat(2).random * @noise_factor * 2 ) + 1.0 - @noise_factor
-    @grad_offset_noise = ( NArray.sfloat(2).random * @noise_offset * 2 ) - @noise_offset
+    @grad_factor_noise = NArray.sfloat(2).random( @noise_factor * 2 ) + ( 1.0 - @noise_factor )
+    @grad_offset_noise = NArray.sfloat(2).random( @noise_offset * 2 ) - @noise_offset
     @actual_grads * @grad_factor_noise + @grad_offset_noise
   end
 end
@@ -454,7 +454,7 @@ describe RuNeNe::GradientDescent::RMSProp do
         # RMSProp varies somewhat with different noise factors (e.g. 0.4 will fail), but
         # can cope with larger offset. In general it meets the tight tolerances in the tests less
         # well than NAG, but seems a little more robust to absolute noise.
-        tq = TestRosenbrock.new( 0.5, 0.02 )
+        tq = TestRosenbrock.new( 0.5, 0.01 )
         @params = NArray.cast( [ -0.5, 0.5 ], 'sfloat' )
 
         # Pre-optimisation check that there is something to optimise
