@@ -5,6 +5,7 @@ describe RuNeNe do
     describe "on a 1D NArray" do
 
       it "should return a copy of original array when tile and pool are 1" do
+        p "#max_pool START"
         input = NArray[ 1.0 ]
         output = RuNeNe.max_pool( input, 1, 1 )
         expect( output ).to be_narray_like NArray[ 1.0 ]
@@ -92,6 +93,7 @@ describe RuNeNe do
         input = NArray[ [ 1.0, -1.1, -1.2 ], [ 2.0, -2.1, -2.2 ], [ 1.0, -1.1, 7.3 ] ]
         output = RuNeNe.max_pool( input, 2, 2 )
         expect( output ).to be_narray_like NArray[ [ 2.0, -1.2 ], [ 1.0, 7.3 ] ]
+        p "#max_pool END"
       end
     end # 2D array
 
