@@ -43,7 +43,7 @@ VALUE RuNeNe_Learn_MBGD_Layer = Qnil;
  * @param [NArray] kernel must be same size or smaller than signal in each dimension
  * @return [NArray] result of convolving signal with kernel
  */
-static VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
+VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
   struct NARRAY *na_a, *na_b, *na_c;
   volatile VALUE val_a, val_b, val_c;
   int target_rank, i;
@@ -72,7 +72,7 @@ static VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
     }
   }
 
-  val_c = na_make_object( NA_SFLOAT, target_rank, target_shape, CLASS_OF( val_a ) );
+  val_c = na_make_object( NA_SFLOAT, target_rank, target_shape, cNArray );
   GetNArray( val_c, na_c );
 
   core_convole(
@@ -91,12 +91,12 @@ static VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
  * @param [Integer] pool_size consider these many positions in each dimension (allows for overlap), accepts 1 to 100
  * @return [NArray] result of applying max pooling to array
  */
-static VALUE narray_max_pool( VALUE self, volatile VALUE rv_a, volatile VALUE rv_tile_size, volatile VALUE rv_pool_size ) {
+VALUE narray_max_pool( VALUE self, volatile VALUE rv_a, volatile VALUE rv_tile_size, volatile VALUE rv_pool_size ) {
   struct NARRAY *na_a, *na_b;
   volatile VALUE val_a;
   volatile VALUE val_b;
   int target_rank, i, tile, pool;
-  int target_shape[LARGEST_RANK];
+  int *target_shape;
 
   tile = NUM2INT( rv_tile_size );
   if ( tile < 1 || tile > 100 ) {
@@ -116,12 +116,12 @@ static VALUE narray_max_pool( VALUE self, volatile VALUE rv_a, volatile VALUE rv
   }
 
   target_rank = na_a->rank;
-
+  target_shape = ALLOC_N( int, target_rank );
   for ( i = 0; i < target_rank; i++ ) {
     target_shape[i] = ( na_a->shape[i] + tile - 1 ) / tile;
   }
-
-  val_b = na_make_object( NA_SFLOAT, target_rank, target_shape, CLASS_OF( val_a ) );
+  val_b = na_make_object( NA_SFLOAT, target_rank, target_shape, cNArray );
+  xfree( target_shape );
   GetNArray( val_b, na_b );
 
   core_max_pool(
@@ -302,7 +302,6 @@ void init_module_ru_ne_ne() {
   rb_define_singleton_method( RuNeNe, "shuffled_integers", runene_shuffled_integers, 1 );
   rb_define_singleton_method( RuNeNe, "weight_decay", runene_rb_module__weight_decay, 3 );
   rb_define_singleton_method( RuNeNe, "max_norm", runene_rb_module__max_norm, 2 );
-
 
   init_transfer_module();
   init_objective_module();

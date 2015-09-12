@@ -18,20 +18,19 @@ inline int cnnc_inline_idxs_to_pos( int rank, int *shape, int *idxs ) {
 // Starts indices
 inline void indices_reset( int rank, int *indices ) {
   int i;
-  for ( i = 0; i < rank; i++ ) { indices[i] = 0; }
+  for ( i = 0; i < 16; i++ ) { indices[i] = 0; }
   return;
 }
 
 // Increments indices
 inline int indices_inc( int rank, int *shape, int *indices ) {
   int i = 0;
-  while ( indices[i]++ > shape[i] - 2 ) {
+  while ( indices[i]++ > ( shape[i] - 2 ) && i < rank ) {
     indices[i] = 0;
     i++;
   }
   return i;
 }
-
 
 inline int size_from_shape2( int rank, int *shape ) {
   int size = 1;
@@ -59,9 +58,11 @@ void core_max_pool( int rank, int *input_shape, float *input_ptr,
   output_size = size_from_shape2( rank, output_shape );
 
   indices_reset( rank, output_idx );
+
   for (i = 0; i < output_size; i++ ) {
     max = -1e30;
     indices_reset( rank, pool_idx );
+
     for (j = 0; j < pool_size; j++ ) {
       for ( k = 0; k < rank; k++ ) { input_idx[k] = output_idx[k] * tile_by + pool_idx[k]; }
       pos = cnnc_inline_idxs_to_pos( rank, input_shape, input_idx );
@@ -70,6 +71,7 @@ void core_max_pool( int rank, int *input_shape, float *input_ptr,
       }
       indices_inc( rank, pool_shape, pool_idx );
     }
+
     output_ptr[i] = max;
     indices_inc( rank, output_shape, output_idx );
   }
