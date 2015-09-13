@@ -5,32 +5,32 @@
 
 #include "shared_helpers.h"
 
-extern VALUE RuNeNe;
-extern VALUE RuNeNe_Transfer;
-extern VALUE RuNeNe_Transfer_Sigmoid;
-extern VALUE RuNeNe_Transfer_TanH;
-extern VALUE RuNeNe_Transfer_ReLU;
-extern VALUE RuNeNe_Transfer_Linear;
-extern VALUE RuNeNe_Transfer_Softmax;
+extern volatile VALUE RuNeNe;
+extern volatile VALUE RuNeNe_Transfer;
+extern volatile VALUE RuNeNe_Transfer_Sigmoid;
+extern volatile VALUE RuNeNe_Transfer_TanH;
+extern volatile VALUE RuNeNe_Transfer_ReLU;
+extern volatile VALUE RuNeNe_Transfer_Linear;
+extern volatile VALUE RuNeNe_Transfer_Softmax;
 
-extern VALUE RuNeNe_Objective;
-extern VALUE RuNeNe_Objective_MeanSquaredError;
-extern VALUE RuNeNe_Objective_LogLoss;
-extern VALUE RuNeNe_Objective_MulticlassLogLoss;
+extern volatile VALUE RuNeNe_Objective;
+extern volatile VALUE RuNeNe_Objective_MeanSquaredError;
+extern volatile VALUE RuNeNe_Objective_LogLoss;
+extern volatile VALUE RuNeNe_Objective_MulticlassLogLoss;
 
-extern VALUE RuNeNe_GradientDescent;
-extern VALUE RuNeNe_GradientDescent_SGD;
-extern VALUE RuNeNe_GradientDescent_NAG;
-extern VALUE RuNeNe_GradientDescent_RMSProp;
+extern volatile VALUE RuNeNe_GradientDescent;
+extern volatile VALUE RuNeNe_GradientDescent_SGD;
+extern volatile VALUE RuNeNe_GradientDescent_NAG;
+extern volatile VALUE RuNeNe_GradientDescent_RMSProp;
 
-extern VALUE RuNeNe_Layer;
-extern VALUE RuNeNe_Layer_FeedForward;
-extern VALUE RuNeNe_Network;
-extern VALUE RuNeNe_DataSet;
+extern volatile VALUE RuNeNe_Layer;
+extern volatile VALUE RuNeNe_Layer_FeedForward;
+extern volatile VALUE RuNeNe_Network;
+extern volatile VALUE RuNeNe_DataSet;
 
-extern VALUE RuNeNe_Learn;
-extern VALUE RuNeNe_Learn_MBGD;
-extern VALUE RuNeNe_Learn_MBGD_Layer;
-extern VALUE RuNeNe_Trainer_BPNetwork;
+extern volatile VALUE RuNeNe_Learn;
+extern volatile VALUE RuNeNe_Learn_MBGD;
+extern volatile VALUE RuNeNe_Learn_MBGD_Layer;
+extern volatile VALUE RuNeNe_Trainer_BPNetwork;
 
 #endif

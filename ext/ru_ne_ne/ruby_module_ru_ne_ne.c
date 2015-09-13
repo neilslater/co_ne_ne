@@ -5,35 +5,35 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // To hold the module object, plus child Module and Class items
-VALUE RuNeNe = Qnil;
+volatile VALUE RuNeNe = Qnil;
 
-VALUE RuNeNe_Transfer = Qnil;
-VALUE RuNeNe_Transfer_Sigmoid = Qnil;
-VALUE RuNeNe_Transfer_TanH = Qnil;
-VALUE RuNeNe_Transfer_ReLU = Qnil;
-VALUE RuNeNe_Transfer_Linear = Qnil;
-VALUE RuNeNe_Transfer_Softmax = Qnil;
+volatile VALUE RuNeNe_Transfer = Qnil;
+volatile VALUE RuNeNe_Transfer_Sigmoid = Qnil;
+volatile VALUE RuNeNe_Transfer_TanH = Qnil;
+volatile VALUE RuNeNe_Transfer_ReLU = Qnil;
+volatile VALUE RuNeNe_Transfer_Linear = Qnil;
+volatile VALUE RuNeNe_Transfer_Softmax = Qnil;
 
-VALUE RuNeNe_Objective = Qnil;
-VALUE RuNeNe_Objective_MeanSquaredError = Qnil;
-VALUE RuNeNe_Objective_LogLoss = Qnil;
-VALUE RuNeNe_Objective_MulticlassLogLoss = Qnil;
+volatile VALUE RuNeNe_Objective = Qnil;
+volatile VALUE RuNeNe_Objective_MeanSquaredError = Qnil;
+volatile VALUE RuNeNe_Objective_LogLoss = Qnil;
+volatile VALUE RuNeNe_Objective_MulticlassLogLoss = Qnil;
 
-VALUE RuNeNe_GradientDescent = Qnil;
-VALUE RuNeNe_GradientDescent_SGD = Qnil;
-VALUE RuNeNe_GradientDescent_NAG = Qnil;
-VALUE RuNeNe_GradientDescent_RMSProp = Qnil;
+volatile VALUE RuNeNe_GradientDescent = Qnil;
+volatile VALUE RuNeNe_GradientDescent_SGD = Qnil;
+volatile VALUE RuNeNe_GradientDescent_NAG = Qnil;
+volatile VALUE RuNeNe_GradientDescent_RMSProp = Qnil;
 
-VALUE RuNeNe_Layer = Qnil;
-VALUE RuNeNe_Layer_FeedForward  = Qnil;
+volatile VALUE RuNeNe_Layer = Qnil;
+volatile VALUE RuNeNe_Layer_FeedForward  = Qnil;
 
-VALUE RuNeNe_Network = Qnil;
+volatile VALUE RuNeNe_Network = Qnil;
 
-VALUE RuNeNe_DataSet = Qnil;
+volatile VALUE RuNeNe_DataSet = Qnil;
 
-VALUE RuNeNe_Learn = Qnil;
-VALUE RuNeNe_Learn_MBGD = Qnil;
-VALUE RuNeNe_Learn_MBGD_Layer = Qnil;
+volatile VALUE RuNeNe_Learn = Qnil;
+volatile VALUE RuNeNe_Learn_MBGD = Qnil;
+volatile VALUE RuNeNe_Learn_MBGD_Layer = Qnil;
 
 /* @overload convolve( signal, kernel )
  * Calculates convolution of an array of floats representing a signal, with a second array representing
