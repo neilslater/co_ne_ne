@@ -22,14 +22,14 @@ typedef enum {GD_TYPE_SGD, GD_TYPE_NAG, GD_TYPE_RMSPROP} gradient_descent_type;
 typedef struct _mbgd_layer_raw {
   int num_inputs;
   int num_outputs;
-  VALUE narr_de_dz;
+  volatile VALUE narr_de_dz;
   float *de_dz;
-  VALUE narr_de_da;
+  volatile VALUE narr_de_da;
   float *de_da;
-  VALUE narr_de_dw;
+  volatile VALUE narr_de_dw;
   float *de_dw;
   gradient_descent_type gradient_descent_type;
-  VALUE gradient_descent;
+  volatile VALUE gradient_descent;
 
   float learning_rate;
   float max_norm;

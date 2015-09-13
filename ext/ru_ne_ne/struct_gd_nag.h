@@ -14,7 +14,7 @@
 typedef struct _gd_nag_raw {
   int num_params;
   float momentum;
-  VALUE narr_param_update_velocity;
+  volatile VALUE narr_param_update_velocity;
   float *param_update_velocity;
   } GradientDescent_NAG;
 

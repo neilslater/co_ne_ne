@@ -23,8 +23,8 @@ typedef struct _dataset_raw {
     int *pos_idx;
     int current_pos;
     int num_items;
-    VALUE narr_inputs;
-    VALUE narr_outputs;
+    volatile VALUE narr_inputs;
+    volatile VALUE narr_outputs;
     float *inputs;
     float *outputs;
   } DataSet;

@@ -20,7 +20,7 @@ typedef struct _layer_ff_raw {
     int num_inputs;
     int num_outputs;
     transfer_type transfer_fn;
-    VALUE narr_weights;
+    volatile VALUE narr_weights;
     float * weights;
   } Layer_FF;
 
