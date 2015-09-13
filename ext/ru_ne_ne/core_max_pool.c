@@ -23,13 +23,16 @@ inline void indices_reset( int rank, int *indices ) {
 }
 
 // Increments indices
-inline int indices_inc( int rank, int *shape, int *indices ) {
-  int i = 0;
-  while ( indices[i]++ > ( shape[i] - 2 ) && i < rank ) {
+inline void indices_inc( int rank, int *shape, int *indices ) {
+  int i;
+  for ( i = 0; i < rank; i++ ) {
+    indices[i]++;
+    if ( indices[i] < shape[i] ) {
+      break;
+    }
     indices[i] = 0;
-    i++;
   }
-  return i;
+  return;
 }
 
 inline int size_from_shape2( int rank, int *shape ) {

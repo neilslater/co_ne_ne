@@ -91,12 +91,12 @@ VALUE narray_convolve( VALUE self, VALUE rv_a, VALUE rv_b ) {
  * @param [Integer] pool_size consider these many positions in each dimension (allows for overlap), accepts 1 to 100
  * @return [NArray] result of applying max pooling to array
  */
-VALUE narray_max_pool( VALUE self, volatile VALUE rv_a, volatile VALUE rv_tile_size, volatile VALUE rv_pool_size ) {
+VALUE narray_max_pool( VALUE self, VALUE rv_a, VALUE rv_tile_size, VALUE rv_pool_size ) {
   struct NARRAY *na_a, *na_b;
   volatile VALUE val_a;
   volatile VALUE val_b;
   int target_rank, i, tile, pool;
-  int *target_shape;
+  int target_shape[16];
 
   tile = NUM2INT( rv_tile_size );
   if ( tile < 1 || tile > 100 ) {
@@ -116,12 +116,10 @@ VALUE narray_max_pool( VALUE self, volatile VALUE rv_a, volatile VALUE rv_tile_s
   }
 
   target_rank = na_a->rank;
-  target_shape = ALLOC_N( int, target_rank );
   for ( i = 0; i < target_rank; i++ ) {
     target_shape[i] = ( na_a->shape[i] + tile - 1 ) / tile;
   }
   val_b = na_make_object( NA_SFLOAT, target_rank, target_shape, cNArray );
-  xfree( target_shape );
   GetNArray( val_b, na_b );
 
   core_max_pool(

@@ -19,7 +19,7 @@ inline void corner_reset( int rank, int *shape, int *rev_indices ) {
 // Counts indices down, returns number of ranks that reset
 inline int corner_dec( int rank, int *shape, int *rev_indices ) {
   int i = 0;
-  while ( ! rev_indices[i]-- ) {
+  while ( ! rev_indices[i]-- && i < rank ) {
     rev_indices[i] = shape[i] - 1;
     i++;
   }

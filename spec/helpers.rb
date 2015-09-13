@@ -1,8 +1,5 @@
 # ru_ne_ne/spec/helpers.rb
-require 'coveralls'
 require 'mocha/api'
-
-Coveralls.wear!
 
 require 'ru_ne_ne'
 
