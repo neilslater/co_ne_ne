@@ -113,6 +113,16 @@ describe RuNeNe::Network do
         expect( result ).to be_narray_like NArray[ 0.483497 ]
       end
 
+      it "sets activations in each layer" do
+        @nn.run( NArray.cast( [-0.5, 0.7], 'sfloat' ) )
+        expect( @nn.activations(0) ).to be_narray_like NArray[ 0.38887, 0.46284 ]
+        expect( @nn.activations(1) ).to be_narray_like NArray[ 0.491116 ]
+
+        @nn.run( NArray.cast( [0.5, -0.7], 'sfloat' ) )
+        expect( @nn.activations(0) ).to be_narray_like NArray[ 0.509866, 0.638625 ]
+        expect( @nn.activations(1) ).to be_narray_like NArray[ 0.483497 ]
+      end
+
       it "should refuse to run for bad inputs" do
         expect { @nn.run( NArray.cast( [-0.5 ], 'sfloat' ) ) }.to raise_error ArgumentError
         expect { @nn.run( NArray.cast( [-0.5,-0.5,-0.5 ], 'sfloat' ) ) }.to raise_error ArgumentError

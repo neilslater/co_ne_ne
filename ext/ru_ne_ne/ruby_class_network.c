@@ -199,10 +199,6 @@ VALUE network_rbobject__run( VALUE self, VALUE rv_input ) {
   volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
   GetNArray( val_output, na_output );
 
-  if ( network->num_layers < 1 ) {
-    return Qnil;
-  }
-
   Data_Get_Struct( network->layers[0], Layer_FF, layer_ff );
   layer_ff__run( layer_ff, (float*) na_input->ptr, network->activations[0] );
 
@@ -213,6 +209,34 @@ VALUE network_rbobject__run( VALUE self, VALUE rv_input ) {
   }
 
   memcpy( (float*) na_output->ptr, network->activations[network->num_layers-1], network->num_outputs * sizeof(float) );
+
+  return val_output;
+}
+
+
+/* @overload activations( layer_id )
+ * Array of activation values from last call to .run from layer identified by layer_id
+ * @param [NArray<sfloat>] input single input vector
+ * @return [NArray<sfloat>] output of network
+ */
+VALUE network_rbobject__activations( VALUE self, VALUE rv_layer_id ) {
+  Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  int layer_id = NUM2INT( rv_layer_id );
+
+  if ( layer_id < 0 || layer_id >= network->num_layers ) {
+    return Qnil; // Should this raise instead? Not sure . . .
+  }
+
+  Data_Get_Struct( network->layers[ layer_id ], Layer_FF, layer_ff );
+  int out_shape[1] = { layer_ff->num_outputs };
+
+  struct NARRAY *na_output;
+
+  volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
+  GetNArray( val_output, na_output );
+
+  memcpy( (float*) na_output->ptr, network->activations[layer_id], layer_ff->num_outputs * sizeof(float) );
 
   return val_output;
 }
@@ -235,4 +259,5 @@ void init_network_class( ) {
   // Network methods
   rb_define_method( RuNeNe_Network, "init_weights", network_rbobject__init_weights, -1 );
   rb_define_method( RuNeNe_Network, "run", network_rbobject__run, 1 );
+  rb_define_method( RuNeNe_Network, "activations", network_rbobject__activations, 1 );
 }
