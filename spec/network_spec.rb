@@ -69,5 +69,34 @@ describe RuNeNe::Network do
         end
       end
     end
+
+    describe "#init_weights" do
+      before :each do
+        RuNeNe.srand(800)
+      end
+
+      it "should set weights to normal distribution by default" do
+        @nn.init_weights
+        expect( @nn.layers[0].weights ).to be_narray_like NArray[
+          [ 0.290879, -0.143323, -0.206298 ],
+          [ 0.145002, -0.409508, 0.210244 ] ]
+        expect( @nn.layers[1].weights ).to be_narray_like NArray[
+          [ -0.0573267, -0.134014, 0.048779 ] ]
+      end
+
+      it "should accept an optional multiplier" do
+        @nn.init_weights( 0.1 )
+        expect( @nn.layers[0].weights ).to be_narray_like NArray[
+          [ 0.0290879, -0.0143323, -0.0206298 ],
+          [ 0.0145002, -0.0409508, 0.0210244 ] ]
+        expect( @nn.layers[1].weights ).to be_narray_like NArray[
+          [ -0.00573267, -0.0134014, 0.0048779 ] ]
+      end
+
+      it "returns self" do
+        expect( @nn.init_weights() ).to be @nn
+        expect( @nn.init_weights( 2.5 ) ).to be @nn
+      end
+    end
   end
 end

@@ -133,6 +133,43 @@ VALUE network_rbobject__get_num_outputs( VALUE self ) {
   return INT2NUM( network->num_outputs );
 }
 
+
+/* @overload init_weights( mult = 1.0 )
+ * Initialises weights in all layers.
+ * @param [Float] mult optional size factor
+ * @return [RuNeNe::Network] self
+ */
+VALUE network_rbobject__init_weights( int argc, VALUE* argv, VALUE self ) {
+  Network *network = get_network_struct( self );
+  VALUE rv_mult;
+  Layer_FF *layer_ff;
+  float m = 1.0;
+  int i, j, t;
+  struct NARRAY *narr;
+
+  rb_scan_args( argc, argv, "01", &rv_mult );
+  if ( ! NIL_P( rv_mult ) ) {
+    m = NUM2FLT( rv_mult );
+  }
+
+  for ( i = 0; i < network->num_layers; i++ ) {
+    // TODO: This only works for Layer_FF layers, we need a more flexible system
+    Data_Get_Struct( network->layers[i], Layer_FF, layer_ff );
+
+    layer_ff__init_weights( layer_ff );
+
+    if ( m != 0 ) {
+      GetNArray( layer_ff->narr_weights, narr );
+      t = narr->total;
+      for ( j = 0; j < t; j++ ) {
+        layer_ff->weights[j] *= m;
+      }
+    }
+  }
+
+  return self;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_network_class( ) {
@@ -146,4 +183,7 @@ void init_network_class( ) {
   rb_define_method( RuNeNe_Network, "num_layers", network_rbobject__get_num_layers, 0 );
   rb_define_method( RuNeNe_Network, "num_inputs", network_rbobject__get_num_inputs, 0 );
   rb_define_method( RuNeNe_Network, "num_outputs", network_rbobject__get_num_outputs, 0 );
+
+  // Network methods
+  rb_define_method( RuNeNe_Network, "init_weights", network_rbobject__init_weights, -1 );
 }

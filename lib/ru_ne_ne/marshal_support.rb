@@ -267,7 +267,6 @@ class RuNeNe::Learn::MBGD::Layer
   end
 end
 
-
 class RuNeNe::Network
   # @!visibility private
   # Adds support for Marshal, via to_h and from_h methods
