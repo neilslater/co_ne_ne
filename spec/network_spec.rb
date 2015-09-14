@@ -112,6 +112,12 @@ describe RuNeNe::Network do
         result = @nn.run( NArray.cast( [0.5, -0.7], 'sfloat' ) )
         expect( result ).to be_narray_like NArray[ 0.483497 ]
       end
+
+      it "should refuse to run for bad inputs" do
+        expect { @nn.run( NArray.cast( [-0.5 ], 'sfloat' ) ) }.to raise_error ArgumentError
+        expect { @nn.run( NArray.cast( [-0.5,-0.5,-0.5 ], 'sfloat' ) ) }.to raise_error ArgumentError
+        expect { @nn.run( :hello ) }.to raise_error TypeError
+      end
     end
   end
 end

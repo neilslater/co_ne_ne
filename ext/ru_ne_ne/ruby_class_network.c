@@ -190,7 +190,7 @@ VALUE network_rbobject__run( VALUE self, VALUE rv_input ) {
     return Qnil;
   }
 
-  if ( na_input->total != layer_ff->num_inputs ) {
+  if ( na_input->total != network->num_inputs ) {
     rb_raise( rb_eArgError, "Input array must be size %d, but it was size %d", layer_ff->num_inputs, na_input->total );
   }
 
