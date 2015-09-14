@@ -14,6 +14,7 @@
 
 typedef struct _network_raw {
   VALUE *layers;
+  float **activations;
   int num_layers;
   int num_inputs;
   int num_outputs;

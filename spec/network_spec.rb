@@ -98,5 +98,20 @@ describe RuNeNe::Network do
         expect( @nn.init_weights( 2.5 ) ).to be @nn
       end
     end
+
+    describe "#run" do
+      before :each do
+        RuNeNe.srand(800)
+        @nn.init_weights
+      end
+
+      it "should produce an expected output" do
+        result = @nn.run( NArray.cast( [-0.5, 0.7], 'sfloat' ) )
+        expect( result ).to be_narray_like NArray[ 0.491116 ]
+
+        result = @nn.run( NArray.cast( [0.5, -0.7], 'sfloat' ) )
+        expect( result ).to be_narray_like NArray[ 0.483497 ]
+      end
+    end
   end
 end

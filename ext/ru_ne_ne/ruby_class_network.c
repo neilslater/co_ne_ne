@@ -170,6 +170,54 @@ VALUE network_rbobject__init_weights( int argc, VALUE* argv, VALUE self ) {
   return self;
 }
 
+/* @overload run( input )
+ * Runs network forward and generates a result
+ * @param [NArray<sfloat>] input single input vector
+ * @return [NArray<sfloat>] output of network
+ */
+VALUE network_rbobject__run( VALUE self, VALUE rv_input ) {
+  Network *network = get_network_struct( self );
+  Layer_FF *layer_ff;
+  int i;
+  int out_shape[1] = { network->num_outputs };
+
+  struct NARRAY *na_input;
+  volatile VALUE val_input = na_cast_object(rv_input, NA_SFLOAT);
+  GetNArray( val_input, na_input );
+
+  // Shouldn't happen, but we don't want a segfault
+  if ( network->num_layers < 1 ) {
+    return Qnil;
+  }
+
+  if ( na_input->total != layer_ff->num_inputs ) {
+    rb_raise( rb_eArgError, "Input array must be size %d, but it was size %d", layer_ff->num_inputs, na_input->total );
+  }
+
+  struct NARRAY *na_output;
+
+  volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
+  GetNArray( val_output, na_output );
+
+  if ( network->num_layers < 1 ) {
+    return Qnil;
+  }
+
+  Data_Get_Struct( network->layers[0], Layer_FF, layer_ff );
+  layer_ff__run( layer_ff, (float*) na_input->ptr, network->activations[0] );
+
+  for ( i = 1; i < network->num_layers; i++ ) {
+    // TODO: This only works for Layer_FF layers, we need a more flexible system
+    Data_Get_Struct( network->layers[i], Layer_FF, layer_ff );
+    layer_ff__run( layer_ff, network->activations[i-1], network->activations[i] );
+  }
+
+  memcpy( (float*) na_output->ptr, network->activations[network->num_layers-1], network->num_outputs * sizeof(float) );
+
+  return val_output;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_network_class( ) {
@@ -186,4 +234,5 @@ void init_network_class( ) {
 
   // Network methods
   rb_define_method( RuNeNe_Network, "init_weights", network_rbobject__init_weights, -1 );
+  rb_define_method( RuNeNe_Network, "run", network_rbobject__run, 1 );
 }
