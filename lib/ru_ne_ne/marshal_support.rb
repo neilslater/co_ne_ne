@@ -266,3 +266,33 @@ class RuNeNe::Learn::MBGD::Layer
     from_h h
   end
 end
+
+
+class RuNeNe::Network
+  # @!visibility private
+  # Adds support for Marshal, via to_h and from_h methods
+  def to_h
+    Hash[
+      :layers => self.layers
+    ]
+  end
+
+  # @!visibility private
+  # Constructs a MBGD::Network from hash description. Used internally to support Marshal.
+  # @param [Hash] h one key is :layers
+  # @return [RuNeNe::Network] new object
+  def self.from_h h
+    RuNeNe::Network.new( h[:layers] )
+  end
+
+  # @!visibility private
+  def _dump *ignored
+    Marshal.dump to_h
+  end
+
+  # @!visibility private
+  def self._load buf
+    h = Marshal.load buf
+    from_h h
+  end
+end

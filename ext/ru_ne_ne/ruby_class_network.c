@@ -68,6 +68,8 @@ VALUE network_rbobject__initialize( VALUE self, VALUE rv_layers ) {
     layers[i] = current_layer;
   }
 
+  network__init( network, n, layers);
+
   return self;
 }
 
