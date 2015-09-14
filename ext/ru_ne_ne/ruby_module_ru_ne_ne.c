@@ -284,7 +284,7 @@ void init_module_ru_ne_ne() {
   RuNeNe_Layer = rb_define_class_under( RuNeNe, "Layer", rb_cObject );
   RuNeNe_Layer_FeedForward = rb_define_class_under( RuNeNe_Layer, "FeedForward", rb_cObject );
 
-  // RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
+  RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
 
   RuNeNe_DataSet = rb_define_class_under( RuNeNe, "DataSet", rb_cObject );
 
@@ -309,5 +309,6 @@ void init_module_ru_ne_ne() {
   init_gd_nag_class();
   init_gd_rmsprop_class();
   init_dataset_class();
+  init_network_class();
   init_srand_by_time();
 }

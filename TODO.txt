@@ -1,7 +1,5 @@
 RuNeNe TODOs:
 
-    Tests for gradient descent involving Rosenbrock function et al: https://en.wikipedia.org/wiki/Gradient_descent
-
     RuNeNe::Network
 
     RuNeNe::Learn::MBGD
@@ -14,18 +12,13 @@ RuNeNe TODOs:
 
     Mini-batch training
 
-    Completely re-architect layer/network
-      layer_ff consists solely of num_inputs, num_outputs, weights, transfer function * DONE
-      trainer adds data structures for tracking weight deltas etc
-      network adds architecture (initially just a stack of layers)
-
-    Some container object for Network + Learn::MBGD that trains it?
-
     Perform batch feed-forward runs
 
     Perform batch backprop runs
 
     Bulk predictions
+
+    Some container object for Network + Learn::MBGD that trains it?
 
     Tests using MNIST digits
 
