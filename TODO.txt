@@ -1,6 +1,10 @@
 RuNeNe TODOs:
 
     RuNeNe::Network
+      - allow for multiple layer types
+      - whilst still efficient C struct calls
+      - drop array of VALUEs in favour of array of mixed struct types?
+      - want "build, then run" network methods that work with multiple layers
 
     RuNeNe::Learn::MBGD
 
