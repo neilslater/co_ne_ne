@@ -191,7 +191,7 @@ VALUE network_rbobject__run( VALUE self, VALUE rv_input ) {
   }
 
   if ( na_input->total != network->num_inputs ) {
-    rb_raise( rb_eArgError, "Input array must be size %d, but it was size %d", layer_ff->num_inputs, na_input->total );
+    rb_raise( rb_eArgError, "Input array must be size %d, but it was size %d", network->num_inputs, na_input->total );
   }
 
   struct NARRAY *na_output;
