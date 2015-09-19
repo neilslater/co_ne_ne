@@ -5,8 +5,8 @@
 //  Definition for NNModel and declarations for its memory management
 //
 
-#ifndef STRUCT_NETWORK_H
-#define STRUCT_NETWORK_H
+#ifndef STRUCT_NN_MODEL_H
+#define STRUCT_NN_MODEL_H
 
 #include <ruby.h>
 #include "narray.h"

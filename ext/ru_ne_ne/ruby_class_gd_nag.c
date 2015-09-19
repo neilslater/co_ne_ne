@@ -65,7 +65,7 @@ void assert_value_wraps_gd_nag( VALUE obj ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  NNModel method definitions
+//  Method definitions
 //
 
 /* @overload initialize( params, momentum )
