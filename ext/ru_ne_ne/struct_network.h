@@ -1,8 +1,8 @@
-// ext/ru_ne_ne/struct_network.h
+// ext/ru_ne_ne/struct_nn_model.h
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Definition for Network and declarations for its memory management
+//  Definition for NNModel and declarations for its memory management
 //
 
 #ifndef STRUCT_NETWORK_H
@@ -12,24 +12,24 @@
 #include "narray.h"
 #include "struct_layer_ff.h"
 
-typedef struct _network_raw {
+typedef struct _nn_model_raw {
   VALUE *layers;
   float **activations;
   int num_layers;
   int num_inputs;
   int num_outputs;
-  } Network;
+  } NNModel;
 
-Network *network__create();
+NNModel *nn_model__create();
 
-void network__init( Network *network, int num_layers, VALUE *layers );
+void nn_model__init( NNModel *nn_model, int num_layers, VALUE *layers );
 
-void network__destroy( Network *network );
+void nn_model__destroy( NNModel *nn_model );
 
-void network__gc_mark( Network *network );
+void nn_model__gc_mark( NNModel *nn_model );
 
-void network__deep_copy( Network *network_copy, Network *network_orig );
+void nn_model__deep_copy( NNModel *nn_model_copy, NNModel *nn_model_orig );
 
-Network * network__clone( Network *network_orig );
+NNModel * nn_model__clone( NNModel *nn_model_orig );
 
 #endif

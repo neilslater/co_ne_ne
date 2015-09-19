@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //  Ruby bindings for a single feed-forward layer - the deeper implementation is in
-//  layer_ff_raw.c and network_raw.c
+//  layer_ff_raw.c and nn_model_raw.c
 //
 
 #include "ruby_class_layer_ff.h"
@@ -85,7 +85,7 @@ VALUE layer_ff_new_ruby_object_from_weights( VALUE weights, transfer_type tfn ) 
 
 /* Document-class:  RuNeNe::Layer::FeedForward
  *
- * An object of this class represents a layer in a feed-forward network.
+ * An object of this class represents a layer in a feed-forward nn_model.
  *
  * A general rule for using NArray parameters with this class is that *sfloat* NArrays
  * are used directly, and other types are cast to that type. This means that using

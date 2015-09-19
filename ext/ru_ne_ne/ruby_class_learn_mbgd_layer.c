@@ -164,17 +164,17 @@ void assert_value_wraps_mbgd_layer( VALUE obj ) {
  *
  * This class models the training algorithms and data used across a single layer during gradient
  * descent by backpropagation. An instance of this class represents the training state of a specific
- * layer in a network.
+ * layer in a nn_model.
  */
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Network method definitions
+//  NNModel method definitions
 //
 
 /* @overload initialize( opts )
- * Creates a new RuNeNe::Learn::MBGD::Layer instance. In normal use, the network trainer will create
- * the necessary layer objects automatically from the network acrhitecture.
+ * Creates a new RuNeNe::Learn::MBGD::Layer instance. In normal use, the nn_model trainer will create
+ * the necessary layer objects automatically from the nn_model acrhitecture.
  * @param [Hash] opts initialisation options
  * @return [RuNeNe::Learn::MBGD::Layer] the new RuNeNe::Learn::MBGD::Layer object.
  */

@@ -1,10 +1,6 @@
 RuNeNe TODOs:
 
-    RuNeNe::Network
-      - allow for multiple layer types
-      - whilst still efficient C struct calls
-      - drop array of VALUEs in favour of array of mixed struct types?
-      - want "build, then run" network methods that work with multiple layers
+    RuNeNe::Network -> RuNeNe::NNModel
 
     RuNeNe::Learn::MBGD
 
@@ -31,6 +27,15 @@ RuNeNe TODOs:
     Transfer issues below to tickets in Github (how to give priorities and dependencies?)
 
 ----- v0.0.1 release ?
+
+    R_Engine
+      - High-level "opcode" structs that contain direct references and structures to run a full
+        netork + training quickly.
+      - Built on-demand to perform batch learning and metrics/assessment tasks
+      - allow for multiple layer types
+      - whilst still efficient C struct calls
+      - drop array of VALUEs in favour of array of mixed struct types?
+      - want "build, then run" network methods that work with multiple layers
 
     Refactoring:
         move all array-walking/maths functions into same place for ease of later optimisations

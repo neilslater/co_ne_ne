@@ -25,12 +25,11 @@ extern volatile VALUE RuNeNe_GradientDescent_RMSProp;
 
 extern volatile VALUE RuNeNe_Layer;
 extern volatile VALUE RuNeNe_Layer_FeedForward;
-extern volatile VALUE RuNeNe_Network;
+extern volatile VALUE RuNeNe_NNModel;
 extern volatile VALUE RuNeNe_DataSet;
 
 extern volatile VALUE RuNeNe_Learn;
 extern volatile VALUE RuNeNe_Learn_MBGD;
 extern volatile VALUE RuNeNe_Learn_MBGD_Layer;
-extern volatile VALUE RuNeNe_Trainer_BPNetwork;
 
 #endif

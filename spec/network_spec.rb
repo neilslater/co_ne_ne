@@ -1,33 +1,33 @@
 require 'helpers'
 
-describe RuNeNe::Network do
+describe RuNeNe::NNModel do
   let( :in_layer_xor ) { RuNeNe::Layer::FeedForward.new( 2, 2 ) }
   let( :out_layer_xor ) { RuNeNe::Layer::FeedForward.new( 2, 1 ) }
 
   describe "class methods" do
     describe "#new" do
-      it "creates a new network" do
-        expect( RuNeNe::Network.new( [in_layer_xor, out_layer_xor] ) ).to be_a RuNeNe::Network
+      it "creates a new nn_model" do
+        expect( RuNeNe::NNModel.new( [in_layer_xor, out_layer_xor] ) ).to be_a RuNeNe::NNModel
       end
 
-      it "refuses to create new networks for bad parameters" do
-        expect { RuNeNe::Network.new( 17 ) }.to raise_error TypeError
-        expect { RuNeNe::Network.new( [] ) }.to raise_error ArgumentError
-        expect { RuNeNe::Network.new( [in_layer_xor,nil,out_layer_xor] ) }.to raise_error TypeError
+      it "refuses to create new nn_models for bad parameters" do
+        expect { RuNeNe::NNModel.new( 17 ) }.to raise_error TypeError
+        expect { RuNeNe::NNModel.new( [] ) }.to raise_error ArgumentError
+        expect { RuNeNe::NNModel.new( [in_layer_xor,nil,out_layer_xor] ) }.to raise_error TypeError
       end
     end
 
     describe "with Marshal" do
-      it "can save and retrieve a network, preserving layer properties" do
-        orig_network = RuNeNe::Network.new( [in_layer_xor, out_layer_xor] )
-        saved = Marshal.dump( orig_network )
-        copy_network = Marshal.load( saved )
+      it "can save and retrieve a nn_model, preserving layer properties" do
+        orig_nn_model = RuNeNe::NNModel.new( [in_layer_xor, out_layer_xor] )
+        saved = Marshal.dump( orig_nn_model )
+        copy_nn_model = Marshal.load( saved )
 
-        expect( copy_network ).to_not be orig_network
-        orig_layers = orig_network.layers
-        copy_layers = copy_network.layers
-        expect( copy_network.num_inputs ).to eql orig_network.num_inputs
-        expect( copy_network.num_outputs ).to eql orig_network.num_outputs
+        expect( copy_nn_model ).to_not be orig_nn_model
+        orig_layers = orig_nn_model.layers
+        copy_layers = copy_nn_model.layers
+        expect( copy_nn_model.num_inputs ).to eql orig_nn_model.num_inputs
+        expect( copy_nn_model.num_outputs ).to eql orig_nn_model.num_outputs
 
         orig_layers.zip(copy_layers).each do |orig_layer, copy_layer|
           expect( copy_layer ).to_not be orig_layer
@@ -42,7 +42,7 @@ describe RuNeNe::Network do
 
   describe "instance methods" do
     before :each do
-      @nn = RuNeNe::Network.new( [in_layer_xor, out_layer_xor] )
+      @nn = RuNeNe::NNModel.new( [in_layer_xor, out_layer_xor] )
     end
 
     describe "clone" do

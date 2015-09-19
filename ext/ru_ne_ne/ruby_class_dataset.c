@@ -41,8 +41,8 @@ void assert_value_wraps_dataset( VALUE obj ) {
 
 /* @overload initialize( inputs, targets )
  * Creates a new dataset from example data.
- * @param [NArray<sfloat>] inputs the input examples that a network will process
- * @param [NArray<sfloat>] targets known outputs that can be used to train or assess a network
+ * @param [NArray<sfloat>] inputs the input examples that a nn_model will process
+ * @param [NArray<sfloat>] targets known outputs that can be used to train or assess a nn_model
  * @return [RuNeNe::DataSet] new dataset
  */
 VALUE dataset_class_initialize( VALUE self, VALUE rv_inputs, VALUE rv_targets ) {

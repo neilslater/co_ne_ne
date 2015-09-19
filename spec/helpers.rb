@@ -106,7 +106,7 @@ def measure_output_layer_de_dw layer, objective_calc, inputs, targets, eta = 0.0
   gradients
 end
 
-# This de_da is for error grad wrt activations of *inputs* to final layer in the network
+# This de_da is for error grad wrt activations of *inputs* to final layer in the nn_model
 def measure_output_layer_de_da layer, objective_calc, inputs, targets, eta = 0.005
   grad_mult = 1.0/(2* eta)
   gradients = inputs.clone
@@ -128,8 +128,8 @@ def measure_output_layer_de_da layer, objective_calc, inputs, targets, eta = 0.0
   gradients
 end
 
-# This is essentially a full, but simple, feed-forward network, using Ruby for the
-# network architecture and the C-backed classes for the individual layers
+# This is essentially a full, but simple, feed-forward nn_model, using Ruby for the
+# nn_model architecture and the C-backed classes for the individual layers
 class TestLayerStack
   attr_reader :objective, :transfer, :output, :loss, :layers
   attr_reader :training_layers, :input_size, :activations

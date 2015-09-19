@@ -24,7 +24,7 @@ def for_all_valid_layer_builds
   end
 end
 
-def for_all_test_networks
+def for_all_test_nn_models
   (3..5).each do |input_size|
     (3..4).each do |hidden_size|
       [:linear,:relu,:sigmoid,:tanh,:softmax].each do |hidden_transfer_type|
@@ -44,7 +44,7 @@ def for_all_test_networks
             NArray.srand( 98189)
             srand( 3141 ) # Needed for :softmax target_type
 
-            description = "[#{input_size},#{hidden_size}/#{hidden_transfer_type},#{output_size}/#{output_transfer_type}] network"
+            description = "[#{input_size},#{hidden_size}/#{hidden_transfer_type},#{output_size}/#{output_transfer_type}] nn_model"
 
             nn = TestLayerStack.new( input_size,
               [ [hidden_size,hidden_transfer_type], [output_size,output_transfer_type] ],
@@ -133,7 +133,7 @@ describe "Backprop gradients per layer" do
     end
   end
 
-  for_all_test_networks do |nn,description|
+  for_all_test_nn_models do |nn,description|
     describe "for #{description}" do
       it "matches measured de_dw gradients in all layers" do
         inputs = random_inputs( nn.layers.first.num_inputs )

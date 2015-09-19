@@ -35,7 +35,7 @@ void assert_value_wraps_gd_sgd( VALUE obj ) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Network method definitions
+//  NNModel method definitions
 //
 
 /* @overload initialize( params )

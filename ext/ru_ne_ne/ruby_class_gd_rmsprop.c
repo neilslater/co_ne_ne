@@ -72,7 +72,7 @@ void copy_hash_to_gd_rmsprop_properties( VALUE rv_opts, GradientDescent_RMSProp 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  Network method definitions
+//  NNModel method definitions
 //
 
 /* @overload initialize( num_params, decay, epsilon )
