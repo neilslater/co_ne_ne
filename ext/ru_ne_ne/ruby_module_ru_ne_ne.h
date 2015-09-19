@@ -21,6 +21,7 @@
 #include "ruby_class_layer_ff.h"
 #include "ruby_class_dataset.h"
 #include "ruby_class_learn_mbgd_layer.h"
+#include "ruby_class_mbgd.h"
 #include "mt.h"
 #include "core_shuffle.h"
 #include "shared_vars.h"

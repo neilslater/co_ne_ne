@@ -1,8 +1,8 @@
 RuNeNe TODOs:
 
-    RuNeNe::Network -> RuNeNe::NNModel
-
     RuNeNe::Learn::MBGD
+
+    RuNeNe::NeuralNetwork (?)
 
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions

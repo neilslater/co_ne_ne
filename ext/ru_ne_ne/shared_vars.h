@@ -25,7 +25,9 @@ extern volatile VALUE RuNeNe_GradientDescent_RMSProp;
 
 extern volatile VALUE RuNeNe_Layer;
 extern volatile VALUE RuNeNe_Layer_FeedForward;
+
 extern volatile VALUE RuNeNe_NNModel;
+
 extern volatile VALUE RuNeNe_DataSet;
 
 extern volatile VALUE RuNeNe_Learn;
