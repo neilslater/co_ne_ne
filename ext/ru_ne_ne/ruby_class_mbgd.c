@@ -47,7 +47,7 @@ VALUE cast_mbgd_layer( volatile VALUE rv_layer_def, int *last_num_outputs ) {
     }
 
     mbgd_layer__init( mbgd_layer, n_inputs, NUM2INT( ValAtSymbol( rv_layer_def, "num_outputs" ) ) );
-    copy_hash_to_mbgd_layer_properties( rv_layer_def, mbgd_layer );
+    copy_hash_to_mbgd_layer_properties( rv_layer_def, mbgd_layer, 1 );
     this_layer = Data_Wrap_Struct( RuNeNe_Learn_MBGD_Layer, mbgd_layer__gc_mark, mbgd_layer__destroy, mbgd_layer );
   } else {
     this_layer = rv_layer_def;
@@ -138,7 +138,6 @@ VALUE mbgd_rbobject__initialize_copy( VALUE copy, VALUE orig ) {
   return copy;
 }
 
-
 /* @overload from_nn_model( nn_model, opts )
  * Creates a new RuNeNe::Learn::MBGD instance to match a given NNModel
  * @param [RuNeNe::NNModel] nn_model to create training structures for
@@ -211,6 +210,30 @@ VALUE mbgd_rbobject__get_layer( VALUE self, VALUE rv_layer_id ) {
   return mbgd->mbgd_layers[i];
 }
 
+/* @overload set_meta_params( opts )
+ * @param [Hash] opts hash of properties to change and their new values
+ * @return [RuNeNe::Learn::MBGD] self
+ */
+VALUE mbgd_rbobject__set_meta_params( VALUE self, VALUE rv_opts ) {
+  MBGD *mbgd = get_mbgd_struct( self );
+  MBGDLayer *mbgd_layer;
+  int i;
+
+  Check_Type( rv_opts, T_HASH );
+  check_opts_hash_for_mbgd_layer_state( rv_opts );
+  if ( !NIL_P( ValAtSymbol(rv_opts,"gradient_descent_type") ) ) {
+    rb_raise( rb_eArgError, "gradient_descent_type cannot be changed in an existing learner" );
+  }
+
+  for ( i = 0; i < mbgd->num_layers; i++ ) {
+    Data_Get_Struct( mbgd->mbgd_layers[i], MBGDLayer, mbgd_layer );
+    copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer, 0 );
+  }
+
+  return self;
+}
+
+
 /* @!attribute [r] num_layers
  * Description goes here
  * @return [Integer]
@@ -255,4 +278,6 @@ void init_mbgd_class( ) {
 
   // MBGD methods
   rb_define_method( RuNeNe_Learn_MBGD, "layer", mbgd_rbobject__get_layer, 1 );
+  rb_define_method( RuNeNe_Learn_MBGD, "set_meta_params", mbgd_rbobject__set_meta_params, 1 );
+
 }

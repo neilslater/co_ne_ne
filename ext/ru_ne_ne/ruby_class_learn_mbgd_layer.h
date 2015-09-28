@@ -12,7 +12,7 @@
 
 void init_mbgd_layer_class( );
 void assert_value_wraps_mbgd_layer( VALUE obj );
-void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer );
+void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer, int new_gds );
 VALUE mbgd_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self );
 
 #endif

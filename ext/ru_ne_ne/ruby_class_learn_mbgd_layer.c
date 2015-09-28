@@ -3,7 +3,7 @@
 #include "ruby_class_learn_mbgd_layer.h"
 
 // Helper for converting hash to C properties
-void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) {
+void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer, int new_gds ) {
   volatile VALUE rv_var;
   volatile VALUE new_narray;
   struct NARRAY* narr;
@@ -109,7 +109,7 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
       rb_raise( rb_eTypeError, "Expected a GradientDescent object for :gradient_descent, but got something else" );
     }
     mbgd_layer->gradient_descent = rv_var;
-  } else {
+  } else if ( new_gds ) {
     rv_var = ValAtSymbol(rv_opts,"momentum");
     if ( !NIL_P(rv_var) ) {
       momentum = NUM2FLT( rv_var );
@@ -128,6 +128,34 @@ void copy_hash_to_mbgd_layer_properties( VALUE rv_opts, MBGDLayer *mbgd_layer ) 
     mbgd_layer__init_gradient_descent( mbgd_layer,
         symbol_to_gradient_descent_type( ValAtSymbol(rv_opts, "gradient_descent_type") ),
         momentum, decay, epsilon );
+  } else {
+    switch ( mbgd_layer->gradient_descent_type ) {
+      case GD_TYPE_SGD:
+        Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_SGD, gd_sgd );
+        break;
+
+      case GD_TYPE_NAG:
+        Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_NAG, gd_nag );
+        rv_var = ValAtSymbol(rv_opts,"momentum");
+        if ( !NIL_P(rv_var) ) {
+          gd_nag->momentum = NUM2FLT( rv_var );
+        }
+        break;
+
+      case GD_TYPE_RMSPROP:
+        Data_Get_Struct( mbgd_layer->gradient_descent, GradientDescent_RMSProp, gd_rmsprop );
+        rv_var = ValAtSymbol(rv_opts,"decay");
+        if ( !NIL_P(rv_var) ) {
+          gd_rmsprop->decay = NUM2FLT( rv_var );
+        }
+
+        rv_var = ValAtSymbol(rv_opts,"epsilon");
+        if ( !NIL_P(rv_var) ) {
+          gd_rmsprop->epsilon = NUM2FLT( rv_var );
+        }
+
+        break;
+    }
   }
 
   return;
@@ -205,7 +233,7 @@ VALUE mbgd_layer_rbobject__initialize( VALUE self, VALUE rv_opts ) {
 
   mbgd_layer__init( mbgd_layer, num_ins, num_outs );
 
-  copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer );
+  copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer, 1 );
 
   return self;
 }
@@ -240,7 +268,7 @@ VALUE mbgd_layer_rbclass__from_layer( int argc, VALUE* argv, VALUE self ) {
   mbgd_layer__init( mbgd_layer, layer_ff->num_inputs, layer_ff->num_outputs );
 
   if (!NIL_P(rv_opts)) {
-    copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer );
+    copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer, 1 );
   } else {
     mbgd_layer__init_gradient_descent( mbgd_layer, GD_TYPE_SGD,
         0.9, 0.9, 1e-6 ); // These last values are ignored for SGD
@@ -421,6 +449,30 @@ VALUE mbgd_layer_rbobject__set_gradient_descent( VALUE self, VALUE rv_var ) {
   mbgd_layer->gradient_descent = rv_var;
 
   return mbgd_layer->gradient_descent;
+}
+
+
+/* @overload set_meta_params( opts )
+ * @param [Hash] opts hash of properties to change and their new values
+ * @return [RuNeNe::Learn::MBGD::Layer] self
+ */
+VALUE mbgd_layer_rbobject__set_meta_params( VALUE self, VALUE rv_opts ) {
+  MBGDLayer *mbgd_layer = get_mbgd_layer_struct( self );
+  int i;
+
+  Check_Type( rv_opts, T_HASH );
+
+  // TODO: We could make this a lot nicer . . .
+  if ( !NIL_P( ValAtSymbol(rv_opts,"gradient_descent") ) ) {
+    rb_raise( rb_eArgError, "To change gradient_descent, use the gradient_descent= assignment" );
+  }
+  if ( !NIL_P( ValAtSymbol(rv_opts,"gradient_descent_type") ) ) {
+    rb_raise( rb_eArgError, "To change gradient_descent_type, use the gradient_descent= assignment"  );
+  }
+
+  copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer, 0 );
+
+  return self;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -645,6 +697,7 @@ void init_mbgd_layer_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "weight_decay=", mbgd_layer_rbobject__set_weight_decay, 1 );
 
   // MBGDLayer methods
+  rb_define_method( RuNeNe_Learn_MBGD_Layer, "set_meta_params", mbgd_layer_rbobject__set_meta_params, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "start_batch", mbgd_layer_rbobject__start_batch, 1 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "backprop_for_output_layer", mbgd_layer_rbobject__backprop_for_output_layer, 5 );
   rb_define_method( RuNeNe_Learn_MBGD_Layer, "backprop_for_mid_layer", mbgd_layer_rbobject__backprop_for_mid_layer, 4 );

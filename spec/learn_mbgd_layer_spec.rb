@@ -298,6 +298,72 @@ describe RuNeNe::Learn::MBGD::Layer do
       end
     end
 
+    describe "#set_meta_params" do
+      before :each do
+        @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
+      end
+
+      [:sgd, :nag, :rmsprop].each do |accel_type|
+        context "with gradient_descent_type '#{accel_type}'" do
+          before :each do
+            @bpl_subject = RuNeNe::Learn::MBGD::Layer.new( :num_inputs => 3, :num_outputs => 2,
+                  :learning_rate => 0.02, :weight_decay => 1e-3,
+                  :max_norm => 1.5, :gradient_descent_type => accel_type )
+          end
+
+          it "can set learning_rate" do
+            @bpl_subject.set_meta_params( :learning_rate => 0.07 )
+            expect( @bpl_subject.learning_rate ).to be_within( 1e-6 ).of 0.07
+          end
+
+          it "doesn't reset other values when setting learning_rate" do
+            @bpl_subject.set_meta_params( :learning_rate => 0.07 )
+            expect( @bpl_subject.weight_decay ).to be_within( 1e-6 ).of 1e-3
+            expect( @bpl_subject.max_norm ).to be_within( 1e-6 ).of 1.5
+          end
+
+          it "can set weight_decay" do
+            @bpl_subject.set_meta_params( :weight_decay => 0.003 )
+            expect( @bpl_subject.weight_decay ).to be_within( 1e-6 ).of 0.003
+          end
+
+          it "can set max_norm" do
+            @bpl_subject.set_meta_params( :max_norm => 0.75 )
+            expect( @bpl_subject.max_norm ).to be_within( 1e-6 ).of 0.75
+          end
+
+          case accel_type
+          when :nag
+            it "can set momentum" do
+              @bpl_subject.set_meta_params( :momentum => 0.55 )
+              expect( @bpl_subject.gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.55
+            end
+            it "doesn't reset momentum when setting learning_rate" do
+              @bpl_subject.set_meta_params( :learning_rate => 0.07 )
+              expect( @bpl_subject.gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.9
+            end
+
+          when :rmsprop
+            it "can set decay" do
+              @bpl_subject.set_meta_params( :decay => 0.99 )
+              expect( @bpl_subject.gradient_descent.decay ).to  be_within( 1e-6 ).of 0.99
+            end
+            it "can set epsilon" do
+              @bpl_subject.set_meta_params( :epsilon => 0.001 )
+              expect( @bpl_subject.gradient_descent.epsilon ).to  be_within( 1e-9 ).of 0.001
+            end
+            it "doesn't reset decay or epsilon when setting learning_rate" do
+              @bpl_subject.set_meta_params( :learning_rate => 0.07 )
+              expect( @bpl_subject.gradient_descent.decay ).to  be_within( 1e-6 ).of 0.9
+              expect( @bpl_subject.gradient_descent.epsilon ).to  be_within( 1e-9 ).of 1e-6
+            end
+
+          end
+        end
+      end
+    end
+
+
     describe "#start_batch" do
       before :each do
         @ff_layer = RuNeNe::Layer::FeedForward.new( 3, 2 )
