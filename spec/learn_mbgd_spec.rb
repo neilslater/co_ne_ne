@@ -62,8 +62,6 @@ describe RuNeNe::Learn::MBGD do
 
       it "refuses to create new trainers for bad parameters" do
         expect { RuNeNe::Learn::MBGD.from_nn_model( @nn, 0 ) }.to raise_error TypeError
-        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
-            :de_dz => "Fish" ) }.to raise_error TypeError
 
         # :de_dz not supported
         expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
@@ -72,6 +70,11 @@ describe RuNeNe::Learn::MBGD do
         # :de_dw not supported
         expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
             :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
+
+        # :gradient_descent not supported
+        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
+            :gradient_descent => RuNeNe::GradientDescent::RMSProp.new( NArray[ [-0.1, 0.01, 0.001] ], 0.8, 3e-7 ) )
+        }.to raise_error ArgumentError
       end
 
       it "creates expected sizes and defaults for arrays" do
