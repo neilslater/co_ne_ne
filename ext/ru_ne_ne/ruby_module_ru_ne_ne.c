@@ -310,5 +310,7 @@ void init_module_ru_ne_ne() {
   init_gd_rmsprop_class();
   init_dataset_class();
   init_nn_model_class();
+  init_mbgd_class();
+
   init_srand_by_time();
 }

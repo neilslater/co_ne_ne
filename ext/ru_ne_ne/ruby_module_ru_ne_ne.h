@@ -27,6 +27,7 @@
 #include "shared_vars.h"
 #include "core_regularise.h"
 #include "ruby_class_nn_model.h"
+#include "ruby_class_mbgd.h"
 
 void init_module_ru_ne_ne();
 

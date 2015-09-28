@@ -1,6 +1,12 @@
 RuNeNe TODOs:
 
+    NNModel & Learn::MBGD -
+        instantiate layers from hash description
+        access individual layers (as opposed to build array of all layers)
+
     RuNeNe::Learn::MBGD
+        instantiate from NNModel
+        allow global settings that apply to every layer
 
     RuNeNe::NeuralNetwork (?)
 

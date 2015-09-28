@@ -7,6 +7,7 @@
 #include "narray.h"
 #include "struct_mbgd.h"
 #include "shared_vars.h"
+#include "ruby_class_learn_mbgd_layer.h"
 
 void init_mbgd_class( );
 

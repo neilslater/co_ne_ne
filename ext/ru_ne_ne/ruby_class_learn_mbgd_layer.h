@@ -11,5 +11,6 @@
 #include "ruby_c_conversions.h"
 
 void init_mbgd_layer_class( );
+void assert_value_wraps_mbgd_layer( VALUE obj );
 
 #endif

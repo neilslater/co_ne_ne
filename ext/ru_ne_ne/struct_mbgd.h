@@ -10,15 +10,19 @@
 
 #include <ruby.h>
 #include "narray.h"
+#include "struct_mbgd_layer.h"
+#include "struct_nn_model.h"
 
 typedef struct _mbgd_raw {
-  volatile VALUE *mbgd_layers;
+  VALUE *mbgd_layers;
   int num_layers;
   int num_inputs;
   int num_outputs;
   } MBGD;
 
 MBGD *mbgd__create();
+
+void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers );
 
 void mbgd__destroy( MBGD *mbgd );
 

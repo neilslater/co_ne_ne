@@ -40,11 +40,36 @@ void assert_value_wraps_mbgd( VALUE obj ) {
 
 /* @overload initialize( mbgd_layers )
  * Creates a new ...
- * @param [Object] mbgd_layers ...
+ * @param [Array<RuNeNe::Learn::MBGD::Layer>] mbgd_layers ...
  * @return [RuNeNe::Learn::MBGD] new ...
  */
 VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers ) {
   MBGD *mbgd = get_mbgd_struct( self );
+
+  // This stack-based var avoids memory leaks from alloc which might not be freed on error
+  VALUE layers[100];
+  volatile VALUE current_layer;
+  int i, n;
+
+  Check_Type( rv_mbgd_layers, T_ARRAY );
+
+  n = FIX2INT( rb_funcall( rv_mbgd_layers, rb_intern("count"), 0 ) );
+  if ( n < 1 ) {
+    rb_raise( rb_eArgError, "no layers in mbgd" );
+  }
+  if ( n > 100 ) {
+    rb_raise( rb_eArgError, "too many layers in mbgd" );
+  }
+
+  for ( i = 0; i < n; i++ ) {
+    current_layer = rb_ary_entry( rv_mbgd_layers, i );
+    // TODO: Accept more than one definition of layer (e.g. orig object, hash). Support
+    //       multiple layer types in theory.
+    assert_value_wraps_mbgd_layer( current_layer );
+    layers[i] = current_layer;
+  }
+
+  mbgd__init( mbgd, n, layers);
 
   return self;
 }
@@ -72,7 +97,15 @@ VALUE mbgd_rbobject__initialize_copy( VALUE copy, VALUE orig ) {
  */
 VALUE mbgd_rbobject__get_mbgd_layers( VALUE self ) {
   MBGD *mbgd = get_mbgd_struct( self );
-  return mbgd->mbgd_layers;
+
+  int i;
+
+  volatile VALUE rv_layers = rb_ary_new2( mbgd->num_layers );
+  for ( i = 0; i < mbgd->num_layers; i++ ) {
+    rb_ary_store( rv_layers, i, mbgd->mbgd_layers[i] );
+  }
+
+  return rv_layers;
 }
 
 /* @!attribute [r] num_layers
