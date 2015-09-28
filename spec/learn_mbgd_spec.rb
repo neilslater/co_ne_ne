@@ -19,6 +19,36 @@ describe RuNeNe::Learn::MBGD do
         expect { RuNeNe::Learn::MBGD.new( [] ) }.to raise_error ArgumentError
         expect { RuNeNe::Learn::MBGD.new( [in_layer_learn,nil,out_layer_learn] ) }.to raise_error TypeError
       end
+
+      it "accepts a hash description in place of a layer" do
+        expect( RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_outputs => 1 } ] ) ).to be_a RuNeNe::Learn::MBGD
+      end
+
+      it "will not allow layer size mis-match" do
+        expect {
+          RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_inputs => 3, :num_outputs => 1 } ] )
+        }.to raise_error RuntimeError
+      end
+
+      it "correctly determines layer num_inputs from previous layer num_outputs when using hash syntax" do
+        learn = RuNeNe::Learn::MBGD.new( [ { :num_inputs => 2, :num_outputs => 4 },
+          { :num_outputs => 7 }, { :num_outputs => 2 }  ]
+        )
+        expect( learn.layer(0).num_inputs ).to be 2
+        expect( learn.layer(1).num_inputs ).to be 4
+        expect( learn.layer(2).num_inputs ).to be 7
+
+        expect( learn.layer(2).num_outputs ).to be 2
+      end
+
+      it "allows specification of gradient descent types using hash syntax" do
+        learn = RuNeNe::Learn::MBGD.new( [
+          { :num_inputs => 2, :num_outputs => 4, :gradient_descent_type => :nag },
+          { :num_outputs => 1, :gradient_descent_type => :rmsprop } ]
+        )
+        expect( learn.layer(0).gradient_descent ).to be_a RuNeNe::GradientDescent::NAG
+        expect( learn.layer(1).gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
+      end
     end
 
     describe "with Marshal" do

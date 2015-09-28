@@ -29,6 +29,37 @@ void assert_value_wraps_mbgd( VALUE obj ) {
   }
 }
 
+// Converts anything compatile with layer description into layer object suitable
+// for storing in mbgd
+VALUE cast_mbgd_layer( volatile VALUE rv_layer_def, int *last_num_outputs ) {
+  volatile VALUE this_layer;
+  volatile VALUE rv_var;
+  MBGDLayer * mbgd_layer;
+  int n_inputs = *last_num_outputs;
+  int n_outputs = 0;
+
+  if ( TYPE(rv_layer_def) == T_HASH ) {
+    mbgd_layer = mbgd_layer__create();
+
+    rv_var = ValAtSymbol( rv_layer_def, "num_inputs" );
+    if ( !NIL_P(rv_var) ) {
+      n_inputs = NUM2INT( rv_var  );
+    }
+
+    mbgd_layer__init( mbgd_layer, n_inputs, NUM2INT( ValAtSymbol( rv_layer_def, "num_outputs" ) ) );
+    copy_hash_to_mbgd_layer_properties( rv_layer_def, mbgd_layer );
+    this_layer = Data_Wrap_Struct( RuNeNe_Learn_MBGD_Layer, mbgd_layer__gc_mark, mbgd_layer__destroy, mbgd_layer );
+  } else {
+    this_layer = rv_layer_def;
+    assert_value_wraps_mbgd_layer( this_layer );
+  }
+
+  Data_Get_Struct( this_layer, MBGDLayer, mbgd_layer );
+  *last_num_outputs = mbgd_layer->num_outputs;
+
+  return this_layer;
+}
+
 /* Document-class: RuNeNe::Learn::MBGD
  *
  */
@@ -48,8 +79,7 @@ VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers ) {
 
   // This stack-based var avoids memory leaks from alloc which might not be freed on error
   VALUE layers[100];
-  volatile VALUE current_layer;
-  int i, n;
+  int i, n, last_num_outputs = 0;
 
   Check_Type( rv_mbgd_layers, T_ARRAY );
 
@@ -62,14 +92,10 @@ VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers ) {
   }
 
   for ( i = 0; i < n; i++ ) {
-    current_layer = rb_ary_entry( rv_mbgd_layers, i );
-    // TODO: Accept more than one definition of layer (e.g. orig object, hash). Support
-    //       multiple layer types in theory.
-    assert_value_wraps_mbgd_layer( current_layer );
-    layers[i] = current_layer;
+    layers[i] = cast_mbgd_layer( rb_ary_entry( rv_mbgd_layers, i ), &last_num_outputs );
   }
 
-  mbgd__init( mbgd, n, layers);
+  mbgd__init( mbgd, n, layers );
 
   return self;
 }

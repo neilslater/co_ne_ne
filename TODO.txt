@@ -1,7 +1,6 @@
 RuNeNe TODOs:
 
     RuNeNe::Learn::MBGD
-        instantiate layers from hash description
         instantiate from NNModel
         allow global settings that apply to every layer
         run complete minibatch on NNModel, using DataSet

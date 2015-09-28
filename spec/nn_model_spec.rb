@@ -30,7 +30,7 @@ describe RuNeNe::NNModel do
         nn = RuNeNe::NNModel.new( [ { :num_inputs => 2, :num_outputs => 4},
           { :num_outputs => 7 }, { :num_outputs => 2 }  ]
         )
-        expect( nn.layers[0].num_inputs ).to be 2
+        expect( nn.layer(0).num_inputs ).to be 2
         expect( nn.layers[1].num_inputs ).to be 4
         expect( nn.layers[2].num_inputs ).to be 7
 
