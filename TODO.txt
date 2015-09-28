@@ -2,6 +2,8 @@ RuNeNe TODOs:
 
     RuNeNe::Learn::MBGD
         instantiate from NNModel
+        refuse to allow "global" settings for :de_dw etc, because they make no sense for whole network
+        (i.e. must set *types*, not current state)
         allow global settings that apply to every layer
         run complete minibatch on NNModel, using DataSet
 
@@ -52,6 +54,7 @@ RuNeNe TODOs:
         rubinius compatibility (due to GC moving memory blocks)?
         Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
         Optimise away additions for softmax mid-layer support (stop them affecting other mid-layer calcs)
+        Improve type errors to reference type of param received
 
     Add Adadelta and.or Adagrad options, see http://imgur.com/a/Hqolp
     - Later versions of RMSProp + Momentum

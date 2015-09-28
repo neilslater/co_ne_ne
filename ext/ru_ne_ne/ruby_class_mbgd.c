@@ -60,6 +60,27 @@ VALUE cast_mbgd_layer( volatile VALUE rv_layer_def, int *last_num_outputs ) {
   return this_layer;
 }
 
+// We cannot accept per-layer state when processing all-layers hash
+void check_opts_hash_for_mbgd_layer_state( VALUE rv_opts ) {
+  if ( !NIL_P( ValAtSymbol(rv_opts,"de_dz") ) ) {
+    rb_raise( rb_eArgError, "de_dz not allowed across whole network" );
+  }
+
+  if ( !NIL_P( ValAtSymbol(rv_opts,"de_da") ) ) {
+    rb_raise( rb_eArgError, "de_da not allowed across whole network" );
+  }
+
+  if ( !NIL_P( ValAtSymbol(rv_opts,"de_dw") ) ) {
+    rb_raise( rb_eArgError, "de_dw not allowed across whole network" );
+  }
+
+  if ( !NIL_P( ValAtSymbol(rv_opts,"gradient_descent") ) ) {
+    rb_raise( rb_eArgError, "gradient_descent not allowed across whole network" );
+  }
+
+  return;
+}
+
 /* Document-class: RuNeNe::Learn::MBGD
  *
  */
@@ -115,6 +136,47 @@ VALUE mbgd_rbobject__initialize_copy( VALUE copy, VALUE orig ) {
   mbgd__deep_copy( mbgd_copy, mbgd_orig );
 
   return copy;
+}
+
+
+/* @overload from_nn_model( nn_model, opts )
+ * Creates a new RuNeNe::Learn::MBGD instance to match a given NNModel
+ * @param [RuNeNe::NNModel] nn_model to create training structures for
+ * @param [Hash] opts initialisation options, applied to all MBGD layers
+ * @return [RuNeNe::Learn::MBGD] the new RuNeNe::Learn::MBGD object.
+ */
+VALUE mbgd_layer_rbclass__from_nn_model( int argc, VALUE* argv, VALUE self ) {
+  volatile VALUE rv_nn_model, rv_opts, mbgd_layer_args[2], mbgd_layers[100];
+  NNModel *nn_model;
+  MBGD *mbgd;
+  int i;
+
+  rb_scan_args( argc, argv, "11", &rv_nn_model, &rv_opts );
+
+  // Check we really have a nn_model object to build from
+  if ( TYPE(rv_nn_model) != T_DATA ||
+      RDATA(rv_nn_model)->dfree != (RUBY_DATA_FUNC)nn_model__destroy) {
+    rb_raise( rb_eTypeError, "Expected a NNModel object, but got something else" );
+  }
+  Data_Get_Struct( rv_nn_model, NNModel, nn_model );
+
+  if (!NIL_P(rv_opts)) {
+    Check_Type( rv_opts, T_HASH );
+    check_opts_hash_for_mbgd_layer_state( rv_opts );
+  }
+
+  volatile VALUE rv_new_mbgd = mbgd_alloc( RuNeNe_Learn_MBGD );
+  mbgd = get_mbgd_struct( rv_new_mbgd );
+
+  for( i = 0; i < nn_model->num_layers; i++ ) {
+    mbgd_layer_args[0] = nn_model->layers[i];
+    mbgd_layer_args[1] = rv_opts;
+    mbgd_layers[i] = mbgd_layer_rbclass__from_layer( 2, (VALUE*)mbgd_layer_args, RuNeNe_Learn_MBGD_Layer );
+  }
+
+  mbgd__init( mbgd, nn_model->num_layers, (VALUE*)mbgd_layers );
+
+  return rv_new_mbgd;
 }
 
 /* @!attribute [r] mbgd_layers
@@ -183,6 +245,7 @@ void init_mbgd_class( ) {
   rb_define_alloc_func( RuNeNe_Learn_MBGD, mbgd_alloc );
   rb_define_method( RuNeNe_Learn_MBGD, "initialize", mbgd_rbobject__initialize, 1 );
   rb_define_method( RuNeNe_Learn_MBGD, "initialize_copy", mbgd_rbobject__initialize_copy, 1 );
+  rb_define_singleton_method( RuNeNe_Learn_MBGD, "from_nn_model", mbgd_layer_rbclass__from_nn_model, -1 );
 
   // MBGD attributes
   rb_define_method( RuNeNe_Learn_MBGD, "mbgd_layers", mbgd_rbobject__get_mbgd_layers, 0 );

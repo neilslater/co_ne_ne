@@ -51,6 +51,64 @@ describe RuNeNe::Learn::MBGD do
       end
     end
 
+    describe "#from_nn_model" do
+      before :each do
+        @nn = RuNeNe::NNModel.new( [in_layer_nn, out_layer_nn] )
+      end
+
+      it "creates a new backprop trainer for a network" do
+        expect( RuNeNe::Learn::MBGD.from_nn_model( @nn ) ).to be_a RuNeNe::Learn::MBGD
+      end
+
+      it "refuses to create new trainers for bad parameters" do
+        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn, 0 ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
+            :de_dz => "Fish" ) }.to raise_error TypeError
+
+        # :de_dz not supported
+        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
+            :de_dz => NArray[ 0.0, 0.0 ] ) }.to raise_error ArgumentError
+
+        # :de_dw not supported
+        expect { RuNeNe::Learn::MBGD.from_nn_model( @nn,
+            :de_dw => NArray[ 0.0, 0.0, 0.1, 0.2 ] ) }.to raise_error ArgumentError
+      end
+
+      it "creates expected sizes and defaults for arrays" do
+        learn = RuNeNe::Learn::MBGD.from_nn_model( @nn )
+        expect( learn.layer(0).de_dz ).to be_narray_like NArray[ 0.0, 0.0 ]
+        expect( learn.layer(1).de_dz ).to be_narray_like NArray[ 0.0 ]
+
+        expect( learn.layer(0).de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
+        expect( learn.layer(1).de_da ).to be_narray_like NArray[ 0.0, 0.0 ]
+
+        expect( learn.layer(0).de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0], [0.0, 0.0, 0.0] ]
+        expect( learn.layer(1).de_dw ).to be_narray_like NArray[ [0.0, 0.0, 0.0] ]
+      end
+
+      it "uses options hash to set learning params" do
+        learn = RuNeNe::Learn::MBGD.from_nn_model( @nn,
+            :learning_rate => 0.005, :decay => 0.99, :weight_decay => 1e-4,
+            :max_norm => 2.4, :gradient_descent_type => :rmsprop )
+
+        learn.mbgd_layers.each do |bpl|
+          expect( bpl.learning_rate ).to be_within( 1e-6 ).of 0.005
+          expect( bpl.gradient_descent_type ).to be :rmsprop
+          expect( bpl.weight_decay ).to be_within( 1e-8 ).of 1e-4
+          expect( bpl.max_norm ).to be_within( 1e-6 ).of 2.4
+          expect( bpl.gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
+          expect( bpl.gradient_descent.decay ).to be_within(1e-6).of 0.99
+          expect( bpl.gradient_descent.epsilon ).to be_within(1e-12).of 1e-6
+        end
+
+        expect( learn.layer(0).gradient_descent.num_params ).to be 6
+        expect( learn.layer(0).gradient_descent.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ], [ 1.0, 1.0, 1.0 ] ]
+
+        expect( learn.layer(1).gradient_descent.num_params ).to be 3
+        expect( learn.layer(1).gradient_descent.av_squared_grads ).to be_narray_like NArray[ [ 1.0, 1.0, 1.0 ] ]
+      end
+    end
+
     describe "with Marshal" do
       it "can save and retrieve a Learn::MBGD, preserving layer properties" do
         orig_mbgd = RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn] )
