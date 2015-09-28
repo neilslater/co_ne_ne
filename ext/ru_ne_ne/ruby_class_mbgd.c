@@ -108,6 +108,21 @@ VALUE mbgd_rbobject__get_mbgd_layers( VALUE self ) {
   return rv_layers;
 }
 
+/* @overload layer( layer_id )
+ * @param [Integer] layer_id index of layer
+ * @return [RuNeNe::Learn::MBGD::Layer]
+ */
+VALUE mbgd_rbobject__get_layer( VALUE self, VALUE rv_layer_id ) {
+  MBGD *mbgd = get_mbgd_struct( self );
+  int i = NUM2INT( rv_layer_id );
+
+  if ( i < 0  || i >= mbgd->num_layers ) {
+    rb_raise( rb_eArgError, "layer_id %d is out of bounds for this network (0..%d)", i, mbgd->num_layers - 1 );
+  }
+
+  return mbgd->mbgd_layers[i];
+}
+
 /* @!attribute [r] num_layers
  * Description goes here
  * @return [Integer]
@@ -148,4 +163,7 @@ void init_mbgd_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD, "num_layers", mbgd_rbobject__get_num_layers, 0 );
   rb_define_method( RuNeNe_Learn_MBGD, "num_inputs", mbgd_rbobject__get_num_inputs, 0 );
   rb_define_method( RuNeNe_Learn_MBGD, "num_outputs", mbgd_rbobject__get_num_outputs, 0 );
+
+  // MBGD methods
+  rb_define_method( RuNeNe_Learn_MBGD, "layer", mbgd_rbobject__get_layer, 1 );
 }

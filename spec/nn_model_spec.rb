@@ -15,6 +15,36 @@ describe RuNeNe::NNModel do
         expect { RuNeNe::NNModel.new( [] ) }.to raise_error ArgumentError
         expect { RuNeNe::NNModel.new( [in_layer_xor,nil,out_layer_xor] ) }.to raise_error TypeError
       end
+
+      it "accepts a hash description in place of a layer" do
+        expect( RuNeNe::NNModel.new( [in_layer_xor, { :num_outputs => 1 } ] ) ).to be_a RuNeNe::NNModel
+      end
+
+      it "will not allow layer size mis-match" do
+        expect {
+          RuNeNe::NNModel.new( [in_layer_xor, { :num_inputs => 3, :num_outputs => 1 } ] )
+        }.to raise_error RuntimeError
+      end
+
+      it "correctly determines layer num_inputs from previous layer num_outputs when using hash syntax" do
+        nn = RuNeNe::NNModel.new( [ { :num_inputs => 2, :num_outputs => 4},
+          { :num_outputs => 7 }, { :num_outputs => 2 }  ]
+        )
+        expect( nn.layers[0].num_inputs ).to be 2
+        expect( nn.layers[1].num_inputs ).to be 4
+        expect( nn.layers[2].num_inputs ).to be 7
+
+        expect( nn.layers[2].num_outputs ).to be 2
+      end
+
+      it "allows specification of transfer functions using hash syntax" do
+        nn = RuNeNe::NNModel.new( [
+          { :num_inputs => 2, :num_outputs => 4, :transfer => :softmax },
+          { :num_outputs => 1, :transfer => :tanh } ]
+        )
+        expect( nn.layers[0].transfer ).to be RuNeNe::Transfer::Softmax
+        expect( nn.layers[1].transfer ).to be RuNeNe::Transfer::TanH
+      end
     end
 
     describe "with Marshal" do
@@ -67,6 +97,13 @@ describe RuNeNe::NNModel do
           expect( copy_layer.transfer ).to be RuNeNe::Transfer::Sigmoid
           expect( copy_layer.weights ).to be_narray_like orig_layer.weights
         end
+      end
+    end
+
+    describe "#layer" do
+      it "accesses individual layer object from layers" do
+        expect( @nn.layer(0) ).to be  @nn.layers[0]
+        expect( @nn.layer(1) ).to be  @nn.layers[1]
       end
     end
 

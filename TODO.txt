@@ -1,14 +1,14 @@
 RuNeNe TODOs:
 
-    NNModel & Learn::MBGD -
-        instantiate layers from hash description
-        access individual layers (as opposed to build array of all layers)
-
     RuNeNe::Learn::MBGD
+        instantiate layers from hash description
         instantiate from NNModel
         allow global settings that apply to every layer
 
     RuNeNe::NeuralNetwork (?)
+        Some container object for Network + Learn::MBGD that trains it
+
+--
 
     RuNeNe::DataSet
       - Support for no output, maybe generating output for predictions
@@ -17,18 +17,16 @@ RuNeNe TODOs:
       - Support for test and CV sets
 
     Mini-batch training
-
-    Perform batch feed-forward runs
-
-    Perform batch backprop runs
+        Perform batch feed-forward runs
+        Perform batch backprop runs
 
     Bulk predictions
-
-    Some container object for Network + Learn::MBGD that trains it?
 
     Tests using MNIST digits
 
     Easy save/load methods for all major objects
+
+    Documentation review
 
     Transfer issues below to tickets in Github (how to give priorities and dependencies?)
 

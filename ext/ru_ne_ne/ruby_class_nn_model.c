@@ -29,6 +29,36 @@ void assert_value_wraps_nn_model( VALUE obj ) {
   }
 }
 
+// Converts anything compatile with layer description into layer object suitable
+// for storing in nn_model
+VALUE cast_nn_model_layer( volatile VALUE rv_layer_def, int *last_num_outputs ) {
+  volatile VALUE this_layer;
+  volatile VALUE rv_var;
+  Layer_FF * layer_ff;
+  int n_inputs = *last_num_outputs;
+
+  if ( TYPE(rv_layer_def) == T_HASH ) {
+    rv_var = ValAtSymbol( rv_layer_def, "num_inputs" );
+    if ( !NIL_P(rv_var) ) {
+      n_inputs = NUM2INT( rv_var  );
+    }
+
+    this_layer = layer_ff_new_ruby_object(
+      n_inputs,
+      NUM2INT( ValAtSymbol( rv_layer_def, "num_outputs" ) ),
+      symbol_to_transfer_type( ValAtSymbol( rv_layer_def, "transfer" ) )
+    );
+  } else {
+    this_layer = rv_layer_def;
+    assert_value_wraps_layer_ff( this_layer );
+  }
+
+  Data_Get_Struct( this_layer, Layer_FF, layer_ff );
+  *last_num_outputs = layer_ff->num_outputs;
+
+  return this_layer;
+}
+
 /* Document-class: RuNeNe::NNModel
  *
  */
@@ -47,8 +77,7 @@ VALUE nn_model_rbobject__initialize( VALUE self, VALUE rv_layers ) {
   NNModel *nn_model = get_nn_model_struct( self );
   // This stack-based var avoids memory leaks from alloc which might not be freed on error
   VALUE layers[100];
-  volatile VALUE current_layer;
-  int i, n;
+  int i, n, last_num_outputs = 0;
 
   Check_Type( rv_layers, T_ARRAY );
 
@@ -61,11 +90,7 @@ VALUE nn_model_rbobject__initialize( VALUE self, VALUE rv_layers ) {
   }
 
   for ( i = 0; i < n; i++ ) {
-    current_layer = rb_ary_entry( rv_layers, i );
-    // TODO: Accept more than one definition of layer (e.g. orig object, hash). Support
-    //       multiple layer types in theory.
-    assert_value_wraps_layer_ff( current_layer );
-    layers[i] = current_layer;
+    layers[i] = cast_nn_model_layer( rb_ary_entry( rv_layers, i ), &last_num_outputs );
   }
 
   nn_model__init( nn_model, n, layers);
@@ -104,6 +129,21 @@ VALUE nn_model_rbobject__get_layers( VALUE self ) {
   }
 
   return rv_layers;
+}
+
+/* @overload layer( layer_id )
+ * @param [Integer] layer_id index of layer
+ * @return [RuNeNe::Layer::Feedforward]
+ */
+VALUE nn_model_rbobject__get_layer( VALUE self, VALUE rv_layer_id ) {
+  NNModel *nn_model = get_nn_model_struct( self );
+  int i = NUM2INT( rv_layer_id );
+
+  if ( i < 0  || i >= nn_model->num_layers ) {
+    rb_raise( rb_eArgError, "layer_id %d is out of bounds for this network (0..%d)", i, nn_model->num_layers - 1 );
+  }
+
+  return nn_model->layers[i];
 }
 
 /* @!attribute [r] num_layers
@@ -257,6 +297,7 @@ void init_nn_model_class( ) {
   rb_define_method( RuNeNe_NNModel, "num_outputs", nn_model_rbobject__get_num_outputs, 0 );
 
   // NNModel methods
+  rb_define_method( RuNeNe_NNModel, "layer", nn_model_rbobject__get_layer, 1 );
   rb_define_method( RuNeNe_NNModel, "init_weights", nn_model_rbobject__init_weights, -1 );
   rb_define_method( RuNeNe_NNModel, "run", nn_model_rbobject__run, 1 );
   rb_define_method( RuNeNe_NNModel, "activations", nn_model_rbobject__activations, 1 );

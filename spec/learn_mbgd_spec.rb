@@ -71,5 +71,12 @@ describe RuNeNe::Learn::MBGD do
         end
       end
     end
+
+    describe "#layer" do
+      it "accesses individual layer object from mbgd_layers" do
+        expect( @mbgd.layer(0) ).to be  @mbgd.mbgd_layers[0]
+        expect( @mbgd.layer(1) ).to be  @mbgd.mbgd_layers[1]
+      end
+    end
   end
 end
