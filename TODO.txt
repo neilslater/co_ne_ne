@@ -52,6 +52,7 @@ RuNeNe TODOs:
         Optimise mlogloss/softmax objective de_dz: Flag to allow optimisation when targets meet simplicity requirements
         Optimise away additions for softmax mid-layer support (stop them affecting other mid-layer calcs)
         Improve type errors to reference type of param received
+        Allow setting gradient_descent[_type] when using set_meta_params on MBGD::Layer
 
     Add Adadelta and.or Adagrad options, see http://imgur.com/a/Hqolp
     - Later versions of RMSProp + Momentum

@@ -169,5 +169,81 @@ describe RuNeNe::Learn::MBGD do
         expect( @mbgd.layer(1) ).to be  @mbgd.mbgd_layers[1]
       end
     end
+
+    describe "#set_meta_params" do
+      before :each do
+        @nn = RuNeNe::NNModel.new( [in_layer_nn, out_layer_nn] )
+      end
+
+      [:sgd, :nag, :rmsprop].each do |accel_type|
+        context "with gradient_descent_type '#{accel_type}'" do
+          before :each do
+            @learn_subject = RuNeNe::Learn::MBGD.from_nn_model( @nn,
+                  :learning_rate => 0.02, :weight_decay => 1e-3,
+                  :max_norm => 1.5, :gradient_descent_type => accel_type )
+          end
+
+          it "can set learning_rate in all layers" do
+            @learn_subject.set_meta_params( :learning_rate => 0.07 )
+            expect( @learn_subject.layer(0).learning_rate ).to be_within( 1e-6 ).of 0.07
+            expect( @learn_subject.layer(1).learning_rate ).to be_within( 1e-6 ).of 0.07
+          end
+
+          it "doesn't reset other values when setting learning_rate" do
+            @learn_subject.set_meta_params( :learning_rate => 0.07 )
+            expect( @learn_subject.layer(0).weight_decay ).to be_within( 1e-6 ).of 1e-3
+            expect( @learn_subject.layer(1).weight_decay ).to be_within( 1e-6 ).of 1e-3
+            expect( @learn_subject.layer(0).max_norm ).to be_within( 1e-6 ).of 1.5
+            expect( @learn_subject.layer(1).max_norm ).to be_within( 1e-6 ).of 1.5
+          end
+
+          it "can set weight_decay in all layers" do
+            @learn_subject.set_meta_params( :weight_decay => 0.003 )
+            expect( @learn_subject.layer(0).weight_decay ).to be_within( 1e-6 ).of 0.003
+            expect( @learn_subject.layer(1).weight_decay ).to be_within( 1e-6 ).of 0.003
+          end
+
+          it "can set max_norm in all layers" do
+            @learn_subject.set_meta_params( :max_norm => 0.75 )
+            expect( @learn_subject.layer(0).max_norm ).to be_within( 1e-6 ).of 0.75
+            expect( @learn_subject.layer(1).max_norm ).to be_within( 1e-6 ).of 0.75
+          end
+
+          case accel_type
+          when :nag
+            it "can set momentum in all layers" do
+              @learn_subject.set_meta_params( :momentum => 0.55 )
+              expect( @learn_subject.layer(0).gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.55
+              expect( @learn_subject.layer(1).gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.55
+            end
+            it "doesn't reset momentum when setting learning_rate" do
+              @learn_subject.set_meta_params( :learning_rate => 0.07 )
+              expect( @learn_subject.layer(0).gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.9
+              expect( @learn_subject.layer(1).gradient_descent.momentum ).to  be_within( 1e-6 ).of 0.9
+            end
+
+          when :rmsprop
+            it "can set decay in all layers" do
+              @learn_subject.set_meta_params( :decay => 0.99 )
+              expect( @learn_subject.layer(0).gradient_descent.decay ).to  be_within( 1e-6 ).of 0.99
+              expect( @learn_subject.layer(1).gradient_descent.decay ).to  be_within( 1e-6 ).of 0.99
+            end
+            it "can set epsilon" do
+              @learn_subject.set_meta_params( :epsilon => 0.001 )
+              expect( @learn_subject.layer(0).gradient_descent.epsilon ).to  be_within( 1e-9 ).of 0.001
+              expect( @learn_subject.layer(1).gradient_descent.epsilon ).to  be_within( 1e-9 ).of 0.001
+            end
+            it "doesn't reset decay or epsilon when setting learning_rate" do
+              @learn_subject.set_meta_params( :learning_rate => 0.07 )
+              expect( @learn_subject.layer(0).gradient_descent.decay ).to  be_within( 1e-6 ).of 0.9
+              expect( @learn_subject.layer(0).gradient_descent.epsilon ).to  be_within( 1e-9 ).of 1e-6
+              expect( @learn_subject.layer(1).gradient_descent.decay ).to  be_within( 1e-6 ).of 0.9
+              expect( @learn_subject.layer(1).gradient_descent.epsilon ).to  be_within( 1e-9 ).of 1e-6
+            end
+          end
+        end
+      end
+    end
+
   end
 end
