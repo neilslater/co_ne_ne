@@ -4,6 +4,7 @@ RuNeNe TODOs:
         instantiate layers from hash description
         instantiate from NNModel
         allow global settings that apply to every layer
+        run complete minibatch on NNModel, using DataSet
 
     RuNeNe::NeuralNetwork (?)
         Some container object for Network + Learn::MBGD that trains it
@@ -11,14 +12,16 @@ RuNeNe TODOs:
 --
 
     RuNeNe::DataSet
-      - Support for no output, maybe generating output for predictions
+      - Support for no output
       - Allow support for splitting/re-organising data
       - Rename C and Ruby source files for new name
       - Support for test and CV sets
 
-    Mini-batch training
-        Perform batch feed-forward runs
-        Perform batch backprop runs
+    RuNeNe::Metrics
+        - using Objective functions
+        - Accuracy
+        - AUROC
+        - F1 score
 
     Bulk predictions
 
