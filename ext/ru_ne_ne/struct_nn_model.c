@@ -92,7 +92,7 @@ void nn_model__deep_copy( NNModel *nn_model_copy, NNModel *nn_model_orig ) {
   }
 
   for ( i = 0; i < nn_model_copy->num_layers; i++ ) {
-    Data_Get_Struct( nn_model_copy->layers[i], Layer_FF, layer_ff );
+    layer_ff = nn_model__get_layer_ff_at( nn_model_copy, i );
     nn_model_copy->activations[i] = ALLOC_N( float, layer_ff->num_outputs );
     memcpy( nn_model_copy->activations[i], nn_model_orig->activations[i], layer_ff->num_outputs * sizeof(float) );
   }
@@ -105,3 +105,25 @@ NNModel * nn_model__clone( NNModel *nn_model_orig ) {
   nn_model__deep_copy( nn_model_copy, nn_model_orig );
   return nn_model_copy;
 }
+
+void nn_model__run( NNModel *nn_model, float *inputs ) {
+  int i;
+
+  layer_ff__run( nn_model__get_layer_ff_at( nn_model, 0 ),
+      inputs, nn_model->activations[0] );
+
+  for ( i = 1; i < nn_model->num_layers; i++ ) {
+    // TODO: This only works for Layer_FF layers, we need a more flexible system
+    layer_ff__run( nn_model__get_layer_ff_at( nn_model, i ),
+        nn_model->activations[i-1], nn_model->activations[i] );
+  }
+
+  return;
+}
+
+Layer_FF *nn_model__get_layer_ff_at( NNModel *nn_model, int idx ) {
+  Layer_FF * layer_ff;
+  Data_Get_Struct( nn_model->layers[idx], Layer_FF, layer_ff );
+  return layer_ff;
+}
+

@@ -392,3 +392,15 @@ void de_dz_from_objective_and_transfer( objective_type obj, transfer_type t, int
 
   return;
 }
+
+float objective_function_loss( objective_type obj, int n, float* predictions, float* targets ) {
+  switch( obj ) {
+  case MSE:
+    return raw_mse_loss( n, predictions, targets );
+  case LOGLOSS:
+    return raw_logloss( n, predictions, targets, 1e-15 );
+  case MLOGLOSS:
+    return raw_mlogloss( n, predictions, targets, 1e-15 );
+  }
+  return 0.0;
+}

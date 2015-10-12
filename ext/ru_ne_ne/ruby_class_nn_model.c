@@ -29,6 +29,12 @@ void assert_value_wraps_nn_model( VALUE obj ) {
   }
 }
 
+NNModel *safe_get_nn_model_struct( VALUE obj ) {
+  assert_value_wraps_nn_model( obj );
+  return get_nn_model_struct( obj );
+}
+
+
 // Converts anything compatile with layer description into layer object suitable
 // for storing in nn_model
 VALUE cast_nn_model_layer( volatile VALUE rv_layer_def, int *last_num_outputs ) {
@@ -217,8 +223,6 @@ VALUE nn_model_rbobject__init_weights( int argc, VALUE* argv, VALUE self ) {
  */
 VALUE nn_model_rbobject__run( VALUE self, VALUE rv_input ) {
   NNModel *nn_model = get_nn_model_struct( self );
-  Layer_FF *layer_ff;
-  int i;
   int out_shape[1] = { nn_model->num_outputs };
 
   struct NARRAY *na_input;
@@ -239,14 +243,7 @@ VALUE nn_model_rbobject__run( VALUE self, VALUE rv_input ) {
   volatile VALUE val_output = na_make_object( NA_SFLOAT, 1, out_shape, cNArray );
   GetNArray( val_output, na_output );
 
-  Data_Get_Struct( nn_model->layers[0], Layer_FF, layer_ff );
-  layer_ff__run( layer_ff, (float*) na_input->ptr, nn_model->activations[0] );
-
-  for ( i = 1; i < nn_model->num_layers; i++ ) {
-    // TODO: This only works for Layer_FF layers, we need a more flexible system
-    Data_Get_Struct( nn_model->layers[i], Layer_FF, layer_ff );
-    layer_ff__run( layer_ff, nn_model->activations[i-1], nn_model->activations[i] );
-  }
+  nn_model__run( nn_model, (float*) na_input->ptr );
 
   memcpy( (float*) na_output->ptr, nn_model->activations[nn_model->num_layers-1], nn_model->num_outputs * sizeof(float) );
 

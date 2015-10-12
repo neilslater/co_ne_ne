@@ -32,4 +32,8 @@ void nn_model__deep_copy( NNModel *nn_model_copy, NNModel *nn_model_orig );
 
 NNModel * nn_model__clone( NNModel *nn_model_orig );
 
+void nn_model__run( NNModel *nn_model, float *inputs );
+
+Layer_FF *nn_model__get_layer_ff_at( NNModel *nn_model, int idx );
+
 #endif

@@ -29,6 +29,11 @@ void assert_value_wraps_dataset( VALUE obj ) {
   }
 }
 
+DataSet *safe_get_dataset_struct( VALUE obj ) {
+  assert_value_wraps_dataset( obj );
+  return get_dataset_struct( obj );
+}
+
 /* Document-class:  RuNeNe::DataSet
  *
  * A DataSet represents numeric data used for training, cross-validation, testing or prediction.

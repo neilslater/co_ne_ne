@@ -10,5 +10,6 @@
 #include "ruby_class_layer_ff.h"
 
 void init_nn_model_class( );
+NNModel *safe_get_nn_model_struct( VALUE obj );
 
 #endif

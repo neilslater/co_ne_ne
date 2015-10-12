@@ -244,6 +244,5 @@ describe RuNeNe::Learn::MBGD do
         end
       end
     end
-
   end
 end

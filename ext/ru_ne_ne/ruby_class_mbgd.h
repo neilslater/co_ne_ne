@@ -8,6 +8,8 @@
 #include "struct_mbgd.h"
 #include "shared_vars.h"
 #include "ruby_class_learn_mbgd_layer.h"
+#include "ruby_class_nn_model.h"
+#include "ruby_class_dataset.h"
 
 void init_mbgd_class( );
 

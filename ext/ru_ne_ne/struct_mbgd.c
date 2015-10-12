@@ -14,6 +14,7 @@ MBGD *mbgd__create() {
   mbgd->num_layers = 0;
   mbgd->num_inputs = 0;
   mbgd->num_outputs = 0;
+  mbgd->objective = MSE;
   return mbgd;
 }
 
@@ -78,4 +79,67 @@ MBGD * mbgd__clone( MBGD *mbgd_orig ) {
   MBGD * mbgd_copy = mbgd__create();
   mbgd__deep_copy( mbgd_copy, mbgd_orig );
   return mbgd_copy;
+}
+
+MBGDLayer *mbgd__get_mbgd_layer_at( MBGD *mbgd, int idx ) {
+  MBGDLayer * mbgd_layer;
+  Data_Get_Struct( mbgd->mbgd_layers[idx], MBGDLayer, mbgd_layer );
+  return mbgd_layer;
+}
+
+void mbgd__check_size_compatible( MBGD *mbgd, NNModel *nn_model, DataSet *dataset ) {
+  int i;
+  Layer_FF * layer_ff;
+  MBGDLayer * mbgd_layer;
+
+  if ( mbgd->num_inputs != nn_model->num_inputs || dataset->input_item_size != nn_model->num_inputs ) {
+    rb_raise( rb_eArgError, "Input size mismatch. Dataset %d, NNModel %d, MBGD %d.",  dataset->input_item_size, nn_model->num_inputs, mbgd->num_inputs );
+  }
+
+  if ( mbgd->num_outputs != nn_model->num_outputs || dataset->output_item_size != nn_model->num_outputs ) {
+    rb_raise( rb_eArgError, "Output size mismatch. Dataset %d, NNModel %d, MBGD %d.",  dataset->output_item_size, nn_model->num_outputs, mbgd->num_outputs );
+  }
+
+  if ( mbgd->num_layers != nn_model->num_layers ) {
+    rb_raise( rb_eArgError, "Number of layers mismatch. NNModel %d, MBGD %d.",  nn_model->num_layers, mbgd->num_layers );
+  }
+
+  for( i = 0; i < mbgd->num_layers; i++ ) {
+    layer_ff = nn_model__get_layer_ff_at( nn_model, i );
+    mbgd_layer = mbgd__get_mbgd_layer_at( mbgd, i );
+
+    if ( layer_ff->num_inputs != mbgd_layer->num_inputs || mbgd_layer->num_outputs != layer_ff->num_outputs ) {
+      rb_raise( rb_eArgError, "Layer size mismatch in layer %d. NNModel %d in, % d out. MBGD %d in, %d out.",
+        i, layer_ff->num_inputs, layer_ff->num_outputs, mbgd_layer->num_inputs, mbgd_layer->num_outputs );
+    }
+  }
+
+  return;
+}
+
+
+float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, objective_type o, int batch_size ) {
+  int i, j;
+  float o_score = 0.0;
+
+  // Start batch each layer pair
+
+  for ( i = 0; i < batch_size; i++ ) {
+    // Get next dataset entry
+    dataset__current_input( dataset );
+    dataset__current_output( dataset );
+
+    // Run through network
+
+    // Collect objective function score
+
+    // Back-propagate each layer
+
+    // Next item
+    dataset__next( dataset );
+  }
+
+  // Weight update each layer pair
+
+  return o_score / batch_size;
 }

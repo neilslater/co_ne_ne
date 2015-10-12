@@ -226,11 +226,30 @@ VALUE mbgd_rbobject__set_meta_params( VALUE self, VALUE rv_opts ) {
   }
 
   for ( i = 0; i < mbgd->num_layers; i++ ) {
-    Data_Get_Struct( mbgd->mbgd_layers[i], MBGDLayer, mbgd_layer );
+    mbgd_layer = mbgd__get_mbgd_layer_at( mbgd, i );
     copy_hash_to_mbgd_layer_properties( rv_opts, mbgd_layer, 0 );
   }
 
   return self;
+}
+
+/* @overload train_one_batch( nn_model, dataset, objective, batch_size )
+ * @param [RuNeNe::NNModel] nn_model network architecture to be trained
+ * @param [RuNeNe::Dataset] dataset training data
+ * @param [Symbol] objective objective function to optimise (TODO: Should be set in constructor)
+ * @param [Integer] batch_size number of items in dataset to process before altering weights
+ * @return [Float] mean score of objective function for batch
+ */
+VALUE mbgd_rbobject__train_one_batch( VALUE self, VALUE rv_nn_model, VALUE rv_dataset, VALUE rv_objective, VALUE rv_batch_size ) {
+  MBGD *mbgd = get_mbgd_struct( self );
+  NNModel *nn_model = safe_get_nn_model_struct( rv_nn_model );
+  DataSet *dataset = safe_get_dataset_struct( rv_dataset );
+
+  int batch_size = NUM2INT( rv_batch_size );
+  objective_type o = symbol_to_objective_type( rv_objective );
+
+  mbgd__check_size_compatible( mbgd, nn_model, dataset );
+  return FLT2NUM( mbgd__train_one_batch( mbgd, nn_model, dataset, o, batch_size ) );
 }
 
 
@@ -279,5 +298,5 @@ void init_mbgd_class( ) {
   // MBGD methods
   rb_define_method( RuNeNe_Learn_MBGD, "layer", mbgd_rbobject__get_layer, 1 );
   rb_define_method( RuNeNe_Learn_MBGD, "set_meta_params", mbgd_rbobject__set_meta_params, 1 );
-
+  rb_define_method( RuNeNe_Learn_MBGD, "train_one_batch", mbgd_rbobject__train_one_batch, 3 );
 }
