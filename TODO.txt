@@ -1,8 +1,5 @@
 RuNeNe TODOs:
 
-    RuNeNe::Learn::MBGD
-        include choice of objective in the learner
-
     RuNeNe::NeuralNetwork (?)
         Some container object for Network + Learn::MBGD that trains it
 
@@ -42,6 +39,7 @@ RuNeNe TODOs:
       - want "build, then run" network methods that work with multiple layers
 
     Refactoring:
+        revise behaviour of Class/Module vs Symbol for setting options in constructors etc
         move all array-walking/maths functions into same place for ease of later optimisations
         use vtables and function lookups to build a training routine from components
         more SIMD in backprop and gradient calculations
