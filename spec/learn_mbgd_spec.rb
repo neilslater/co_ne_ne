@@ -255,25 +255,29 @@ describe RuNeNe::Learn::MBGD do
       end
 
       [:sgd, :nag, :rmsprop].each do |accel_type|
-        context "with gradient_descent_type '#{accel_type}'" do
+      [:mse, :logloss].each do |objective|
+        context "with gradient_descent_type '#{accel_type}' and objective '#{objective}'" do
           before :each do
+            # SGD optimiser needs high learning rate, rmsprop needs low learning rate
+            lr = accel_type == :sgd ? 1.0 : 0.1
             @learn_subject = RuNeNe::Learn::MBGD.from_nn_model( @nn,
-                  :learning_rate => 0.5, :gradient_descent_type => accel_type )
+                  :learning_rate => lr, :gradient_descent_type => accel_type )
           end
 
           it "returns a loss value" do
-            loss = @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
-            expect( loss ).to be_within( 0.00001 ).of 0.111272
+            loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+            expected_loss = objective == :mse ? 0.111272 : 0.638037
+            expect( loss ).to be_within( 0.00001 ).of expected_loss
           end
 
           it "reduces loss over time" do
-            last_loss = @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+            last_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
 
             5.times do
               200.times do
-                @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+                @learn_subject.train_one_batch( @nn, @data, objective, 4 )
               end
-              this_loss = @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+              this_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
               expect( this_loss ).to be < last_loss
               last_loss = this_loss
             end
@@ -281,15 +285,16 @@ describe RuNeNe::Learn::MBGD do
 
           it "eventually learns xor" do
             3000.times do
-              @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+              @learn_subject.train_one_batch( @nn, @data, objective, 4 )
             end
 
-            this_loss = @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+            this_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
             expect( this_loss ).to be_within(0.001).of 0.0
 
             expect( @nn.run( NArray[-1.0, -1.0] ) ).to be_narray_like NArray[0.0], 1e-3
           end
         end
+      end
       end
     end
   end
