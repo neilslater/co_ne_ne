@@ -1,7 +1,6 @@
 RuNeNe TODOs:
 
     RuNeNe::Learn::MBGD
-        run complete minibatch on NNModel, using DataSet
         include choice of objective in the learner
 
     RuNeNe::NeuralNetwork (?)

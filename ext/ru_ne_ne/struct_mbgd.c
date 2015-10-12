@@ -18,7 +18,7 @@ MBGD *mbgd__create() {
   return mbgd;
 }
 
-void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers ) {
+void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers, objective_type o ) {
   int i, last_num_outputs;
   MBGDLayer *mbgd_layer;
 
@@ -42,6 +42,8 @@ void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers ) {
 
   mbgd->num_outputs = last_num_outputs;
 
+  mbgd->objective = o;
+
   return;
 }
 
@@ -64,6 +66,7 @@ void mbgd__deep_copy( MBGD *mbgd_copy, MBGD *mbgd_orig ) {
   mbgd_copy->num_layers = mbgd_orig->num_layers;
   mbgd_copy->num_inputs = mbgd_orig->num_inputs;
   mbgd_copy->num_outputs = mbgd_orig->num_outputs;
+  mbgd_copy->objective = mbgd_orig->objective;
 
   mbgd_copy->mbgd_layers = ALLOC_N( VALUE, mbgd_copy->num_layers );
   int i;
@@ -118,7 +121,7 @@ void mbgd__check_size_compatible( MBGD *mbgd, NNModel *nn_model, DataSet *datase
 }
 
 
-float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, objective_type o, int batch_size ) {
+float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, int batch_size ) {
   int i, j;
   float o_score = 0.0;
   float *inputs;
@@ -147,10 +150,8 @@ float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, ob
     nn_model__run( nn_model, inputs );
     predictions = nn_model->activations[ nn_model->num_layers - 1 ];
 
-    // Collect objective function score (TODO: This should use instance objective)
-    o_score += objective_function_loss( o, mbgd->num_outputs, predictions, targets );
+    o_score += objective_function_loss( mbgd->objective, mbgd->num_outputs, predictions, targets );
 
-    // Back-propagate error to output layer (TODO: This should use instance objective)
     mbgd_layer = mbgd__get_mbgd_layer_at( mbgd, mbgd->num_layers - 1 );
     layer_ff = nn_model__get_layer_ff_at( nn_model, mbgd->num_layers - 1 );
     layer_activations = nn_model->activations[ mbgd->num_layers - 1 ];
@@ -161,7 +162,7 @@ float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, ob
     }
 
     mbgd_layer__backprop_for_output_layer( mbgd_layer, layer_ff,
-        layer_inputs, layer_activations, targets, o );
+        layer_inputs, layer_activations, targets, mbgd->objective );
 
     // Continue back-propagation to all earlier layers
     for ( j = mbgd->num_layers - 2; j >= 0; j-- ) {

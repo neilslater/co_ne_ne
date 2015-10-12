@@ -95,8 +95,9 @@ void check_opts_hash_for_mbgd_layer_state( VALUE rv_opts ) {
  * @param [Array<RuNeNe::Learn::MBGD::Layer>] mbgd_layers ...
  * @return [RuNeNe::Learn::MBGD] new ...
  */
-VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers ) {
+VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers, VALUE rv_objective_type ) {
   MBGD *mbgd = get_mbgd_struct( self );
+  objective_type o = symbol_to_objective_type( rv_objective_type );
 
   // This stack-based var avoids memory leaks from alloc which might not be freed on error
   VALUE layers[100];
@@ -116,7 +117,7 @@ VALUE mbgd_rbobject__initialize( VALUE self, VALUE rv_mbgd_layers ) {
     layers[i] = cast_mbgd_layer( rb_ary_entry( rv_mbgd_layers, i ), &last_num_outputs );
   }
 
-  mbgd__init( mbgd, n, layers );
+  mbgd__init( mbgd, n, layers, o );
 
   return self;
 }
@@ -149,6 +150,7 @@ VALUE mbgd_layer_rbclass__from_nn_model( int argc, VALUE* argv, VALUE self ) {
   NNModel *nn_model;
   MBGD *mbgd;
   int i;
+  objective_type o = MSE;
 
   rb_scan_args( argc, argv, "11", &rv_nn_model, &rv_opts );
 
@@ -162,6 +164,10 @@ VALUE mbgd_layer_rbclass__from_nn_model( int argc, VALUE* argv, VALUE self ) {
   if (!NIL_P(rv_opts)) {
     Check_Type( rv_opts, T_HASH );
     check_opts_hash_for_mbgd_layer_state( rv_opts );
+
+    if ( !NIL_P( ValAtSymbol(rv_opts,"objective") ) ) {
+      o = symbol_to_objective_type( ValAtSymbol(rv_opts,"objective") );
+    }
   }
 
   volatile VALUE rv_new_mbgd = mbgd_alloc( RuNeNe_Learn_MBGD );
@@ -173,7 +179,7 @@ VALUE mbgd_layer_rbclass__from_nn_model( int argc, VALUE* argv, VALUE self ) {
     mbgd_layers[i] = mbgd_layer_rbclass__from_layer( 2, (VALUE*)mbgd_layer_args, RuNeNe_Learn_MBGD_Layer );
   }
 
-  mbgd__init( mbgd, nn_model->num_layers, (VALUE*)mbgd_layers );
+  mbgd__init( mbgd, nn_model->num_layers, (VALUE*)mbgd_layers, o );
 
   return rv_new_mbgd;
 }
@@ -240,16 +246,15 @@ VALUE mbgd_rbobject__set_meta_params( VALUE self, VALUE rv_opts ) {
  * @param [Integer] batch_size number of items in dataset to process before altering weights
  * @return [Float] mean score of objective function for batch
  */
-VALUE mbgd_rbobject__train_one_batch( VALUE self, VALUE rv_nn_model, VALUE rv_dataset, VALUE rv_objective, VALUE rv_batch_size ) {
+VALUE mbgd_rbobject__train_one_batch( VALUE self, VALUE rv_nn_model, VALUE rv_dataset, VALUE rv_batch_size ) {
   MBGD *mbgd = get_mbgd_struct( self );
   NNModel *nn_model = safe_get_nn_model_struct( rv_nn_model );
   DataSet *dataset = safe_get_dataset_struct( rv_dataset );
 
   int batch_size = NUM2INT( rv_batch_size );
-  objective_type o = symbol_to_objective_type( rv_objective );
 
   mbgd__check_size_compatible( mbgd, nn_model, dataset );
-  return FLT2NUM( mbgd__train_one_batch( mbgd, nn_model, dataset, o, batch_size ) );
+  return FLT2NUM( mbgd__train_one_batch( mbgd, nn_model, dataset, batch_size ) );
 }
 
 
@@ -280,12 +285,21 @@ VALUE mbgd_rbobject__get_num_outputs( VALUE self ) {
   return INT2NUM( mbgd->num_outputs );
 }
 
+/* @!attribute [r] objective
+ * Description goes here
+ * @return [Module]
+ */
+VALUE mbgd_rbobject__get_objective( VALUE self ) {
+  MBGD *mbgd = get_mbgd_struct( self );
+  return objective_type_to_module( mbgd->objective );
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void init_mbgd_class( ) {
   // MBGD instantiation and class methods
   rb_define_alloc_func( RuNeNe_Learn_MBGD, mbgd_alloc );
-  rb_define_method( RuNeNe_Learn_MBGD, "initialize", mbgd_rbobject__initialize, 1 );
+  rb_define_method( RuNeNe_Learn_MBGD, "initialize", mbgd_rbobject__initialize, 2 );
   rb_define_method( RuNeNe_Learn_MBGD, "initialize_copy", mbgd_rbobject__initialize_copy, 1 );
   rb_define_singleton_method( RuNeNe_Learn_MBGD, "from_nn_model", mbgd_layer_rbclass__from_nn_model, -1 );
 
@@ -294,9 +308,10 @@ void init_mbgd_class( ) {
   rb_define_method( RuNeNe_Learn_MBGD, "num_layers", mbgd_rbobject__get_num_layers, 0 );
   rb_define_method( RuNeNe_Learn_MBGD, "num_inputs", mbgd_rbobject__get_num_inputs, 0 );
   rb_define_method( RuNeNe_Learn_MBGD, "num_outputs", mbgd_rbobject__get_num_outputs, 0 );
+  rb_define_method( RuNeNe_Learn_MBGD, "objective", mbgd_rbobject__get_objective, 0 );
 
   // MBGD methods
   rb_define_method( RuNeNe_Learn_MBGD, "layer", mbgd_rbobject__get_layer, 1 );
   rb_define_method( RuNeNe_Learn_MBGD, "set_meta_params", mbgd_rbobject__set_meta_params, 1 );
-  rb_define_method( RuNeNe_Learn_MBGD, "train_one_batch", mbgd_rbobject__train_one_batch, 4 );
+  rb_define_method( RuNeNe_Learn_MBGD, "train_one_batch", mbgd_rbobject__train_one_batch, 3 );
 }

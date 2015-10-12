@@ -301,7 +301,8 @@ class RuNeNe::Learn::MBGD
   # Adds support for Marshal, via to_h and from_h methods
   def to_h
     Hash[
-      :mbgd_layers => self.mbgd_layers
+      :mbgd_layers => self.mbgd_layers,
+      :objective => self.objective.label
     ]
   end
 
@@ -310,7 +311,7 @@ class RuNeNe::Learn::MBGD
   # @param [Hash] h one key is :layers
   # @return [Learn::MBGD] new object
   def self.from_h h
-    RuNeNe::Learn::MBGD.new( h[:mbgd_layers] )
+    RuNeNe::Learn::MBGD.new( h[:mbgd_layers], h[:objective] )
   end
 
   # @!visibility private

@@ -11,28 +11,29 @@ describe RuNeNe::Learn::MBGD do
   describe "class methods" do
     describe "#new" do
       it "creates a new Learn::MBGD" do
-        expect( RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn] ) ).to be_a RuNeNe::Learn::MBGD
+        expect( RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn], :mse ) ).to be_a RuNeNe::Learn::MBGD
       end
 
       it "refuses to create new Learn::MBGD for bad parameters" do
-        expect { RuNeNe::Learn::MBGD.new( 17 ) }.to raise_error TypeError
-        expect { RuNeNe::Learn::MBGD.new( [] ) }.to raise_error ArgumentError
-        expect { RuNeNe::Learn::MBGD.new( [in_layer_learn,nil,out_layer_learn] ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD.new( 17, :logloss ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD.new( [], :mlogloss ) }.to raise_error ArgumentError
+        expect { RuNeNe::Learn::MBGD.new( [in_layer_learn,nil,out_layer_learn], :mse ) }.to raise_error TypeError
+        expect { RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn], :funky ) }.to raise_error ArgumentError
       end
 
       it "accepts a hash description in place of a layer" do
-        expect( RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_outputs => 1 } ] ) ).to be_a RuNeNe::Learn::MBGD
+        expect( RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_outputs => 1 } ], :mse ) ).to be_a RuNeNe::Learn::MBGD
       end
 
       it "will not allow layer size mis-match" do
         expect {
-          RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_inputs => 3, :num_outputs => 1 } ] )
+          RuNeNe::Learn::MBGD.new( [in_layer_learn, { :num_inputs => 3, :num_outputs => 1 } ], :mse )
         }.to raise_error RuntimeError
       end
 
       it "correctly determines layer num_inputs from previous layer num_outputs when using hash syntax" do
         learn = RuNeNe::Learn::MBGD.new( [ { :num_inputs => 2, :num_outputs => 4 },
-          { :num_outputs => 7 }, { :num_outputs => 2 }  ]
+          { :num_outputs => 7 }, { :num_outputs => 2 }  ], :mse
         )
         expect( learn.layer(0).num_inputs ).to be 2
         expect( learn.layer(1).num_inputs ).to be 4
@@ -44,7 +45,7 @@ describe RuNeNe::Learn::MBGD do
       it "allows specification of gradient descent types using hash syntax" do
         learn = RuNeNe::Learn::MBGD.new( [
           { :num_inputs => 2, :num_outputs => 4, :gradient_descent_type => :nag },
-          { :num_outputs => 1, :gradient_descent_type => :rmsprop } ]
+          { :num_outputs => 1, :gradient_descent_type => :rmsprop } ], :mse
         )
         expect( learn.layer(0).gradient_descent ).to be_a RuNeNe::GradientDescent::NAG
         expect( learn.layer(1).gradient_descent ).to be_a RuNeNe::GradientDescent::RMSProp
@@ -114,7 +115,7 @@ describe RuNeNe::Learn::MBGD do
 
     describe "with Marshal" do
       it "can save and retrieve a Learn::MBGD, preserving layer properties" do
-        orig_mbgd = RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn] )
+        orig_mbgd = RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn], :logloss )
         saved = Marshal.dump( orig_mbgd )
         copy_mbgd = Marshal.load( saved )
 
@@ -136,7 +137,7 @@ describe RuNeNe::Learn::MBGD do
 
   describe "instance methods" do
     before :each do
-      @mbgd = RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn] )
+      @mbgd = RuNeNe::Learn::MBGD.new( [in_layer_learn,out_layer_learn], :mse )
     end
 
     describe "clone" do
@@ -261,23 +262,23 @@ describe RuNeNe::Learn::MBGD do
             # SGD optimiser needs high learning rate, rmsprop needs low learning rate
             lr = accel_type == :sgd ? 1.0 : 0.1
             @learn_subject = RuNeNe::Learn::MBGD.from_nn_model( @nn,
-                  :learning_rate => lr, :gradient_descent_type => accel_type )
+                  :learning_rate => lr, :gradient_descent_type => accel_type, :objective => objective )
           end
 
           it "returns a loss value" do
-            loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+            loss = @learn_subject.train_one_batch( @nn, @data, 4 )
             expected_loss = objective == :mse ? 0.111272 : 0.638037
             expect( loss ).to be_within( 0.00001 ).of expected_loss
           end
 
           it "reduces loss over time" do
-            last_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+            last_loss = @learn_subject.train_one_batch( @nn, @data, 4 )
 
             5.times do
               200.times do
-                @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+                @learn_subject.train_one_batch( @nn, @data, 4 )
               end
-              this_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+              this_loss = @learn_subject.train_one_batch( @nn, @data, 4 )
               expect( this_loss ).to be < last_loss
               last_loss = this_loss
             end
@@ -285,10 +286,10 @@ describe RuNeNe::Learn::MBGD do
 
           it "eventually learns xor" do
             3000.times do
-              @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+              @learn_subject.train_one_batch( @nn, @data, 4 )
             end
 
-            this_loss = @learn_subject.train_one_batch( @nn, @data, objective, 4 )
+            this_loss = @learn_subject.train_one_batch( @nn, @data, 4 )
             expect( this_loss ).to be_within(0.001).of 0.0
 
             expect( @nn.run( NArray[-1.0, -1.0] ) ).to be_narray_like NArray[0.0], 1e-3

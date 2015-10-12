@@ -25,7 +25,7 @@ typedef struct _mbgd_raw {
 
 MBGD *mbgd__create();
 
-void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers );
+void mbgd__init( MBGD *mbgd, int num_mbgd_layers, VALUE *mbgd_layers, objective_type o );
 
 void mbgd__destroy( MBGD *mbgd );
 
@@ -37,7 +37,7 @@ MBGD * mbgd__clone( MBGD *mbgd_orig );
 
 MBGDLayer *mbgd__get_mbgd_layer_at( MBGD *mbgd, int idx );
 
-float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, objective_type o, int batch_size );
+float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, int batch_size );
 
 void mbgd__check_size_compatible( MBGD *mbgd, NNModel *nn_model, DataSet *dataset );
 
