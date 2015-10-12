@@ -121,25 +121,75 @@ void mbgd__check_size_compatible( MBGD *mbgd, NNModel *nn_model, DataSet *datase
 float mbgd__train_one_batch( MBGD *mbgd, NNModel *nn_model, DataSet *dataset, objective_type o, int batch_size ) {
   int i, j;
   float o_score = 0.0;
+  float *inputs;
+  float *targets;
+  float *predictions;
+  float *layer_activations;
+  float *layer_inputs;
+
+  Layer_FF * layer_ff;
+  MBGDLayer * mbgd_layer;
+  MBGDLayer * upper_mbgd_layer;
 
   // Start batch each layer pair
+  for ( i = 0; i < mbgd->num_layers; i++ ) {
+    mbgd_layer__start_batch(
+      mbgd__get_mbgd_layer_at( mbgd, i ),
+      nn_model__get_layer_ff_at( nn_model, i ) );
+  }
 
   for ( i = 0; i < batch_size; i++ ) {
     // Get next dataset entry
-    dataset__current_input( dataset );
-    dataset__current_output( dataset );
+    inputs = dataset__current_input( dataset );
+    targets = dataset__current_output( dataset );
 
     // Run through network
+    nn_model__run( nn_model, inputs );
+    predictions = nn_model->activations[ nn_model->num_layers - 1 ];
 
-    // Collect objective function score
+    // Collect objective function score (TODO: This should use instance objective)
+    o_score += objective_function_loss( o, mbgd->num_outputs, predictions, targets );
 
-    // Back-propagate each layer
+    // Back-propagate error to output layer (TODO: This should use instance objective)
+    mbgd_layer = mbgd__get_mbgd_layer_at( mbgd, mbgd->num_layers - 1 );
+    layer_ff = nn_model__get_layer_ff_at( nn_model, mbgd->num_layers - 1 );
+    layer_activations = nn_model->activations[ mbgd->num_layers - 1 ];
+    if ( mbgd->num_layers > 1 ) {
+      layer_inputs = nn_model->activations[ mbgd->num_layers - 2 ];
+    } else {
+      layer_inputs = inputs;
+    }
+
+    mbgd_layer__backprop_for_output_layer( mbgd_layer, layer_ff,
+        layer_inputs, layer_activations, targets, o );
+
+    // Continue back-propagation to all earlier layers
+    for ( j = mbgd->num_layers - 2; j >= 0; j-- ) {
+      upper_mbgd_layer = mbgd_layer;
+      mbgd_layer = mbgd__get_mbgd_layer_at( mbgd, j );
+      layer_ff = nn_model__get_layer_ff_at( nn_model, j );
+      layer_activations =  nn_model->activations[ j ];
+      if ( j > 0 ) {
+        layer_inputs = nn_model->activations[ j - 1 ];
+      } else {
+        layer_inputs = inputs;
+      }
+
+      // FIXME: this needlessly calculates de_da for input layer
+      mbgd_layer__backprop_for_mid_layer( mbgd_layer, layer_ff,
+        layer_inputs, layer_activations, upper_mbgd_layer->de_da );
+    }
 
     // Next item
     dataset__next( dataset );
   }
 
   // Weight update each layer pair
+  for ( i = 0; i < mbgd->num_layers; i++ ) {
+    mbgd_layer__finish_batch(
+      mbgd__get_mbgd_layer_at( mbgd, i ),
+      nn_model__get_layer_ff_at( nn_model, i ) );
+  }
 
   return o_score / batch_size;
 }

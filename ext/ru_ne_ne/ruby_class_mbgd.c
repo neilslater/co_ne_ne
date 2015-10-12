@@ -298,5 +298,5 @@ void init_mbgd_class( ) {
   // MBGD methods
   rb_define_method( RuNeNe_Learn_MBGD, "layer", mbgd_rbobject__get_layer, 1 );
   rb_define_method( RuNeNe_Learn_MBGD, "set_meta_params", mbgd_rbobject__set_meta_params, 1 );
-  rb_define_method( RuNeNe_Learn_MBGD, "train_one_batch", mbgd_rbobject__train_one_batch, 3 );
+  rb_define_method( RuNeNe_Learn_MBGD, "train_one_batch", mbgd_rbobject__train_one_batch, 4 );
 }

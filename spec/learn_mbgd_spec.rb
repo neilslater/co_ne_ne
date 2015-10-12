@@ -244,5 +244,31 @@ describe RuNeNe::Learn::MBGD do
         end
       end
     end
+
+    describe "#train_one_batch" do
+      before :each do
+        RuNeNe.srand( 1_000_000 )
+        @nn = RuNeNe::NNModel.new( [in_layer_nn, out_layer_nn] )
+        @xor_inputs = NArray.cast( [ [-1.0, -1.0], [1.0, -1.0], [-1.0, 1.0], [1.0, 1.0] ], 'sfloat' )
+        @xor_targets = NArray.cast( [ [0.0], [1.0], [1.0], [0.0] ], 'sfloat' )
+        @data = RuNeNe::DataSet.new( @xor_inputs, @xor_targets )
+      end
+
+      [:sgd, :nag, :rmsprop].each do |accel_type|
+        context "with gradient_descent_type '#{accel_type}'" do
+          before :each do
+            @learn_subject = RuNeNe::Learn::MBGD.from_nn_model( @nn,
+                  :learning_rate => 0.02, :weight_decay => 1e-3,
+                  :max_norm => 1.5, :gradient_descent_type => accel_type )
+          end
+
+          it "returns a loss value" do
+            loss = @learn_subject.train_one_batch( @nn, @data, :mse, 4 )
+            expect( loss ).to be_within( 0.00001 ).of 0.111272
+          end
+
+        end
+      end
+    end
   end
 end
