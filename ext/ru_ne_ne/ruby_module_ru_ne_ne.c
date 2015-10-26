@@ -35,6 +35,8 @@ volatile VALUE RuNeNe_Learn = Qnil;
 volatile VALUE RuNeNe_Learn_MBGD = Qnil;
 volatile VALUE RuNeNe_Learn_MBGD_Layer = Qnil;
 
+volatile VALUE RuNeNe_Network = Qnil;
+
 /* @overload convolve( signal, kernel )
  * Calculates convolution of an array of floats representing a signal, with a second array representing
  * a kernel. The two parameters must have the same rank. The output has same rank, its size in each dimension d is given by
@@ -292,6 +294,8 @@ void init_module_ru_ne_ne() {
   RuNeNe_Learn_MBGD = rb_define_class_under(  RuNeNe_Learn, "MBGD", rb_cObject );
   RuNeNe_Learn_MBGD_Layer = rb_define_class_under( RuNeNe_Learn_MBGD, "Layer", rb_cObject );
 
+  RuNeNe_Network = rb_define_class_under( RuNeNe, "Network", rb_cObject );
+
   rb_define_singleton_method( RuNeNe, "convolve", narray_convolve, 2 );
   rb_define_singleton_method( RuNeNe, "max_pool", narray_max_pool, 3 );
   rb_define_singleton_method( RuNeNe, "srand", mt_srand, 1 );
@@ -311,6 +315,7 @@ void init_module_ru_ne_ne() {
   init_dataset_class();
   init_nn_model_class();
   init_mbgd_class();
+  init_network_class();
 
   init_srand_by_time();
 }

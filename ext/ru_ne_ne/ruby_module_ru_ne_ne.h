@@ -28,6 +28,7 @@
 #include "core_regularise.h"
 #include "ruby_class_nn_model.h"
 #include "ruby_class_mbgd.h"
+#include "ruby_class_network.h"
 
 void init_module_ru_ne_ne();
 

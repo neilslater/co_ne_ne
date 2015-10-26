@@ -26,7 +26,15 @@ void network__gc_mark( Network *network ) {
   return;
 }
 
+void network__init( Network *network, VALUE nn_model, VALUE learn ) {
+  network->nn_model = nn_model;
+  network->learn = learn;
+  return;
+}
+
 void network__deep_copy( Network *network_copy, Network *network_orig ) {
+  // Deep clone current model and learner
+
   network_copy->nn_model = network_orig->nn_model;
   network_copy->learn = network_orig->learn;
 

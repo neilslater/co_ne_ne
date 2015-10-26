@@ -46,7 +46,10 @@ void assert_value_wraps_network( VALUE obj ) {
  */
 VALUE network_rbobject__initialize( VALUE self, VALUE rv_nn_model, VALUE rv_learn ) {
   Network *network = get_network_struct( self );
+  assert_value_wraps_nn_model( rv_nn_model );
+  assert_value_wraps_mbgd( rv_learn );
 
+  network__init( network, rv_nn_model, rv_learn );
   return self;
 }
 

@@ -10,6 +10,8 @@
 
 #include <ruby.h>
 #include "narray.h"
+#include "struct_nn_model.h"
+#include "struct_mbgd.h"
 
 typedef struct _network_raw {
   volatile VALUE nn_model;
@@ -21,6 +23,8 @@ Network *network__create();
 void network__destroy( Network *network );
 
 void network__gc_mark( Network *network );
+
+void network__init( Network *network, VALUE nn_model, VALUE learn );
 
 void network__deep_copy( Network *network_copy, Network *network_orig );
 

@@ -12,5 +12,6 @@
 #include "ruby_class_dataset.h"
 
 void init_mbgd_class( );
+void assert_value_wraps_mbgd( VALUE obj );
 
 #endif

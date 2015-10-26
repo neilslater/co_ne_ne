@@ -34,4 +34,6 @@ extern volatile VALUE RuNeNe_Learn;
 extern volatile VALUE RuNeNe_Learn_MBGD;
 extern volatile VALUE RuNeNe_Learn_MBGD_Layer;
 
+extern volatile VALUE RuNeNe_Network;
+
 #endif
