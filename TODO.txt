@@ -11,13 +11,13 @@ RuNeNe TODOs:
       - Rename C and Ruby source files for new name
       - Support for test and CV sets
 
+    Bulk predictions
+
     RuNeNe::Metrics
         - using Objective functions
         - Accuracy
         - AUROC
         - F1 score
-
-    Bulk predictions
 
     Tests using MNIST digits
 
