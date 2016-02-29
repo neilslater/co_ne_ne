@@ -1,4 +1,4 @@
-// ext/ru_ne_ne/shared_helpers.h
+// ext/kaggle_skeleton/shared_helpers.h
 
 #ifndef SHARED_HELPERS_H
 #define SHARED_HELPERS_H

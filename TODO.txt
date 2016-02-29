@@ -1,6 +1,6 @@
 RuNeNe TODOs:
 
-    RuNeNe::NeuralNetwork (?)
+    RuNeNe::Network
         Some container object for Network + Learn::MBGD that trains it
 
 --
@@ -8,7 +8,6 @@ RuNeNe TODOs:
     RuNeNe::DataSet
       - Support for no output
       - Allow support for splitting/re-organising data
-      - Rename C and Ruby source files for new name
       - Support for test and CV sets
 
     Bulk predictions
