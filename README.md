@@ -9,7 +9,21 @@
 
 *Ru*by *Ne*ural *Ne*tworks.
 
-*Please note this gem is not published, nor anywhere near being ready to use. It is currently a long-term personal project.*
+*Please note this gem is effectively abandoned before any first version was published.*
+
+The proto-gem code is being left online for reference. It is MIT licensed, so anyone is free to fork
+it or to just take code snippets and use in their own projects.
+
+If you are looking for a neural-network library, you have a few better choices than attempting
+to complete this unfinished gem. Here are some:
+
+ * ruby-fann gem. The FANN library is somewhat behind on new developments in deep networks, but is
+   perfectly servicable for small-to-medium two or three layer feed-forward networks.
+
+ * Tensor Flow for Ruby. Coming soon - it should support the building blocks of deep networks in Ruby (at last!)
+
+ * Learn enough Python to use one of the many great options in that language, such as Keras. Python has
+   far better machine learning libraries than Ruby, and will likely continue to do so for many years.
 
 ## Features
 
@@ -28,11 +42,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install ru_ne_ne
-
-## Usage
-
-### Multi Layer Perceptron learning XOR
-
 
 
 ## Contributing
